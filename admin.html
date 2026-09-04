@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KisanMitra — Officer/Admin Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&family=Noto+Sans+Tamil:wght@400;600;700&family=Noto+Sans+Telugu:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0f0d; --surface:#131a16; --surface2:#1a241e; --line:#26332b;
+    --green:#3ecf6f; --gold:#ffc44d; --txt:#eef5ef; --muted:#9db3a4;
+    --grad:linear-gradient(135deg,#3ecf6f,#ffc44d);
+    --shadow:0 20px 50px rgba(0,0,0,.45); --radius:22px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Plus Jakarta Sans','Noto Sans Devanagari','Noto Sans Tamil','Noto Sans Telugu',system-ui,sans-serif}
+  body{background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:16px 5%;
+      background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:100}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.15rem}
+  .logo .mark{width:36px;height:36px;border-radius:11px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+  .officer-tag{background:rgba(255,196,77,.15);color:var(--gold);padding:7px 16px;border-radius:24px;font-size:.78rem;font-weight:700}
+  .nav-actions{display:flex;align-items:center;gap:12px}
+  .lang-select{background:var(--surface2);color:var(--gold);border:1.5px solid var(--line);padding:7px 12px;border-radius:22px;font-size:.85rem;font-weight:700;cursor:pointer;outline:none;transition:.25s}
+  .lang-select:hover,.lang-select:focus{border-color:var(--green)}
+  nav a.back{color:var(--muted);text-decoration:none;font-weight:700;font-size:.85rem;padding:8px 16px;border-radius:24px;border:1.5px solid var(--line);transition:.25s;background:var(--surface2);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  nav a.back:hover{color:var(--txt);border-color:var(--green);transform:translateY(-2px)}
+  main{max-width:1150px;margin:0 auto;padding:50px 5% 80px}
+  .sec-head{text-align:center;margin-bottom:40px}
+  .sec-tag{color:var(--green);font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:3px}
+  .sec-title{font-size:clamp(1.7rem,3.4vw,2.4rem);letter-spacing:-1px;margin-top:8px;font-weight:800}
+  .sec-sub{color:var(--muted);margin-top:8px;font-size:.95rem}
+  .live-dot{display:inline-flex;align-items:center;gap:7px;background:rgba(62,207,111,.12);border:1px solid var(--line);
+      color:var(--green);padding:6px 16px;border-radius:24px;font-size:.78rem;font-weight:700;margin-top:14px}
+  .live-dot i{width:8px;height:8px;border-radius:50%;background:var(--green);animation:blink 1.4s infinite;font-style:normal}
+  @keyframes blink{50%{opacity:.25}}
+
+  .login-box{max-width:400px;margin:30px auto;background:var(--surface);border:1px solid var(--line);
+      border-radius:var(--radius);padding:38px;text-align:center;box-shadow:var(--shadow)}
+  .field{width:100%;padding:15px 18px;background:var(--bg);border:1.5px solid var(--line);border-radius:14px;color:var(--txt);font-size:1rem;margin-bottom:14px}
+  .field:focus{outline:none;border-color:var(--green)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 30px;border-radius:30px;font-weight:700;cursor:pointer;border:none;font-size:.95rem;transition:.3s}
+  .btn-primary{background:var(--grad);color:#0b0f0d;box-shadow:0 8px 30px rgba(62,207,111,.3)}
+  .btn-primary:hover{transform:translateY(-2px)}
+  .btn-ghost{background:var(--surface2);border:1px solid var(--line);color:var(--txt)}
+  #adminErr{color:#ff7b7b;font-weight:700;font-size:.86rem;min-height:22px}
+
+  .panel{display:none}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-bottom:26px}
+  .astat{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;text-align:center}
+  .astat b{font-size:2rem;display:block;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .astat span{font-size:.8rem;color:var(--muted)}
+  .table-wrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow-x:auto}
+  table{width:100%;border-collapse:collapse;min-width:720px}
+  th{text-align:left;padding:16px;font-size:.76rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);border-bottom:1px solid var(--line)}
+  td{padding:16px;border-bottom:1px solid var(--line);font-size:.9rem}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:rgba(62,207,111,.04)}
+  .mini-bar{height:7px;background:var(--bg);border-radius:8px;overflow:hidden;min-width:90px;margin-top:5px}
+  .mini-fill{height:100%;background:var(--grad)}
+  .adm-btn{padding:8px 16px;border:none;border-radius:22px;font-weight:700;font-size:.78rem;cursor:pointer;transition:.25s;background:var(--grad);color:#0b0f0d}
+  .adm-btn:hover{transform:scale(1.06)}
+  .adm-btn.done-btn{background:var(--surface2);color:var(--muted);cursor:not-allowed;transform:none}
+  .adm-btn.del{background:rgba(224,82,82,.15);color:#ff7b7b;margin-left:6px}
+  .new-badge{background:#ff4d6d;color:#fff;padding:3px 10px;border-radius:14px;font-size:.66rem;font-weight:800;margin-left:6px}
+  .actions-row{text-align:center;margin-top:24px}
+  .search-admin{width:100%;max-width:340px;margin:0 auto 22px;display:block}
+  #newAlert{position:fixed;top:80px;right:22px;z-index:999;background:var(--surface);border:1px solid var(--green);border-left:5px solid var(--green);
+      border-radius:16px;box-shadow:var(--shadow);padding:16px 20px;width:300px;display:none;animation:popIn .4s ease}
+  @keyframes popIn{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
+  #newAlert b{color:var(--green)} #newAlert p{font-size:.82rem;color:var(--muted);margin-top:4px}
+  #closeAlert{float:right;cursor:pointer;color:#667}
+  footer{text-align:center;padding:30px;color:var(--muted);font-size:.82rem;border-top:1px solid var(--line)}
+  @media(max-width:600px){
+    #newAlert{width:calc(100vw - 30px);right:15px}
+    .officer-tag{display:none}
+  }
+</style>
+  <script src="js/api.js"></script>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><div class="mark">🛡️</div>KisanMitra <span style="color:var(--muted);font-weight:600;font-size:.85rem">| Officer Portal</span></div>
+  <div class="nav-actions">
+    <select class="lang-select" id="langSelect" onchange="changeLanguage(this.value)">
+      <option value="en">🌐 English</option>
+      <option value="hi">🇮🇳 हिन्दी</option>
+      <option value="ta">🌾 தமிழ்</option>
+      <option value="te">🌱 తెలుగు</option>
+    </select>
+    <span class="officer-tag" id="officerTag">🔒 Not logged in</span>
+    <a class="back" href="index.html" onclick="goToFarmerSite(event)">🌾 <span data-i18n="btn_farmer_site">← Farmer Site</span></a>
+  </div>
+</nav>
+
+<main>
+  <div class="sec-head">
+    <div class="sec-tag" data-i18n="admin_tag">Administration</div>
+    <h1 class="sec-title" data-i18n="admin_title">Procurement Control Center</h1>
+    <p class="sec-sub" data-i18n="admin_sub">New farmer registrations appear here <b style="color:var(--green)">automatically &amp; live</b>.</p>
+    <div class="live-dot"><i data-i18n="live_sync"></i> Live sync with farmer site</div>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="login-box" id="adminLogin">
+    <div style="font-size:2.8rem">🔐</div>
+    <h3 style="margin:10px 0 4px" data-i18n="login_head">Officer Login</h3>
+    <p style="color:var(--muted);font-size:.84rem"><span data-i18n="demo_pwd">Demo password:</span> <b style="color:var(--gold)">admin123</b></p>
+    <input class="field" type="password" id="adminPass" placeholder="Enter password" maxlength="20" style="text-align:center;margin-top:18px" data-i18n-ph="ph_pass">
+    <div id="adminErr"></div>
+    <button class="btn btn-primary" style="width:100%" onclick="adminLogin()" data-i18n="btn_login">Login</button>
+  </div>
+
+  <!-- PANEL -->
+  <div class="panel" id="adminPanel">
+    <div class="stats">
+      <div class="astat"><b id="stTotal">0</b><span data-i18n="stat_total">Total Tokens</span></div>
+      <div class="astat"><b id="stDone">0</b><span data-i18n="stat_paid">Paid ✅</span></div>
+      <div class="astat"><b id="stPend">0</b><span data-i18n="stat_process">In Process ⏳</span></div>
+      <div class="astat"><b id="stNew">0</b><span data-i18n="stat_unreviewed">🆕 New (unreviewed)</span></div>
+    </div>
+    <input class="field search-admin" id="adminSearch" placeholder="🔍 Search name / token / crop..." data-i18n-ph="ph_search" oninput="renderAdmin()">
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th data-i18n="th_token">Token</th>
+          <th data-i18n="th_farmer">Farmer</th>
+          <th data-i18n="th_crop_qty">Crop / Qty</th>
+          <th data-i18n="th_mandi">Mandi</th>
+          <th data-i18n="th_progress">Progress</th>
+          <th data-i18n="th_actions">Actions</th>
+        </tr>
+        <tbody id="adminRows"></tbody>
+      </table>
+    </div>
+    <div class="actions-row">
+      <button class="btn btn-ghost" onclick="adminLogout()" data-i18n="btn_logout">🚪 Logout</button>
+      <button class="btn btn-primary" onclick="clearDemo()" style="margin-left:12px" data-i18n="btn_reset">🗑️ Reset Demo Data</button>
+    </div>
+  </div>
+</main>
+
+<div id="newAlert">
+  <span id="closeAlert" onclick="this.parentElement.style.display='none'">✕</span>
+  🆕 <b>New Farmer Registered!</b>
+  <p id="newAlertTxt"></p>
+</div>
+
+<footer>KisanMitra Officer Portal · Linked with Farmer Website · v4.0</footer>
+
+<script>
+/* ============ TRANSLATION SUPPORT ============ */
+const I18N_ADMIN = {
+  en: {
+    btn_farmer_site: "← Farmer Site",
+    admin_tag: "Administration",
+    admin_title: "Procurement Control Center",
+    admin_sub: "New farmer registrations appear here automatically & live.",
+    login_head: "Officer Login", demo_pwd: "Demo password:", ph_pass: "Enter password", btn_login: "Login",
+    stat_total: "Total Tokens", stat_paid: "Paid ✅", stat_process: "In Process ⏳", stat_unreviewed: "🆕 New (unreviewed)",
+    ph_search: "🔍 Search name / token / crop...",
+    th_token: "Token", th_farmer: "Farmer", th_crop_qty: "Crop / Qty", th_mandi: "Mandi", th_progress: "Progress", th_actions: "Actions",
+    btn_logout: "🚪 Logout", btn_reset: "🗑️ Reset Demo Data"
+  },
+  hi: {
+    btn_farmer_site: "← किसान पोर्टल",
+    admin_tag: "प्रशासन",
+    admin_title: "खरीद नियंत्रण केंद्र",
+    admin_sub: "नए किसान पंजीकरण यहाँ स्वतः व लाइव प्रदर्शित होते हैं।",
+    login_head: "अधिकारी लॉगिन", demo_pwd: "डेमो पासवर्ड:", ph_pass: "पासवर्ड दर्ज करें", btn_login: "लॉगिन करें",
+    stat_total: "कुल टोकन", stat_paid: "भुगतान पूर्ण ✅", stat_process: "प्रक्रिया जारी ⏳", stat_unreviewed: "🆕 नए (समीक्षा बाकी)",
+    ph_search: "🔍 नाम / टोकन / फसल खोजें...",
+    th_token: "टोकन", th_farmer: "किसान का नाम", th_crop_qty: "फसल / मात्रा", th_mandi: "मंडी", th_progress: "प्रगति", th_actions: "कार्यवाही",
+    btn_logout: "🚪 लॉगआउट", btn_reset: "🗑️ डेटा रीसेट करें"
+  },
+  ta: {
+    btn_farmer_site: "← உழவர் தளம்",
+    admin_tag: "நிர்வாகம்",
+    admin_title: "கொள்முதல் கட்டுப்பாட்டு மையம்",
+    admin_sub: "புதிய விவசாயிகள் பதிவுகள் உடனுக்குடன் இங்கு தோன்றும்.",
+    login_head: "அதிகாரி உள்நுழைவு", demo_pwd: "டெமோ கடவுச்சொல்:", ph_pass: "கடவுச்சொல் உள்ளிடவும்", btn_login: "உள்நுழைக",
+    stat_total: "மொத்த டோக்கன்கள்", stat_paid: "பணம் செலுத்தப்பட்டது ✅", stat_process: "செயல்பாட்டில் ⏳", stat_unreviewed: "🆕 புதியவை",
+    ph_search: "🔍 பெயர் / டோக்கன் / பயிர் தேடுக...",
+    th_token: "டோக்கன்", th_farmer: "விவசாயி", th_crop_qty: "பயிர் / அளவு", th_mandi: "மண்டி", th_progress: "முன்னேற்றம்", th_actions: "செயல்கள்",
+    btn_logout: "🚪 வெளியேறு", btn_reset: "🗑️ மீட்டமைக்க"
+  },
+  te: {
+    btn_farmer_site: "← రైతు పోర్టల్",
+    admin_tag: "పరిపాలన",
+    admin_title: "కొనుగోలు నియంత్రణ కేంద్రం",
+    admin_sub: "కొత్త రైతు రిజిస్ట్రేషన్లు ఇక్కడ ప్రత్యక్షంగా కనిపిస్తాయి.",
+    login_head: "అధికారి లాగిన్", demo_pwd: "డెమో పాస్‌వర్డ్:", ph_pass: "పాస్‌వర్డ్ నమోదు చేయండి", btn_login: "లాగిన్",
+    stat_total: "మొత్తం టోకెన్లు", stat_paid: "చెల్లింపు పూర్తయింది ✅", stat_process: "పురోగతిలో ఉంది ⏳", stat_unreviewed: "🆕 కొత్తవి",
+    ph_search: "🔍 పేరు / టోకెన్ / పంట శోధించండి...",
+    th_token: "టోకెన్", th_farmer: "రైతు", th_crop_qty: "పంట / పరిమాణం", th_mandi: "మార్కెట్", th_progress: "పురోగతి", th_actions: "చర్యలు",
+    btn_logout: "🚪 లాగౌట్", btn_reset: "🗑️ డేటా రీసెట్"
+  }
+};
+
+let currentLang = localStorage.getItem("km_lang") || "en";
+
+function changeLanguage(lang){
+  currentLang = lang;
+  localStorage.setItem("km_lang", lang);
+  document.getElementById("langSelect").value = lang;
+  const dict = I18N_ADMIN[lang] || I18N_ADMIN.en;
+
+  document.querySelectorAll("[data-i18n]").forEach(function(el){
+    const key = el.getAttribute("data-i18n");
+    if(dict[key]) el.innerHTML = dict[key];
+  });
+
+  document.querySelectorAll("[data-i18n-ph]").forEach(function(el){
+    const key = el.getAttribute("data-i18n-ph");
+    if(dict[key]) el.placeholder = dict[key];
+  });
+}
+
+/* ============ GUARANTEED NAVIGATION TO FARMER SITE ============ */
+function goToFarmerSite(e){
+  if(e) e.preventDefault();
+  window.location.href = "index.html";
+}
+
+/* ============ SHARED DATABASE KEYS ============ */
+const DB_KEY = "kisanmitra_db_v3";
+const SEEN_KEY = "km_seen_tokens";
+const ADMIN_PASS = "admin123";
+
+function getDB(){ return JSON.parse(localStorage.getItem(DB_KEY) || "{}"); }
+function saveDB(db){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+function getSeen(){ try{ return JSON.parse(localStorage.getItem(SEEN_KEY) || "[]"); }catch(e){ return []; } }
+function markSeen(t){ const s = getSeen(); if(s.indexOf(t) === -1){ s.push(t); localStorage.setItem(SEEN_KEY, JSON.stringify(s)); } }
+function isNew(t){ return getSeen().indexOf(t) === -1; }
+
+
+/* ============ API BACKED ADMIN FUNCTIONS ============ */
+async function adminLogin(){
+  const p = document.getElementById("adminPass").value;
+  const err = document.getElementById("adminErr");
+  err.textContent = "Authenticating...";
+  const res = await KM_API.officerLogin(p);
+  if(res.ok || p === ADMIN_PASS){
+    document.getElementById("adminLogin").style.display = "none";
+    document.getElementById("adminPanel").style.display = "block";
+    document.getElementById("officerTag").textContent = "👮 Officer #1042 · Online";
+    err.textContent = "";
+    renderAdmin();
+  } else {
+    err.textContent = "❌ " + (res.message || "Wrong password!");
+    document.getElementById("adminPass").value = "";
+  }
+}
+
+
+async function renderAdmin(){
+  let db = getDB();
+  const q = (document.getElementById("adminSearch").value || "").toLowerCase();
+  const tbody = document.getElementById("adminRows");
+  let rows = "", total = 0, done = 0, pend = 0, fresh = 0;
+
+  try {
+    if (typeof KM_API !== "undefined" && KM_API.getAllTokens) {
+      const apiRes = await KM_API.getAllTokens();
+      if (apiRes && apiRes.data && Object.keys(apiRes.data).length > 0) {
+        db = apiRes.data;
+        saveDB(db);
+      }
+    }
+  } catch(e){}
+
+  const tokens = Object.keys(db).sort();
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    const d = db[token];
+    if (!d || !d.steps) continue;
+
+    if (q && !(token.toLowerCase().indexOf(q) !== -1 || (d.name || "").toLowerCase().indexOf(q) !== -1 ||
+              (d.crop || "").toLowerCase().indexOf(q) !== -1 || (d.mandi || "").toLowerCase().indexOf(q) !== -1)) continue;
+    total++;
+    const dn = d.steps.filter(function(s){ return s[1]; }).length;
+    const pct = Math.round(dn / d.steps.length * 100);
+    if (pct === 100) done++; else pend++;
+    const finished = dn >= d.steps.length;
+    const freshFlag = isNew(token);
+    if (freshFlag) fresh++;
+
+    let row = "<tr>";
+    row += '<td><b style="color:var(--green)">' + token + (freshFlag ? '<span class="new-badge">NEW</span>' : '') + '</b></td>';
+    row += "<td>" + (d.name || "-") + "</td>";
+    row += "<td>" + (d.crop || "-") + '<br><small style="color:var(--muted)">' + (d.qty || "-") + "</small></td>";
+    row += "<td>" + (d.mandi || "-") + "</td>";
+    row += '<td><small style="color:var(--muted)">' + pct + '%</small><div class="mini-bar"><div class="mini-fill" style="width:' + pct + '%"></div></div></td>';
+    row += '<td><button class="adm-btn ' + (finished ? "done-btn" : "") + '" ' + (finished ? "disabled" : "") + ' onclick="advanceStep(&apos;' + token + '&apos;)">' + (finished ? "✔ Done" : "▶ Advance") + '</button>';
+    row += '<button class="adm-btn del" onclick="deleteToken(&apos;' + token + '&apos;)">🗑</button></td>';
+    row += "</tr>";
+    rows += row;
+  }
+  tbody.innerHTML = rows || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">No tokens found</td></tr>';
+
+  try {
+    if (typeof KM_API !== "undefined" && KM_API.getAdminStats) {
+      const statsRes = await KM_API.getAdminStats();
+      if (statsRes && statsRes.stats) {
+        document.getElementById("stTotal").textContent = statsRes.stats.total_tokens || total;
+        document.getElementById("stDone").textContent = statsRes.stats.paid_completed || done;
+        document.getElementById("stPend").textContent = statsRes.stats.in_process || pend;
+        document.getElementById("stNew").textContent = statsRes.stats.new_unreviewed || fresh;
+        return;
+      }
+    }
+  } catch(e){}
+
+  document.getElementById("stTotal").textContent = total;
+  document.getElementById("stDone").textContent = done;
+  document.getElementById("stPend").textContent = pend;
+  document.getElementById("stNew").textContent = fresh;
+}
+
+
+async function advanceStep(token){
+  try {
+    await KM_API.advanceStep(token);
+  } catch(e){}
+  const db = getDB();
+  const d = db[token];
+  if(d){
+    const next = d.steps.find(function(s){ return !s[1]; });
+    if(next) next[1] = 1;
+    saveDB(db);
+  }
+  markSeen(token);
+  renderAdmin();
+}
+
+async function deleteToken(token){
+  if(!confirm("Delete token " + token + "?")) return;
+  try {
+    await KM_API.deleteToken(token);
+  } catch(e){}
+  const db = getDB();
+  delete db[token];
+  saveDB(db);
+  renderAdmin();
+}
+
+async function clearDemo(){
+  if(!confirm("All data will be erased and demo data restored. Continue?")) return;
+  try {
+    await KM_API.resetDemoData();
+  } catch(e){}
+  localStorage.removeItem(DB_KEY);
+  localStorage.removeItem("km_counter_v3");
+  localStorage.removeItem("km_today_count");
+  localStorage.removeItem(SEEN_KEY);
+  localStorage.removeItem("km_new_token");
+  renderAdmin();
+}
+
+/* ============ LIVE SYNC ============ */
+window.addEventListener("storage", function(e){
+  if(e.key === DB_KEY) renderAdmin();
+
+  if(e.key === "km_new_token" && e.newValue){
+    const d = getDB()[e.newValue];
+    if(d){
+      const a = document.getElementById("newAlert");
+      document.getElementById("newAlertTxt").innerHTML =
+        "<b>" + d.name + "</b> booked token <b>" + e.newValue + "</b><br>" +
+        d.crop + " · " + d.qty + " · " + d.mandi;
+      a.style.display = "block";
+      if(navigator.vibrate) navigator.vibrate([120,60,120]);
+      setTimeout(function(){ a.style.display = "none"; }, 10000);
+    }
+    renderAdmin();
+  }
+});
+
+setInterval(function(){
+  if(document.getElementById("adminPanel").style.display === "block") renderAdmin();
+}, 3000);
+
+window.addEventListener("load", function(){
+  changeLanguage(currentLang);
+});
+</script>
+
+</body>
+</html>

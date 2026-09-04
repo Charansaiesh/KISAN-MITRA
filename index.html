@@ -1,0 +1,1305 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KisanMitra — Smart Farm Procurement Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&family=Noto+Sans+Tamil:wght@400;600;700&family=Noto+Sans+Telugu:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<style>
+  :root{
+    --bg:#0b0f0d; --surface:#131a16; --surface2:#1a241e; --line:#26332b;
+    --green:#3ecf6f; --gold:#ffc44d; --txt:#eef5ef; --muted:#9db3a4;
+    --grad:linear-gradient(135deg,#3ecf6f,#ffc44d);
+    --shadow:0 20px 50px rgba(0,0,0,.45); --radius:22px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Plus Jakarta Sans','Noto Sans Devanagari','Noto Sans Tamil','Noto Sans Telugu',system-ui,sans-serif}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--txt);overflow-x:hidden}
+  nav{position:fixed;top:0;width:100%;z-index:500;display:flex;align-items:center;justify-content:space-between;
+      padding:12px 5%;background:rgba(11,15,13,.8);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.2rem;text-decoration:none;color:var(--txt)}
+  .logo .mark{width:36px;height:36px;border-radius:11px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+  .nav-right{display:flex;align-items:center;gap:10px}
+  nav ul{display:flex;gap:6px;list-style:none}
+  nav a{color:var(--muted);text-decoration:none;font-weight:600;font-size:.88rem;padding:8px 14px;border-radius:30px;transition:.25s}
+  nav a:hover{color:var(--txt);background:var(--surface2)}
+  .lang-select{background:var(--surface2);color:var(--gold);border:1.5px solid var(--line);padding:7px 12px;border-radius:22px;font-size:.85rem;font-weight:700;cursor:pointer;outline:none;transition:.25s}
+  .lang-select:hover,.lang-select:focus{border-color:var(--green)}
+  .menu-btn{display:none;background:none;border:none;color:#fff;font-size:1.6rem;cursor:pointer}
+  
+  /* Tap to Speak Toggle */
+  .voice-mode-btn{background:var(--surface2);border:1.5px solid var(--line);color:var(--muted);padding:7px 14px;border-radius:22px;font-weight:700;font-size:.82rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.25s}
+  .voice-mode-btn.active{background:rgba(255,196,77,.18);border-color:var(--gold);color:var(--gold);box-shadow:0 0 15px rgba(255,196,77,.3)}
+  .voice-mode-btn:hover{transform:scale(1.04)}
+
+  /* Accessibility Focus Ring */
+  .voice-focused{outline:3px solid var(--gold)!important;outline-offset:4px!important;box-shadow:0 0 25px rgba(255,196,77,.5)!important;transition:all .2s ease}
+
+  /* Accessibility Active Status Banner */
+  #ttsBanner{position:fixed;top:66px;left:50%;transform:translateX(-50%);z-index:490;background:var(--gold);color:#0b0f0d;padding:6px 20px;border-radius:20px;font-weight:800;font-size:.8rem;box-shadow:0 8px 25px rgba(0,0,0,.5);display:none;align-items:center;gap:8px;animation:up .3s ease}
+
+  header{min-height:100vh;display:grid;grid-template-columns:1.1fr 1fr;align-items:center;gap:40px;padding:130px 6% 80px;position:relative;overflow:hidden}
+  .aurora{position:absolute;border-radius:50%;filter:blur(110px);opacity:.5;pointer-events:none}
+  .a1{width:560px;height:560px;background:#1f9d54;top:-200px;left:-120px;animation:drift 12s ease-in-out infinite}
+  .a2{width:480px;height:480px;background:#f4a300;bottom:-200px;right:-100px;animation:drift 14s ease-in-out infinite reverse}
+  .a3{width:300px;height:300px;background:#3ecf6f;top:40%;right:30%;opacity:.25;animation:drift 10s ease-in-out infinite}
+  @keyframes drift{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(50px,-40px) scale(1.15)}}
+  .badge-pill{display:inline-flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--line);padding:8px 18px;border-radius:30px;font-size:.82rem;color:var(--muted);margin-bottom:22px}
+  .badge-pill .dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:blink 1.6s infinite}
+  @keyframes blink{50%{opacity:.3}}
+  h1{font-size:clamp(2.3rem,4.8vw,3.8rem);line-height:1.15;letter-spacing:-1.5px;font-weight:800;margin-bottom:20px}
+  .grad-txt{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero-p{color:var(--muted);font-size:1.05rem;line-height:1.75;max-width:540px;margin-bottom:32px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:15px 32px;border-radius:34px;font-weight:700;cursor:pointer;border:none;text-decoration:none;font-size:.98rem;transition:.3s}
+  .btn-primary{background:var(--grad);color:#0b0f0d;box-shadow:0 8px 30px rgba(62,207,111,.3)}
+  .btn-primary:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(62,207,111,.45)}
+  .btn-ghost{background:var(--surface2);border:1px solid var(--line);color:var(--txt);margin-left:12px}
+  .btn-ghost:hover{border-color:var(--green)}
+  .hero-stats{display:flex;gap:44px;margin-top:46px}
+  .stat b{font-size:1.7rem;display:block;letter-spacing:-1px}
+  .stat b em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat span{font-size:.8rem;color:var(--muted)}
+  .hero-visual{position:relative;height:440px;display:flex;align-items:center;justify-content:center}
+  .orbit-ring{position:absolute;border:1px dashed #2e3d33;border-radius:50%;animation:spin 30s linear infinite}
+  .o1{width:400px;height:400px}.o2{width:290px;height:290px;animation-direction:reverse;animation-duration:22s}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .core{width:150px;height:150px;border-radius:38px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:4.5rem;box-shadow:0 20px 60px rgba(62,207,111,.35);animation:bob 4s ease-in-out infinite;z-index:2}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+  .sat{position:absolute;width:58px;height:58px;border-radius:18px;background:var(--surface2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:1.6rem;box-shadow:var(--shadow);animation:bob 3.4s ease-in-out infinite}
+  .s1{top:8%;left:14%}.s2{top:14%;right:12%;animation-delay:.5s}.s3{bottom:16%;left:8%;animation-delay:1s}.s4{bottom:8%;right:18%;animation-delay:1.5s}
+  .ticker{background:var(--surface);border-block:1px solid var(--line);overflow:hidden;white-space:nowrap;padding:12px 0;color:var(--gold);font-weight:600;font-size:.9rem}
+  .ticker div{display:inline-block;animation:scroll 30s linear infinite}
+  @keyframes scroll{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
+  section{padding:100px 6%}
+  .sec-head{text-align:center;max-width:640px;margin:0 auto 56px}
+  .sec-tag{color:var(--green);font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:3px}
+  .sec-title{font-size:clamp(1.7rem,3.4vw,2.5rem);letter-spacing:-1px;margin:10px 0 12px;font-weight:800}
+  .sec-sub{color:var(--muted);line-height:1.7}
+  .bento{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:190px;gap:18px;max-width:1200px;margin:0 auto}
+  .bcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:28px;position:relative;overflow:hidden;transition:.35s;text-decoration:none;color:inherit;display:block}
+  .bcard:hover{transform:translateY(-6px);border-color:var(--green);box-shadow:0 20px 50px rgba(62,207,111,.12)}
+  .bcard .icon{font-size:2rem;margin-bottom:14px}
+  .bcard h3{font-size:1.05rem;margin-bottom:8px;font-weight:700}
+  .bcard p{color:var(--muted);font-size:.86rem;line-height:1.6}
+  .b-big{grid-column:span 2;grid-row:span 2;display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(160deg,var(--surface2),var(--surface))}
+  .b-big .big-emoji{font-size:5rem;position:absolute;top:20px;right:24px;animation:bob 4s ease-in-out infinite}
+  .b-big h3{font-size:1.5rem}
+  .b-tall{grid-row:span 2}
+  .glow-line{position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad);opacity:0;transition:.35s}
+  .bcard:hover .glow-line{opacity:1}
+  .video-wrap{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:1.15fr 1fr;gap:34px;align-items:center}
+  .video-box{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);background:var(--surface);aspect-ratio:16/10;position:relative;cursor:pointer;border:1px solid var(--line)}
+  .video-fallback{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:radial-gradient(circle at 50% 40%,#1a3d28,#0e1a12)}
+  .play{font-size:2.6rem;background:var(--grad);border-radius:50%;width:86px;height:86px;display:flex;align-items:center;justify-content:center;color:#0b0f0d;box-shadow:0 0 40px rgba(62,207,111,.5);animation:pulse 2s infinite}
+  @keyframes pulse{50%{transform:scale(1.1)}}
+  .gsteps{display:flex;flex-direction:column;gap:12px}
+  .gstep{display:flex;gap:16px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px;transition:.3s}
+  .gstep:hover{transform:translateX(8px);border-color:var(--green)}
+  .gnum{min-width:40px;height:40px;border-radius:12px;background:var(--grad);color:#0b0f0d;display:flex;align-items:center;justify-content:center;font-weight:800}
+  .gstep b{font-size:.95rem}.gstep small{color:var(--muted);font-size:.82rem}
+  .tracker-box{max-width:620px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:38px;box-shadow:var(--shadow)}
+  .field{width:100%;padding:15px 18px;background:var(--bg);border:1.5px solid var(--line);border-radius:14px;color:var(--txt);font-size:1rem;margin-bottom:14px}
+  .field:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 4px rgba(62,207,111,.12)}
+  .result{margin-top:24px;display:none;animation:up .45s ease}
+  @keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  .steps{list-style:none;margin-top:16px;display:flex;flex-direction:column;gap:8px}
+  .steps li{padding:12px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:.92rem;display:flex;justify-content:space-between}
+  .done{border-color:var(--green)!important;background:rgba(62,207,111,.08)!important;color:var(--green);font-weight:700}
+  .pending{opacity:.45}
+  .progress-bar{height:10px;background:var(--bg);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:14px}
+  .progress-fill{height:100%;background:var(--grad);border-radius:10px;transition:width 1s ease}
+  .table-wrap{overflow-x:auto;max-width:1050px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+  table{width:100%;border-collapse:collapse;min-width:660px}
+  th{text-align:left;padding:16px;font-size:.78rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);border-bottom:1px solid var(--line)}
+  td{padding:16px;border-bottom:1px solid var(--line);font-size:.92rem}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:rgba(62,207,111,.04)}
+  .badge{padding:5px 14px;border-radius:20px;font-size:.74rem;font-weight:700}
+  .b-live{background:rgba(62,207,111,.15);color:var(--green)}
+  .b-soon{background:rgba(255,196,77,.15);color:var(--gold)}
+  .b-closed{background:rgba(224,82,82,.15);color:#ff7b7b}
+  #mapBox{height:520px;border-radius:var(--radius);border:1px solid var(--line);overflow:hidden;max-width:1100px;margin:0 auto 26px;position:relative;z-index:1}
+  .mandi-pin-icon{background:var(--surface);border:2px solid var(--green);border-radius:12px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 6px 16px rgba(0,0,0,.5)}
+  .leaflet-popup-content-wrapper{background:var(--surface2);color:var(--txt);border-radius:14px;border:1px solid var(--line)}
+  .leaflet-popup-tip{background:var(--surface2)}
+  .leaflet-popup-content b{color:var(--green)}
+  .leaflet-container{background:#0d1410;font-family:'Plus Jakarta Sans',sans-serif}
+  .leaflet-control-attribution{background:rgba(11,15,13,.8)!important;color:#667!important}
+  .gmap-btn{margin-top:8px;padding:6px 14px;border:none;border-radius:16px;background:var(--green);color:#0b0f0d;font-weight:700;cursor:pointer;font-family:inherit}
+  .marker-cluster-small{background:rgba(62,207,111,.25)}
+  .marker-cluster-small div,.marker-cluster-medium div,.marker-cluster-large div{background:var(--green);color:#0b0f0d;font-weight:800}
+  .marker-cluster-medium{background:rgba(255,196,77,.25)}
+  .marker-cluster-medium div,.marker-cluster-large div{background:var(--gold)}
+  .mandi-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:26px;max-width:1100px;margin:0 auto}
+  .mandi-list{display:flex;flex-direction:column;gap:12px;max-height:560px;overflow-y:auto;padding-right:6px}
+  .mandi-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 20px;cursor:pointer;transition:.3s;display:flex;align-items:center;gap:16px}
+  .mandi-card:hover{border-color:var(--green);transform:translateX(6px)}
+  .mandi-card.active{border-color:var(--green);background:rgba(62,207,111,.06)}
+  .mandi-card .m-emoji{font-size:1.8rem}
+  .mandi-card b{font-size:.98rem}
+  .mandi-card small{color:var(--muted);display:block;margin-top:3px;font-size:.8rem}
+  .dist-chip{margin-left:auto;background:var(--surface2);border:1px solid var(--line);color:var(--gold);padding:6px 14px;border-radius:20px;font-size:.8rem;font-weight:700;white-space:nowrap}
+  .weather-panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:28px;position:sticky;top:90px}
+  .weather-panel h3{font-size:1.15rem;margin-bottom:4px}
+  .wx-now{display:flex;align-items:center;gap:18px;margin:18px 0;padding:18px;background:var(--bg);border-radius:16px;border:1px solid var(--line)}
+  .wx-now .w-emoji{font-size:3.4rem}
+  .wx-now b{font-size:2rem;letter-spacing:-1px}
+  .wx-now small{color:var(--muted);display:block}
+  .wx-days{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:16px}
+  .wx-day{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px 6px;text-align:center}
+  .wx-day .d-emoji{font-size:1.6rem}
+  .wx-day small{color:var(--muted);font-size:.68rem;display:block;margin-top:6px}
+  .wx-day b{font-size:.85rem}
+  .wx-alert{margin-top:16px;padding:14px 16px;border-radius:14px;font-size:.88rem;font-weight:700;line-height:1.5;display:flex;gap:10px;align-items:flex-start}
+  .wx-alert.rain{background:rgba(255,196,77,.12);border:1px solid rgba(255,196,77,.4);color:var(--gold)}
+  .wx-alert.safe{background:rgba(62,207,111,.1);border:1px solid rgba(62,207,111,.4);color:var(--green)}
+  .mandi-note{max-width:1100px;margin:14px auto 0;color:var(--muted);font-size:.8rem;text-align:center}
+  .reg-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:740px;margin:0 auto;background:var(--surface);border:1px solid var(--line);padding:38px;border-radius:var(--radius);box-shadow:var(--shadow)}
+  .reg-grid label{font-size:.8rem;font-weight:700;color:var(--muted);display:block;margin-bottom:7px;text-transform:uppercase;letter-spacing:1px}
+  .full{grid-column:1/-1}
+  #regMsg{grid-column:1/-1;text-align:center;font-weight:700;display:none;animation:up .4s ease}
+  .token-chip{background:var(--grad);color:#0b0f0d;padding:8px 22px;border-radius:24px;font-size:1.15rem;font-weight:800;display:inline-block;margin:8px 0}
+  #smsPopup{position:fixed;right:22px;bottom:22px;z-index:999;width:330px;background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:18px;display:none;animation:popIn .4s ease;border-left:4px solid var(--green)}
+  @keyframes popIn{from{opacity:0;transform:translateY(30px) scale(.92)}to{opacity:1;transform:none}}
+  .sms-head{display:flex;align-items:center;gap:10px;font-weight:800;margin-bottom:8px;font-size:.9rem}
+  .sms-body{font-size:.86rem;color:var(--muted);background:var(--bg);border-radius:12px;padding:12px;line-height:1.6}
+  .sms-time{font-size:.7rem;color:#667;margin-top:6px;text-align:right}
+  #smsClose{margin-left:auto;cursor:pointer;color:#667}
+  
+  footer{border-top:1px solid var(--line);text-align:center;padding:44px 6%;font-size:.88rem;color:var(--muted);line-height:2}
+  .flag-line{font-size:1.3rem;letter-spacing:8px}
+  .reveal{opacity:0;transform:translateY(30px);transition:.7s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media(max-width:960px){
+    header{grid-template-columns:1fr;text-align:center;padding-top:110px}
+    .hero-p{margin:0 auto 30px}.hero-stats{justify-content:center}
+    .bento{grid-template-columns:repeat(2,1fr)}
+    .video-wrap{grid-template-columns:1fr}
+    nav ul{display:none;position:absolute;top:64px;right:14px;background:var(--surface);flex-direction:column;width:220px;padding:14px;border-radius:18px;border:1px solid var(--line);box-shadow:var(--shadow)}
+    nav ul.open{display:flex}.menu-btn{display:block}
+    .reg-grid{grid-template-columns:1fr}.btn-ghost{margin:10px 0 0}
+    #smsPopup{width:calc(100vw - 30px);right:15px}
+    .mandi-grid{grid-template-columns:1fr}.weather-panel{position:static}
+  }
+  @media(max-width:560px){.bento{grid-template-columns:1fr}.b-big{grid-column:span 1;grid-row:span 1}}
+</style>
+  <script src="js/api.js"></script>
+</head>
+<body>
+
+<!-- Active Banner for Tap to Speak -->
+<div id="ttsBanner">
+  <span>🗣️</span> <span data-i18n="banner_tts">Tap-to-Speak Active: Single tap reads, double tap opens.</span>
+</div>
+
+<nav>
+  <a class="logo" href="#home"><div class="mark">🌾</div>KisanMitra</a>
+  <div class="nav-right">
+    <button class="voice-mode-btn" id="voiceModeBtn" onclick="toggleVoiceMode(event)">
+      <span id="voiceStatusIcon">🗣️</span> <span data-i18n="btn_voice_mode">Voice: OFF</span>
+    </button>
+    <select class="lang-select" id="langSelect" onchange="changeLanguage(this.value)">
+      <option value="en">🌐 English</option>
+      <option value="hi">🇮🇳 हिन्दी</option>
+      <option value="ta">🌾 தமிழ்</option>
+      <option value="te">🌱 తెలుగు</option>
+    </select>
+    <button class="menu-btn" onclick="document.getElementById('nav').classList.toggle('open')">☰</button>
+  </div>
+  <ul id="nav">
+    <li><a href="#home" data-i18n="nav_home">Home</a></li>
+    <li><a href="#guide" data-i18n="nav_guide">📖 How It Works</a></li>
+    <li><a href="#track" data-i18n="nav_track">🔍 Track</a></li>
+    <li><a href="#prices" data-i18n="nav_prices">📈 Live Prices</a></li>
+    <li><a href="#mandis" data-i18n="nav_mandis">📍 Mandi Map</a></li>
+    <li><a href="community.html" target="_blank" style="color:var(--gold)" data-i18n="nav_community">🤝 Community ↗</a></li>
+    <li><a href="#register" data-i18n="nav_register">📝 Register</a></li>
+  </ul>
+</nav>
+
+<header id="home">
+  <div class="aurora a1"></div><div class="aurora a2"></div><div class="aurora a3"></div>
+  <div>
+    <span class="badge-pill"><span class="dot"></span> <span data-i18n="hero_pill">Digital India Initiative · 70+ Mandis · Live Prices</span></span>
+    <h1 data-i18n="hero_title">Sell your harvest with <span class="grad-txt">zero queues,</span> zero confusion.</h1>
+    <p class="hero-p" data-i18n="hero_sub">Smart tokens, live procurement status, guaranteed MSP, today's real mandi prices from AGMARKNET, and an interactive pan-India mandi map with weather alerts. No middlemen. Ever.</p>
+    <a href="#register" class="btn btn-primary" data-i18n="hero_btn_book">🚜 Book Your Token</a>
+    <a href="community.html" target="_blank" class="btn btn-ghost" data-i18n="hero_btn_comm">🤝 Farmer Community ↗</a>
+    <div class="hero-stats">
+      <div class="stat"><b><em>2.4L+</em></b><span data-i18n="stat_farmers">Farmers onboard</span></div>
+      <div class="stat"><b><em>₹890 Cr</em></b><span data-i18n="stat_paid">Paid via DBT</span></div>
+      <div class="stat"><b><em>72 hrs</em></b><span data-i18n="stat_guarantee">Payment guarantee</span></div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="orbit-ring o1"></div><div class="orbit-ring o2"></div>
+    <div class="core">🚜</div>
+    <div class="sat s1">🌾</div><div class="sat s2">📱</div><div class="sat s3">💰</div><div class="sat s4">🗺️</div>
+  </div>
+</header>
+
+<div class="ticker"><div data-i18n="ticker_txt">📢 Wheat procurement opens 1 April · Paddy (Kharif) from 1 October · MSP 2024-25 rates applicable · Payment within 72 hours via DBT · 70+ mandis mapped across India · Live AGMARKNET prices · Direct community marketplace online · Helpline 1800-180-1551 ·</div></div>
+
+<section>
+  <div class="sec-head reveal">
+    <div class="sec-tag" data-i18n="feat_tag">Features</div>
+    <h2 class="sec-title" data-i18n="feat_title">Built for every Indian farmer</h2>
+    <p class="sec-sub" data-i18n="feat_sub">From token to money in the bank — one seamless digital journey.</p>
+  </div>
+  <div class="bento">
+    <div class="bcard b-big reveal"><span class="big-emoji">⏱️</span><div class="glow-line"></div>
+      <h3 data-i18n="feat_1_h">Zero Waiting Time</h3><p data-i18n="feat_1_p">Our smart token system tells you your exact slot before you leave home. Walk into the mandi exactly when it's your turn — save hours of queueing under the sun.</p></div>
+    <div class="bcard reveal"><div class="glow-line"></div><div class="icon">📱</div><h3 data-i18n="feat_2_h">Instant SMS Alerts</h3><p data-i18n="feat_2_p">Every step — registration to payment — lands on your phone instantly.</p></div>
+    <a href="community.html" target="_blank" class="bcard reveal"><div class="glow-line"></div><div class="icon">🤝</div><h3 data-i18n="feat_3_h">Community Marketplace ↗</h3><p data-i18n="feat_3_p">Buy, sell crops, rent tractors, and hire lorries directly with nearby farmers.</p></a>
+    <div class="bcard b-tall reveal"><div class="glow-line"></div><div class="icon">🧠</div><h3 data-i18n="feat_4_h">Fair Price Assurance</h3><p data-i18n="feat_4_p">Official MSP rates upfront + live AGMARKNET market prices, so you always know what your harvest is really worth before you sell.</p></div>
+    <div class="bcard reveal"><div class="glow-line"></div><div class="icon">💰</div><h3 data-i18n="feat_5_h">Direct DBT Payment</h3><p data-i18n="feat_5_p">Money in your bank within 72 hours. Zero middlemen, 100% transparency.</p></div>
+    <div class="bcard reveal"><div class="glow-line"></div><div class="icon">🗺️</div><h3 data-i18n="feat_6_h">Pan-India Mandi Map</h3><p data-i18n="feat_6_p">70+ APMC mandis mapped across every state, with live weather alerts.</p></div>
+  </div>
+</section>
+
+<section id="guide" style="background:var(--surface);border-block:1px solid var(--line)">
+  <div class="sec-head reveal">
+    <div class="sec-tag" data-i18n="guide_tag">Step-by-step</div>
+    <h2 class="sec-title" data-i18n="guide_title">How to book your token</h2>
+    <p class="sec-sub" data-i18n="guide_sub">Specially made for elderly or first-time users — just watch and follow along.</p>
+  </div>
+  <div class="video-wrap">
+    <div class="video-box" id="videoBox" onclick="playDemo()">
+      <div class="video-fallback">
+        <div class="play">▶</div>
+        <h3 style="margin-top:16px" data-i18n="demo_play">Play Demo Animation</h3>
+        <p style="opacity:.7;font-size:.85rem;margin-top:6px" data-i18n="demo_steps">6 simple steps · click to start</p>
+      </div>
+    </div>
+    <div class="gsteps">
+      <div class="gstep reveal"><div class="gnum">1</div><div><b data-i18n="step1_t">Fill the registration form</b><br><small data-i18n="step1_d">Name, mobile, Aadhaar and crop details — just 2 minutes.</small></div></div>
+      <div class="gstep reveal"><div class="gnum">2</div><div><b data-i18n="step2_t">Receive your token</b><br><small data-i18n="step2_d">Token appears on screen + SMS confirmation arrives.</small></div></div>
+      <div class="gstep reveal"><div class="gnum">3</div><div><b data-i18n="step3_t">Track your status live</b><br><small data-i18n="step3_d">Enter token number to see every step's progress.</small></div></div>
+      <div class="gstep reveal"><div class="gnum">4</div><div><b data-i18n="step4_t">Visit mandi & get paid</b><br><small data-i18n="step4_d">Arrive at your slot — money in bank within 72 hours.</small></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="track">
+  <div class="sec-head reveal">
+    <div class="sec-tag" data-i18n="track_tag">Live Tracking</div>
+    <h2 class="sec-title" data-i18n="track_title">Check your procurement status</h2>
+    <p class="sec-sub" data-i18n="track_sub">Demo tokens: <b>KM2024001</b>, <b>KM2024002</b>, <b>KM2024003</b> — or use your own registered token.</p>
+  </div>
+  <div class="tracker-box reveal">
+    <input class="field" type="text" id="tokenInput" placeholder="Enter token number (e.g. KM2024001)" data-i18n-ph="track_ph">
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="trackStatus()" data-i18n="track_btn">🔍 Check Status</button>
+    <div class="result" id="result"></div>
+  </div>
+</section>
+
+<section id="schedule" style="background:var(--surface);border-block:1px solid var(--line)">
+  <div class="sec-head reveal">
+    <div class="sec-tag" data-i18n="msp_tag">MSP Calendar</div>
+    <h2 class="sec-title" data-i18n="msp_title">Procurement schedule & guaranteed prices</h2>
+    <p class="sec-sub" data-i18n="msp_sub">Official Minimum Support Price — the government-guaranteed floor. Compare with live market prices below 👇</p>
+  </div>
+  <div class="table-wrap reveal">
+    <table>
+      <tr><th data-i18n="th_crop">Crop</th><th data-i18n="th_mandi">Mandi</th><th data-i18n="th_dates">Dates</th><th data-i18n="th_msp">MSP (₹/quintal)</th><th data-i18n="th_status">Status</th></tr>
+      <tr><td>🌾 <span data-i18n="crop_wheat">Wheat</span></td><td>Lucknow Mandi, UP</td><td>01 Apr – 30 Jun</td><td>₹2,425</td><td><span class="badge b-live">● Live</span></td></tr>
+      <tr><td>🌾 <span data-i18n="crop_paddy">Paddy</span></td><td>Patna Mandi, Bihar</td><td>01 Oct – 31 Dec</td><td>₹2,300</td><td><span class="badge b-soon">● Opening Soon</span></td></tr>
+      <tr><td>🌱 <span data-i18n="crop_mustard">Mustard</span></td><td>Jaipur Mandi, Rajasthan</td><td>15 Feb – 15 Jun</td><td>₹5,950</td><td><span class="badge b-live">● Live</span></td></tr>
+      <tr><td>🫘 <span data-i18n="crop_gram">Gram</span></td><td>Bhopal Mandi, MP</td><td>20 Feb – 31 Jul</td><td>₹5,650</td><td><span class="badge b-closed">● Closed</span></td></tr>
+      <tr><td>🌽 <span data-i18n="crop_maize">Maize</span></td><td>Chandigarh Mandi</td><td>01 Dec – 31 Mar</td><td>₹2,225</td><td><span class="badge b-closed">● Closed</span></td></tr>
+    </table>
+  </div>
+</section>
+
+<section id="prices">
+  <div class="sec-head reveal">
+    <div class="sec-tag" data-i18n="prices_tag">Live Market</div>
+    <h2 class="sec-title" data-i18n="prices_title">Today's real mandi prices 📈</h2>
+    <p class="sec-sub" data-i18n="prices_sub">Live data from AGMARKNET — Government of India official database (3,000+ mandis). Pick a crop to see today's actual traded prices.</p>
+  </div>
+  <div style="max-width:1050px;margin:0 auto 16px;display:flex;gap:10px;flex-wrap:wrap">
+    <select class="field" id="priceCrop" style="max-width:240px;margin-bottom:0" onchange="loadPrices()">
+      <option value="Wheat">🌾 Wheat</option>
+      <option value="Paddy">🌾 Paddy</option>
+      <option value="Mustard">🌱 Mustard</option>
+      <option value="Gram">🫘 Gram</option>
+      <option value="Maize">🌽 Maize</option>
+      <option value="Cotton">🧵 Cotton</option>
+      <option value="Onion">🧅 Onion</option>
+      <option value="Potato">🥔 Potato</option>
+      <option value="Turmeric">🟡 Turmeric</option>
+      <option value="Chilli">🌶️ Chilli</option>
+    </select>
+    <button class="btn btn-ghost" style="margin-left:0;padding:12px 20px" onclick="loadPrices()" data-i18n="prices_refresh">🔄 Refresh</button>
+  </div>
+  <div class="table-wrap reveal" id="priceTableWrap">
+    <table id="priceTable"><tr><th>Mandi</th><th>District / State</th><th>Min ₹</th><th>Max ₹</th><th>Modal ₹ (per quintal)</th></tr></table>
+  </div>
+  <p class="mandi-note" id="priceNote">⏳ Loading live prices…</p>
+</section>
+
+<section id="mandis" style="background:var(--surface);border-block:1px solid var(--line)">
+  <div class="sec-head reveal">
+    <div class="sec-tag" data-i18n="mandi_tag">Mandi Locator + Weather</div>
+    <h2 class="sec-title" data-i18n="mandi_title">Find your nearest mandi on the map 🗺️</h2>
+    <p class="sec-sub" data-i18n="mandi_sub">70+ APMC mandis across India. Search your city/district or use GPS — mandis rank by distance, with live weather so rain never damages your harvest in transit.</p>
+  </div>
+  <div id="mapBox"></div>
+  <div class="mandi-grid">
+    <div>
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <input class="field" id="mandiSearch" style="margin-bottom:0" placeholder="🔍 Type your city / district (e.g. Coimbatore)" data-i18n-ph="mandi_ph" oninput="searchMandis()">
+        <button class="btn btn-ghost" style="margin-left:0;padding:12px 20px;white-space:nowrap" onclick="locateMe()" data-i18n="mandi_gps">📍 GPS</button>
+      </div>
+      <div class="mandi-list" id="mandiList"></div>
+      <p class="mandi-note" id="mandiNote" style="margin-top:12px">💡 Tip: type a nearby city name — or tap GPS</p>
+    </div>
+    <div class="weather-panel" id="weatherPanel">
+      <h3 data-i18n="wx_head">🌦️ Weather at Mandi</h3>
+      <p style="color:var(--muted);font-size:.85rem" data-i18n="wx_desc">Select a mandi to view its live 5-day forecast and transport-safety advice.</p>
+    </div>
+  </div>
+  <p class="mandi-note">🗺️ Map: Leaflet + OpenStreetMap · 📡 Weather: Open-Meteo</p>
+</section>
+
+<section id="register">
+  <div class="sec-head reveal">
+    <div class="sec-tag" data-i18n="reg_tag">Registration</div>
+    <h2 class="sec-title" data-i18n="reg_title">Get your token instantly</h2>
+    <p class="sec-sub" data-i18n="reg_sub">Data is saved safely on your device — it survives page refreshes. ✅</p>
+  </div>
+  <form class="reg-grid reveal" onsubmit="register(event)">
+    <div><label data-i18n="lbl_name">Farmer's Name *</label><input class="field" required id="fName" placeholder="Full name" data-i18n-ph="ph_name"></div>
+    <div><label data-i18n="lbl_phone">Mobile Number *</label><input class="field" required type="tel" pattern="[0-9]{10}" id="fPhone" placeholder="10-digit number" data-i18n-ph="ph_phone"></div>
+    <div><label data-i18n="lbl_aadhaar">Aadhaar Number *</label><input class="field" required pattern="[0-9]{12}" placeholder="12-digit Aadhaar" data-i18n-ph="ph_aadhaar"></div>
+    <div><label data-i18n="lbl_crop">Select Crop *</label>
+      <select class="field" required id="fCrop"><option value="">— Choose —</option><option>Wheat</option><option>Paddy</option><option>Mustard</option><option>Gram</option><option>Maize</option><option>Sugarcane</option><option>Cotton</option><option>Chilli</option><option>Turmeric</option><option>Groundnut</option><option>Coconut</option><option>Onion</option></select></div>
+    <div><label data-i18n="lbl_qty">Quantity (quintal) *</label><input class="field" required type="number" min="1" id="fQty" placeholder="e.g. 50" data-i18n-ph="ph_qty"></div>
+    <div><label data-i18n="lbl_dist">District *</label><input class="field" required id="fDist" placeholder="Your district" data-i18n-ph="ph_dist"></div>
+    <div class="full"><button class="btn btn-primary" style="width:100%;justify-content:center" data-i18n="btn_issue_token">✅ Issue Token — with SMS</button></div>
+    <div id="regMsg"></div>
+  </form>
+</section>
+
+<footer>
+  <div class="flag-line">🟧 ⬜ 🟩</div>
+  <b style="color:var(--txt)">KisanMitra — Jai Jawan, Jai Kisan 🙏</b><br>
+  Developed with ❤️ by <b style="color:var(--green)">Team TechNova</b><br>
+  Hackathon project · Inspired by Digital India · Data: AGMARKNET (Govt. of India), Open-Meteo, OpenStreetMap<br>
+  Helpline: 1800-180-1551 · support@kisanmitra.in
+</footer>
+
+<div id="smsPopup">
+  <div class="sms-head">📩 SMS — VM-KISANMT <span id="smsClose" onclick="this.parentElement.parentElement.style.display='none'">✕</span></div>
+  <div class="sms-body" id="smsBody"></div>
+  <div class="sms-time" id="smsTime"></div>
+</div>
+
+<script>
+/* ============ SPEECH SYNTHESIS ENGINE ============ */
+const SPEECH_LANG_MAP = { en: "en-IN", hi: "hi-IN", ta: "ta-IN", te: "te-IN" };
+
+function speakText(text, langCode){
+  if(!("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  if(!text) return;
+
+  const code = langCode || SPEECH_LANG_MAP[currentLang] || "en-IN";
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = code;
+  utter.rate = 0.95;
+
+  const voices = window.speechSynthesis.getVoices();
+  const matchedVoice = voices.find(function(v){ return v.lang === code || v.lang.startsWith(code.split("-")[0]); });
+  if(matchedVoice) utter.voice = matchedVoice;
+
+  window.speechSynthesis.speak(utter);
+}
+
+/* ============ TAP-TO-SPEAK (SINGLE CLICK READS, DOUBLE CLICK OPENS) ============ */
+let voiceModeActive = false;
+let lastClickedEl = null;
+let lastClickTime = 0;
+
+function toggleVoiceMode(e){
+  if(e) e.stopPropagation();
+  voiceModeActive = !voiceModeActive;
+  const btn = document.getElementById("voiceModeBtn");
+  const banner = document.getElementById("ttsBanner");
+
+  const dict = I18N[currentLang] || I18N.en;
+
+  if(voiceModeActive){
+    btn.classList.add("active");
+    btn.innerHTML = '<span>🔊</span> ' + dict.btn_voice_on;
+    banner.style.display = "flex";
+    speakText(dict.voice_activated);
+  } else {
+    btn.classList.remove("active");
+    btn.innerHTML = '<span>🗣️</span> ' + dict.btn_voice_mode;
+    banner.style.display = "none";
+    window.speechSynthesis.cancel();
+    document.querySelectorAll(".voice-focused").forEach(function(el){ el.classList.remove("voice-focused"); });
+  }
+}
+
+// Global Intercept: Single click reads aloud, Double click activates
+document.addEventListener("click", function(e){
+  if(!voiceModeActive) return;
+
+  if(e.target.closest("#voiceModeBtn") || e.target.closest(".lang-select")) return;
+
+  const target = e.target.closest("button, a, .bcard, .mandi-card, .gstep, input, select, h1, h2, h3, p, .stat, .logo") || e.target;
+  const now = new Date().getTime();
+
+  // Double Click / Tap Detection (within 450ms on the same element)
+  if(lastClickedEl === target && (now - lastClickTime) < 450){
+    lastClickedEl = null;
+    lastClickTime = 0;
+    target.classList.remove("voice-focused");
+    return;
+  }
+
+  // Single Click: Stop action & speak
+  e.preventDefault();
+  e.stopPropagation();
+
+  document.querySelectorAll(".voice-focused").forEach(function(el){ el.classList.remove("voice-focused"); });
+  target.classList.add("voice-focused");
+
+  lastClickedEl = target;
+  lastClickTime = now;
+
+  let desc = target.getAttribute("aria-label") || target.innerText || target.placeholder || target.value || target.title || "";
+  desc = desc.replace(/\s+/g, " ").trim();
+
+  const dict = I18N[currentLang] || I18N.en;
+  let fullAnnouncement = desc;
+
+  const isInteractive = target.closest("button, a, .bcard, .mandi-card, input, select, [onclick]");
+  if(isInteractive && desc){
+    fullAnnouncement += ". " + dict.hint_double_click;
+  }
+
+  speakText(fullAnnouncement);
+}, true);
+
+/* ============ TRANSLATIONS DICTIONARY ============ */
+const I18N = {
+  en: {
+    nav_home: "Home", nav_guide: "📖 How It Works", nav_track: "🔍 Track", nav_prices: "📈 Live Prices", nav_mandis: "📍 Mandi Map", nav_community: "🤝 Community ↗", nav_register: "📝 Register",
+    btn_voice_mode: "Voice: OFF", btn_voice_on: "Voice: ON 🔊",
+    banner_tts: "Tap-to-Speak Active: Single tap reads, double tap opens.",
+    voice_activated: "Voice reader activated. Single tap on any item to hear it. Double tap to open.",
+    hint_double_click: "Double tap to open.",
+    hero_pill: "Digital India Initiative · 70+ Mandis · Live Prices",
+    hero_title: 'Sell your harvest with <span class="grad-txt">zero queues,</span> zero confusion.',
+    hero_sub: "Smart tokens, live procurement status, guaranteed MSP, today's real mandi prices from AGMARKNET, and an interactive pan-India mandi map with weather alerts. No middlemen. Ever.",
+    hero_btn_book: "🚜 Book Your Token", hero_btn_comm: "🤝 Farmer Community ↗",
+    stat_farmers: "Farmers onboard", stat_paid: "Paid via DBT", stat_guarantee: "Payment guarantee",
+    ticker_txt: "📢 Wheat procurement opens 1 April · Paddy (Kharif) from 1 October · MSP 2024-25 rates applicable · Payment within 72 hours via DBT · 70+ mandis mapped across India · Live AGMARKNET prices · Direct community marketplace online · Helpline 1800-180-1551 ·",
+    feat_tag: "Features", feat_title: "Built for every Indian farmer", feat_sub: "From token to money in the bank — one seamless digital journey.",
+    feat_1_h: "Zero Waiting Time", feat_1_p: "Our smart token system tells you your exact slot before you leave home. Walk into the mandi exactly when it's your turn — save hours of queueing under the sun.",
+    feat_2_h: "Instant SMS Alerts", feat_2_p: "Every step — registration to payment — lands on your phone instantly.",
+    feat_3_h: "Community Marketplace ↗", feat_3_p: "Buy, sell crops, rent tractors, and hire lorries directly with nearby farmers.",
+    feat_4_h: "Fair Price Assurance", feat_4_p: "Official MSP rates upfront + live AGMARKNET market prices, so you always know what your harvest is really worth before you sell.",
+    feat_5_h: "Direct DBT Payment", feat_5_p: "Money in your bank within 72 hours. Zero middlemen, 100% transparency.",
+    feat_6_h: "Pan-India Mandi Map", feat_6_p: "70+ APMC mandis mapped across every state, with live weather alerts.",
+    guide_tag: "Step-by-step", guide_title: "How to book your token", guide_sub: "Specially made for elderly or first-time users — just watch and follow along.",
+    demo_play: "Play Demo Animation", demo_steps: "6 simple steps · click to start",
+    step1_t: "Fill the registration form", step1_d: "Name, mobile, Aadhaar and crop details — just 2 minutes.",
+    step2_t: "Receive your token", step2_d: "Token appears on screen + SMS confirmation arrives.",
+    step3_t: "Track your status live", step3_d: "Enter token number to see every step's progress.",
+    step4_t: "Visit mandi & get paid", step4_d: "Arrive at your slot — money in bank within 72 hours.",
+    track_tag: "Live Tracking", track_title: "Check your procurement status", track_sub: "Demo tokens: <b>KM2024001</b>, <b>KM2024002</b>, <b>KM2024003</b> — or use your own registered token.",
+    track_ph: "Enter token number (e.g. KM2024001)", track_btn: "🔍 Check Status",
+    msp_tag: "MSP Calendar", msp_title: "Procurement schedule & guaranteed prices", msp_sub: "Official Minimum Support Price — the government-guaranteed floor. Compare with live market prices below 👇",
+    th_crop: "Crop", th_mandi: "Mandi", th_dates: "Dates", th_msp: "MSP (₹/quintal)", th_status: "Status",
+    crop_wheat: "Wheat", crop_paddy: "Paddy", crop_mustard: "Mustard", crop_gram: "Gram", crop_maize: "Maize",
+    prices_tag: "Live Market", prices_title: "Today's real mandi prices 📈", prices_sub: "Live data from AGMARKNET — Government of India official database (3,000+ mandis). Pick a crop to see today's actual traded prices.",
+    prices_refresh: "🔄 Refresh",
+    mandi_tag: "Mandi Locator + Weather", mandi_title: "Find your nearest mandi on the map 🗺️", mandi_sub: "70+ APMC mandis across India. Search your city/district or use GPS — mandis rank by distance, with live weather so rain never damages your harvest in transit.",
+    mandi_ph: "🔍 Type your city / district (e.g. Coimbatore)", mandi_gps: "📍 GPS",
+    wx_head: "🌦️ Weather at Mandi", wx_desc: "Select a mandi to view its live 5-day forecast and transport-safety advice.",
+    reg_tag: "Registration", reg_title: "Get your token instantly", reg_sub: "Data is saved safely on your device — it survives page refreshes. ✅",
+    lbl_name: "Farmer's Name *", ph_name: "Full name",
+    lbl_phone: "Mobile Number *", ph_phone: "10-digit number",
+    lbl_aadhaar: "Aadhaar Number *", ph_aadhaar: "12-digit Aadhaar",
+    lbl_crop: "Select Crop *",
+    lbl_qty: "Quantity (quintal) *", ph_qty: "e.g. 50",
+    lbl_dist: "District *", ph_dist: "Your district",
+    btn_issue_token: "✅ Issue Token — with SMS"
+  },
+  hi: {
+    nav_home: "मुख्य पृष्ठ", nav_guide: "📖 प्रक्रिया", nav_track: "🔍 स्थिति ट्रैक करें", nav_prices: "📈 मंडी भाव", nav_mandis: "📍 मंडी मैप", nav_community: "🤝 समुदाय ↗", nav_register: "📝 पंजीकरण",
+    btn_voice_mode: "आवाज: बंद", btn_voice_on: "आवाज: चालू 🔊",
+    banner_tts: "टैप-टू-स्पीक सक्रिय: एक बार दबाकर सुनें, दो बार दबाकर खोलें।",
+    voice_activated: "आवाज वाचक सक्रिय हो गया है। सुनने के लिए एक बार दबाएं, खोलने के लिए दो बार दबाएं।",
+    hint_double_click: "खोलने के लिए दो बार दबाएं।",
+    hero_pill: "डिजिटल इंडिया पहल · 70+ मंडियां · लाइव भाव",
+    hero_title: 'अपनी फसल बेचें <span class="grad-txt">बिना कतार,</span> बिना परेशानी।',
+    hero_sub: "स्मार्ट टोकन, लाइव खरीद स्थिति, न्यूनतम समर्थन मूल्य (MSP) गारंटी, AGMARKNET से आज के असली मंडी भाव और मौसम पूर्वानुमान। बिचौलिया मुक्त भारत।",
+    hero_btn_book: "🚜 टोकन बुक करें", hero_btn_comm: "🤝 किसान समुदाय ↗",
+    stat_farmers: "किसान पंजीकृत", stat_paid: "DBT द्वारा भुगतान", stat_guarantee: "भुगतान गारंटी",
+    ticker_txt: "📢 गेहूं खरीद 1 अप्रैल से प्रारंभ · धान खरीद 1 अक्टूबर से · MSP 2024-25 दरें लागू · 72 घंटे में बैंक खाते में भुगतान · 70+ मंडियां मैप पर उपलब्ध · किसान हेल्पलाइन 1800-180-1551 ·",
+    feat_tag: "सुविधाएं", feat_title: "प्रत्येक भारतीय किसान के लिए निर्मित", feat_sub: "टोकन से लेकर बैंक खाते में पैसे तक — एक सरल डिजिटल अनुभव।",
+    feat_1_h: "शून्य प्रतीक्षा समय", feat_1_p: "घर से निकलने से पहले सटीक समय स्लॉट जानें। धूप में लंबी कतारों से मुक्ति पाएं।",
+    feat_2_h: "त्वरित SMS अलर्ट", feat_2_p: "पंजीकरण से लेकर बैंक भुगतान तक की हर जानकारी फोन पर पाएं।",
+    feat_3_h: "किसान समुदाय बाज़ार ↗", feat_3_p: "सीधे अन्य किसानों से फसल खरीदें-बेचें, ट्रैक्टर व वाहन किराए पर लें।",
+    feat_4_h: "उचित मूल्य गारंटी", feat_4_p: "सरकारी समर्थन मूल्य और लाइव मंडी भाव देखें, ताकि फसल का सही दाम मिले।",
+    feat_5_h: "सीधा DBT भुगतान", feat_5_p: "72 घंटे में सीधे आपके बैंक खाते में राशि। शून्य बिचौलिए, 100% पारदर्शिता।",
+    feat_6_h: "अखिल भारतीय मंडी मैप", feat_6_p: "70+ APMC मंडियों का नक्शा और लाइव मौसम की सटीक चेतावनी।",
+    guide_tag: "चरण-दर-चरण", guide_title: "टोकन कैसे प्राप्त करें", guide_sub: "बुजुर्ग एवं नए उपयोगकर्ताओं के लिए सरल सचित्र गाइड।",
+    demo_play: "डेमो एनीमेशन देखें", demo_steps: "6 आसान कदम · शुरू करने के लिए क्लिक करें",
+    step1_t: "पंजीकरण फॉर्म भरें", step1_d: "नाम, मोबाइल, आधार और फसल विवरण — केवल 2 मिनट।",
+    step2_t: "टोकन नंबर प्राप्त करें", step2_d: "स्क्रीन पर टोकन और मोबाइल पर तत्काल SMS मिलेगा।",
+    step3_t: "लाइव स्थिति ट्रैक करें", step3_d: "टोकन नंबर दर्ज करके हर चरण की प्रगति देखें।",
+    step4_t: "मंडी जाएं और भुगतान पाएं", step4_d: "अपने समय पर मंडी पहुंचें — 72 घंटे में बैंक में पैसे।",
+    track_tag: "लाइव ट्रैकिंग", track_title: "अपनी फसल खरीद स्थिति जांचें", track_sub: "डेमो टोकन: <b>KM2024001</b>, <b>KM2024002</b>, <b>KM2024003</b> या अपना टोकन दर्ज करें।",
+    track_ph: "टोकन नंबर दर्ज करें (उदा. KM2024001)", track_btn: "🔍 स्थिति जांचें",
+    msp_tag: "MSP कैलेंडर", msp_title: "सरकारी खरीद समय व गारंटीड भाव", msp_sub: "सरकारी न्यूनतम समर्थन मूल्य (MSP) — नीचे लाइव बाज़ार भाव से तुलना करें 👇",
+    th_crop: "फसल", th_mandi: "मंडी", th_dates: "तारीख", th_msp: "MSP (₹/क्विंटल)", th_status: "स्थिति",
+    crop_wheat: "गेहूं", crop_paddy: "धान", crop_mustard: "सरसों", crop_gram: "चना", crop_maize: "मक्का",
+    prices_tag: "लाइव बाज़ार भाव", prices_title: "आज के वास्तविक मंडी भाव 📈", prices_sub: "AGMARKNET (भारत सरकार) से लाइव डेटा। आज के असली भाव देखने के लिए फसल चुनें।",
+    prices_refresh: "🔄 ताज़ा करें",
+    mandi_tag: "मंडी लोकेटर + मौसम", mandi_title: "नक्शे पर नजदीकी मंडी खोजें 🗺️", mandi_sub: "भारत भर की 70+ मंडियां। शहर खोजें या GPS का उपयोग करें — दूरी और मौसम की जानकारी के साथ।",
+    mandi_ph: "🔍 अपना शहर / जिला दर्ज करें (उदा. Lucknow, Jaipur)", mandi_gps: "📍 GPS स्थान",
+    wx_head: "🌦️ मंडी में मौसम", wx_desc: "5 दिवसीय मौसम पूर्वानुमान और परिवहन सुरक्षा सलाह देखने के लिए मंडी चुनें।",
+    reg_tag: "पंजीकरण", reg_title: "तुरंत टोकन प्राप्त करें", reg_sub: "आपकी जानकारी सुरक्षित रूप से सहेजी जाती है। ✅",
+    lbl_name: "किसान का नाम *", ph_name: "पूरा नाम",
+    lbl_phone: "मोबाइल नंबर *", ph_phone: "10 अंकों का नंबर",
+    lbl_aadhaar: "आधार नंबर *", ph_aadhaar: "12 अंकों का आधार",
+    lbl_crop: "फसल चुनें *",
+    lbl_qty: "मात्रा (क्विंटल) *", ph_qty: "उदा. 50",
+    lbl_dist: "जिला *", ph_dist: "आपका जिला",
+    btn_issue_token: "✅ टोकन जारी करें — SMS सहित"
+  },
+  ta: {
+    nav_home: "முகப்பு", nav_guide: "📖 செயல்முறை", nav_track: "🔍 நிலை அறிய", nav_prices: "📈 நேரடி விலை", nav_mandis: "📍 மண்டி வரைபடம்", nav_community: "🤝 சமூகம் ↗", nav_register: "📝 பதிவு",
+    btn_voice_mode: "குரல்: அணை", btn_voice_on: "குரல்: இயக்கம் 🔊",
+    banner_tts: "குரல் வழி இயக்கம்: ஒருமுறை தொட்டு கேட்கவும், இருமுறை தொட்டு திறக்கவும்.",
+    voice_activated: "குரல் வாசிப்பான் இயக்கப்பட்டது. ஒருமுறை தொட்டு கேட்கலாம், இருமுறை தொட்டு திறக்கலாம்.",
+    hint_double_click: "திறக்க இருமுறை தொடவும்.",
+    hero_pill: "டிஜிட்டல் இந்தியா திட்டம் · 70+ மண்டிகள் · நேரடி விலை",
+    hero_title: 'உங்கள் விளைச்சலை விற்கவும் <span class="grad-txt">நீண்ட வரிசையின்றி,</span> இடைத்தரகரின்றி.',
+    hero_sub: "ஸ்மார்ட் டோக்கன், நேரடி கொள்முதல் நிலை, குறைந்தபட்ச ஆதரவு விலை (MSP), AGMARKNET நேரடி சந்தை விலைகள் மற்றும் வானிலை முன்னறிவிப்பு.",
+    hero_btn_book: "🚜 டோக்கன் பதிவு", hero_btn_comm: "🤝 உழவர் சமூகம் ↗",
+    stat_farmers: "இணைந்த விவசாயிகள்", stat_paid: "DBT மூலம் செலுத்தியது", stat_guarantee: "பண உத்தரவாதம்",
+    ticker_txt: "📢 கோதுமை கொள்முதல் ஏப்ரல் 1 முதல் · நெல் கொள்முதல் அக்டோபர் 1 முதல் · 72 மணி நேரத்திற்குள் வங்கிக் கணக்கில் பணம் · நேரடி உதவி எண் 1800-180-1551 ·",
+    feat_tag: "சிறப்பம்சங்கள்", feat_title: "இந்திய விவசாயிகளுக்காக உருவாக்கப்பட்டது", feat_sub: "டோக்கன் முதல் வங்கி கணக்கு வரை — எளிய டிஜிட்டல் முறை.",
+    feat_1_h: "காத்திருக்க தேவையில்லை", feat_1_p: "வீட்டை விட்டு கிளம்பும் முன்பே உங்கள் நேரத்தை அறிந்து கொள்ளுங்கள். வெயிலில் வரிசையில் நிற்பதை தவிர்க்கவும்.",
+    feat_2_h: "உடனடி SMS எச்சரிக்கை", feat_2_p: "பதிவு முதல் வங்கி பணம் வரை அனைத்து தகவல்களும் மொபைலில் வரும்.",
+    feat_3_h: "உழவர் சந்தை சமூகம் ↗", feat_3_p: "விளைபொருட்களை விற்க, டிராக்டர் மற்றும் லாரி வாடகைக்கு எடுக்க நேரடி தளம்.",
+    feat_4_h: "நியாயமான விலை உறுதி", feat_4_p: "அரசு MSP விலை மற்றும் இன்றைய நேரடி சந்தை விலையை அறிந்து விற்கவும்.",
+    feat_5_h: "நேரடி வங்கி பரிமாற்றம்", feat_5_p: "72 மணி நேரத்தில் பணம் நேரடியாக வங்கி கணக்கில். 100% வெளிப்படைத்தன்மை.",
+    feat_6_h: "அகில இந்திய மண்டி வரைபடம்", feat_6_p: "70+ மண்டிகளின் வரைபடம் மற்றும் நேரடி மழை வானிலை எச்சரிக்கைகள்.",
+    guide_tag: "படிப்படியான வழிகாட்டி", guide_title: "டோக்கன் பெறுவது எப்படி", guide_sub: "முதியவர்கள் மற்றும் புதிய பயனர்களுக்கான எளிய காணொளி.",
+    demo_play: "டெமோவை பார்க்க", demo_steps: "6 எளிய படிகள் · தொடங்க கிளிக் செய்யவும்",
+    step1_t: "படிவத்தை பூர்த்தி செய்க", step1_d: "பெயர், மொபைல், ஆதார் மற்றும் பயிர் விவரங்கள் — 2 நிமிடம்.",
+    step2_t: "டோக்கன் பெறுக", step2_d: "திரையில் டோக்கன் எண்ணும், மொபைலில் SMS-ம் வரும்.",
+    step3_t: "நிலையை கண்காணிக்க", step3_d: "டோக்கன் எண்ணை உள்ளிட்டு முன்னேற்றத்தை பார்க்கவும்.",
+    step4_t: "மண்டி சென்று பணம் பெறுக", step4_d: "குறிப்பிட்ட நேரத்தில் சென்று 72 மணி நேரத்தில் வங்கி பணம் பெறுங்கள்.",
+    track_tag: "நேரடி கண்காணிப்பு", track_title: "கொள்முதல் நிலையை சரிபார்க்கவும்", track_sub: "டெமோ டோக்கன்: <b>KM2024001</b>, <b>KM2024002</b> அல்லது உங்கள் டோக்கன் உள்ளிடவும்.",
+    track_ph: "டோக்கன் எண் உள்ளிடவும் (எ.கா. KM2024001)", track_btn: "🔍 நிலையை காண்க",
+    msp_tag: "MSP நாட்காட்டி", msp_title: "அரசு கொள்முதல் அட்டவணை & உத்தரவாத விலை", msp_sub: "அரசு குறைந்தபட்ச ஆதரவு விலை (MSP) விபரம் 👇",
+    th_crop: "பயிர்", th_mandi: "மண்டி", th_dates: "தேதிகள்", th_msp: "MSP (₹/குவிண்டால்)", th_status: "நிலை",
+    crop_wheat: "கோதுமை", crop_paddy: "நெல்", crop_mustard: "கடுகு", crop_gram: "கடலை", crop_maize: "மக்காச்சோளம்",
+    prices_tag: "நேரடி சந்தை", prices_title: "இன்றைய மண்டி விலைகள் 📈", prices_sub: "AGMARKNET நேரடி அரசு தரவுத்தளம் (3,000+ மண்டிகள்). இன்றைய விலையை அறிய பயிரை தேர்ந்தெடுக்கவும்.",
+    prices_refresh: "🔄 புதுப்பிக்க",
+    mandi_tag: "மண்டி வரைபடம் + வானிலை", mandi_title: "அருகிலுள்ள மண்டியை கண்டறியவும் 🗺️", mandi_sub: "70+ மண்டிகள். உங்கள் ஊரை தட்டச்சு செய்து நேரடி தூரம் மற்றும் வானிலை அறியவும்.",
+    mandi_ph: "🔍 உங்கள் ஊர் / மாவட்டம் (எ.கா. Coimbatore, Erode)", mandi_gps: "📍 GPS இடம்",
+    wx_head: "🌦️ மண்டியில் வானிலை", wx_desc: "5 நாள் வானிலை முன்னறிவிப்பை காண மண்டியை தேர்ந்தெடுக்கவும்.",
+    reg_tag: "பதிவு", reg_title: "உடனடி டோக்கன் பெறுக", reg_sub: "உங்கள் விவரங்கள் பாதுகாப்பாக சேமிக்கப்படும். ✅",
+    lbl_name: "விவசாயி பெயர் *", ph_name: "முழு பெயர்",
+    lbl_phone: "மொபைல் எண் *", ph_phone: "10 இலக்க எண்",
+    lbl_aadhaar: "ஆதார் எண் *", ph_aadhaar: "12 இலக்க ஆதார்",
+    lbl_crop: "பயிரை தேர்வு செய்க *",
+    lbl_qty: "அளவு (குவிண்டால்) *", ph_qty: "எ.கா. 50",
+    lbl_dist: "மாவட்டம் *", ph_dist: "உங்கள் மாவட்டம்",
+    btn_issue_token: "✅ டோக்கன் பெறுக — SMS உடன்"
+  },
+  te: {
+    nav_home: "హోమ్", nav_guide: "📖 ఎలా పనిచేస్తుంది", nav_track: "🔍 స్థితిని తనిఖీ చేయండి", nav_prices: "📈 మార్కెట్ ధరలు", nav_mandis: "📍 మార్కెట్ మ్యాప్", nav_community: "🤝 కమ్యూనిటీ ↗", nav_register: "📝 నమోదు",
+    btn_voice_mode: "వాయిస్: ఆఫ్", btn_voice_on: "వాయిస్: ఆన్ 🔊",
+    banner_tts: "ట్యాప్-టు-స్పీక్ మోడ్: వినడానికి ఒకసారి నొక్కండి, తెరవడానికి రెండుసార్లు నొక్కండి.",
+    voice_activated: "వాయిస్ రీడర్ ప్రారంభించబడింది. వినడానికి ఒకసారి నొక్కండి, తెరవడానికి రెండుసార్లు నొక్కండి.",
+    hint_double_click: "తెరవడానికి రెండుసార్లు నొక్కండి.",
+    hero_pill: "డిజిటల్ ఇండియా చొరవ · 70+ మార్కెట్లు · లైవ్ ధరలు",
+    hero_title: 'పంటను అమ్మండి <span class="grad-txt">క్యూలు లేకుండా,</span> దళారుల ప్రమేయం లేకుండా.',
+    hero_sub: "స్మార్ట్ టోకెన్, లైవ్ కొనుగోలు స్థితి, కనీస మద్దతు ధర (MSP) హామీ, AGMARKNET లైవ్ మార్కెట్ ధరలు మరియు వాతావరణ హెచ్చరికలు.",
+    hero_btn_book: "🚜 టోకెన్ బుక్ చేయండి", hero_btn_comm: "🤝 రైతు కమ్యూనిటీ ↗",
+    stat_farmers: "రిజిస్టర్ అయిన రైతులు", stat_paid: "DBT ద్వారా చెల్లింపు", stat_guarantee: "చెల్లింపు హామీ",
+    ticker_txt: "📢 గోధుమ కొనుగోలు ఏప్రిల్ 1 నుండి ప్రారంభం · వరి కొనుగోలు అక్టోబర్ 1 నుండి · 72 గంటల్లో ఖాతాలో డబ్బులు జమ · హెల్ప్‌లైన్ 1800-180-1551 ·",
+    feat_tag: "ఫీచర్లు", feat_title: "ప్రతి భారతీయ రైతు కోసం రూపొందించబడింది", feat_sub: "టోకెన్ నుండి బ్యాంక్ ఖాతాలో డబ్బు వరకు — ఒకే డిజిటల్ వ్యవస్థ.",
+    feat_1_h: "వేచి ఉండాల్సిన అవసరం లేదు", feat_1_p: "ఇంటి నుండి బయలుదేరే ముందే మీ సమయాన్ని తెలుసుకోండి. ఎండలో క్యూలో నిలబడకుండా ఉండండి.",
+    feat_2_h: "తక్షణ SMS హెచ్చరికలు", feat_2_p: "రిజిస్ట్రేషన్ నుండి చెల్లింపు వరకు ప్రతి వివరాలు ఫోన్‌కు అందుతాయి.",
+    feat_3_h: "రైతు కమ్యూనిటీ మార్కెట్ ↗", feat_3_p: "రైతుల మధ్య నేరుగా పంట అమ్మకాలు, ట్రాక్టర్లు & లారీల అద్దె సేవలు.",
+    feat_4_h: "సరసమైన ధర హామీ", feat_4_p: "ప్రభుత్వ MSP ధరలు మరియు ప్రస్తుత మార్కెట్ ధరలు సరిచూసి లాభం పొందండి.",
+    feat_5_h: "నేరుగా DBT చెల్లింపు", feat_5_p: "72 గంటల్లో నేరుగా బ్యాంకు ఖాతాలో డబ్బు జమ. దళారుల ప్రమేయం లేదు.",
+    feat_6_h: "అఖిల భారత మార్కెట్ మ్యాప్", feat_6_p: "70+ మార్కెట్ల వివరాలు మరియు లైవ్ వర్ష సూచన హెచ్చరికలు.",
+    guide_tag: "దశల వారీ మార్గదర్శి", guide_title: "టోకెన్ ఎలా బుక్ చేసుకోవాలి", guide_sub: "రైతుల కోసం సులభమైన వీడియో గైడ్.",
+    demo_play: "డెమో యానిమేషన్ చూడండి", demo_steps: "6 సులభమైన దశలు · ప్రారంభించడానికి క్లిక్ చేయండి",
+    step1_t: "రిజిస్ట్రేషన్ ఫారం పూరించండి", step1_d: "పేరు, మొబైల్, ఆధార్ మరియు పంట వివరాలు — కేవలం 2 నిమిషాలు.",
+    step2_t: "టోకెన్ పొందండి", step2_d: "స్క్రీన్‌పై టోకెన్ నంబర్ మరియు SMS ధృవీకరణ వస్తుంది.",
+    step3_t: "లైవ్ స్థితిని చూడండి", step3_d: "టోకెన్ నంబర్ నమోదు చేసి ప్రతి దశ పురోగతిని చూడండి.",
+    step4_t: "మార్కెట్‌ను సందర్శించి డబ్బు పొందండి", step4_d: "మీ సమయానికి వెళ్లి 72 గంటల్లో బ్యాంకులో డబ్బులు పొందండి.",
+    track_tag: "లైవ్ ట్రాకింగ్", track_title: "కొనుగోలు స్థితిని తనిఖీ చేయండి", track_sub: "డెమో టోకెన్లు: <b>KM2024001</b>, <b>KM2024002</b> లేదా మీ టోకెన్ నమోదు చేయండి.",
+    track_ph: "టోకెన్ నంబర్ నమోదు చేయండి (ఉదా. KM2024001)", track_btn: "🔍 స్థితిని చూడండి",
+    msp_tag: "MSP క్యాలెండర్", msp_title: "ప్రభుత్వ కొనుగోలు షెడ్యూల్ & హామీ ధరలు", msp_sub: "ప్రభుత్వ కనీస మద్దతు ధర (MSP) వివరాలు 👇",
+    th_crop: "పంట", th_mandi: "మార్కెట్", th_dates: "తేదీలు", th_msp: "MSP (₹/క్వింటాల్)", th_status: "స్థితి",
+    crop_wheat: "గోధుమ", crop_paddy: "వరి", crop_mustard: "ఆవాలు", crop_gram: "శనగలు", crop_maize: "మొక్కజొన్న",
+    prices_tag: "లైవ్ మార్కెట్", prices_title: "నేటి మార్కెట్ ధరలు 📈", prices_sub: "AGMARKNET ప్రభుత్వ లైవ్ డేటా (3,000+ మార్కెట్లు). నేటి ధరలను చూడటానికి పంటను ఎంచుకోండి.",
+    prices_refresh: "🔄 తాజా చేయండి",
+    mandi_tag: "మార్కెట్ లొకేటర్ + వాతావరణం", mandi_title: "మ్యాప్‌లో సమీప మార్కెట్‌ను కనుగొనండి 🗺️", mandi_sub: "70+ మార్కెట్లు. మీ నగరాన్ని శోధించండి లేదా GPS ఉపయోగించి దూరం మరియు వాతావరణం తెలుసుకోండి.",
+    mandi_ph: "🔍 మీ నగరం / జిల్లా (ఉదా. Warangal, Kurnool)", mandi_gps: "📍 GPS స్థానం",
+    wx_head: "🌦️ మార్కెట్ వద్ద వాతావరణం", wx_desc: "5 రోజుల వాతావరణ సూచనను చూడటానికి మార్కెట్‌ను ఎంచుకోండి.",
+    reg_tag: "నమోదు", reg_title: "వెంటనే టోకెన్ పొందండి", reg_sub: "మీ డేటా సురక్షితంగా సేవ్ చేయబడుతుంది. ✅",
+    lbl_name: "రైతు పేరు *", ph_name: "పూర్తి పేరు",
+    lbl_phone: "మొబైల్ నంబర్ *", ph_phone: "10 అంకెల నంబర్",
+    lbl_aadhaar: "ఆధార్ నంబర్ *", ph_aadhaar: "12 అంకెల ఆధార్",
+    lbl_crop: "పంటను ఎంచుకోండి *",
+    lbl_qty: "పరిమాణం (క్వింటాళ్ళు) *", ph_qty: "ఉదా. 50",
+    lbl_dist: "జిల్లా *", ph_dist: "మీ జిల్లా",
+    btn_issue_token: "✅ టోకెన్ జారీ చేయండి — SMS తో"
+  }
+};
+
+let currentLang = localStorage.getItem("km_lang") || "en";
+
+function changeLanguage(lang){
+  currentLang = lang;
+  localStorage.setItem("km_lang", lang);
+  document.getElementById("langSelect").value = lang;
+  const dict = I18N[lang] || I18N.en;
+
+  document.querySelectorAll("[data-i18n]").forEach(function(el){
+    const key = el.getAttribute("data-i18n");
+    if(dict[key]) el.innerHTML = dict[key];
+  });
+
+  document.querySelectorAll("[data-i18n-ph]").forEach(function(el){
+    const key = el.getAttribute("data-i18n-ph");
+    if(dict[key]) el.placeholder = dict[key];
+  });
+
+  const btn = document.getElementById("voiceModeBtn");
+  if(btn){
+    btn.innerHTML = voiceModeActive ? ('<span>🔊</span> ' + dict.btn_voice_on) : ('<span>🗣️</span> ' + dict.btn_voice_mode);
+  }
+}
+
+/* ============ DATABASE (localStorage) ============ */
+const DB_KEY = "kisanmitra_db_v3";
+function getDB(){
+  let db = JSON.parse(localStorage.getItem(DB_KEY) || "null");
+  if(!db){
+    db = {
+      "KM2024001":{name:"Ram Yadav",crop:"Wheat",qty:"45 quintal",mandi:"Lucknow Mandi",steps:[["Registration received",1],["Identity verified",1],["Crop deposited at mandi",1],["Quality check done",1],["Payment approved ✅",1]]},
+      "KM2024002":{name:"Sumitra Devi",crop:"Mustard",qty:"30 quintal",mandi:"Jaipur Mandi",steps:[["Registration received",1],["Identity verified",1],["Crop deposited at mandi",1],["Quality check ⏳",1],["Payment",0]]},
+      "KM2024003":{name:"Mohan Patel",crop:"Paddy",qty:"60 quintal",mandi:"Patna Mandi",steps:[["Registration received",1],["Identity verified ⏳",1],["Deposit at mandi (Oct 10)",0],["Quality check",0],["Payment",0]]}
+    };
+    localStorage.setItem(DB_KEY, JSON.stringify(db));
+  }
+  return db;
+}
+
+/* ============ SMS SIMULATION ============ */
+function showSMS(text){
+  try{
+    const p = document.getElementById("smsPopup");
+    document.getElementById("smsBody").textContent = text;
+    document.getElementById("smsTime").textContent = new Date().toLocaleString("en-IN");
+    p.style.display = "block";
+    clearTimeout(window._smsTimer);
+    window._smsTimer = setTimeout(function(){ p.style.display = "none"; }, 12000);
+    if(navigator.vibrate){ try{ navigator.vibrate([100,50,100]); }catch(e){} }
+  }catch(err){ console.log("SMS:", text); }
+}
+
+
+/* ============ TRACKER ============ */
+async function trackStatus(){
+  const t = document.getElementById("tokenInput").value.trim().toUpperCase();
+  const r = document.getElementById("result");
+  r.style.display = "block";
+  if(!t){ r.innerHTML = '<p style="color:#ff7b7b;font-weight:700">⚠️ Please enter a token number.</p>'; return; }
+
+  let d = null;
+  try {
+    const apiRes = await KM_API.getToken(t);
+    if(apiRes && apiRes.success) {
+      d = apiRes;
+    }
+  } catch(e){}
+
+  if(!d) {
+    const DB = getDB();
+    d = DB[t];
+  }
+
+  if(!d){ r.innerHTML = '<p style="color:#ff7b7b;font-weight:700">❌ Token not found! Please check and try again.</p>'; return; }
+  const doneCount = d.steps.filter(function(s){ return s[1]; }).length;
+  const pct = Math.round(doneCount/d.steps.length*100);
+  let html = '<h3 style="color:var(--green)">✅ ' + d.name + ' — ' + d.crop + ' (' + d.qty + ')</h3>';
+  html += '<p style="color:var(--muted);margin-top:4px;font-size:.9rem">📍 ' + d.mandi + ' • Progress: <b style="color:var(--txt)">' + pct + '%</b></p>';
+  html += '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div><ul class="steps">';
+  d.steps.forEach(function(s){
+    html += '<li class="' + (s[1] ? "done" : "pending") + '"><span>' + (s[1] ? "✔" : "○") + ' ' + s[0] + '</span><span>' + (s[1] ? "Done" : "Pending") + '</span></li>';
+  });
+  r.innerHTML = html + '</ul>';
+}
+
+
+/* ============ OFFICIAL TOKEN SLIP (PDF / PRINTABLE) ============ */
+function generateTokenSlipHTML(data) {
+  return '<!DOCTYPE html>' +
+    '<html><head><meta charset="UTF-8"><title>KisanMitra Token Slip - ' + data.token + '</title>' +
+    '<style>' +
+    '@page { size: A4; margin: 15mm; }' +
+    'body { font-family: "Segoe UI", Arial, sans-serif; color: #111; margin: 0; padding: 25px; background: #f4f7f4; }' +
+    '.slip { max-width: 650px; margin: 0 auto; background: #fff; border: 2.5px solid #2e7d32; border-radius: 14px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; }' +
+    '.header { text-align: center; border-bottom: 2px dashed #2e7d32; padding-bottom: 18px; margin-bottom: 22px; }' +
+    '.header h1 { margin: 0; color: #2e7d32; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }' +
+    '.header p { margin: 6px 0 0; color: #555; font-size: 13px; font-weight: 500; }' +
+    '.token-box { background: #e8f5e9; border: 2px solid #4caf50; border-radius: 10px; text-align: center; padding: 14px; margin-bottom: 22px; }' +
+    '.token-box span { font-size: 13px; color: #2e7d32; font-weight: bold; text-transform: uppercase; display: block; letter-spacing: 1px; }' +
+    '.token-box b { font-size: 34px; color: #1b5e20; letter-spacing: 3px; font-family: monospace; display: block; margin-top: 4px; }' +
+    '.details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 22px; font-size: 14px; }' +
+    '.item { background: #fbfbfb; padding: 12px 16px; border-radius: 8px; border-left: 4px solid #4caf50; border-top: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee; }' +
+    '.item label { color: #666; font-size: 11px; text-transform: uppercase; display: block; font-weight: bold; }' +
+    '.item value { font-weight: 700; font-size: 15px; color: #111; display: block; margin-top: 3px; }' +
+    '.instructions { background: #fff8e1; border: 1.5px solid #ffe082; border-radius: 8px; padding: 15px 18px; font-size: 13px; line-height: 1.6; color: #5d4037; margin-bottom: 22px; }' +
+    '.footer { text-align: center; border-top: 1px solid #ddd; padding-top: 15px; font-size: 12px; color: #777; line-height: 1.6; }' +
+    '.btn-print { background: linear-gradient(135deg,#3ecf6f,#2e7d32); color: #fff; border: none; padding: 12px 30px; font-size: 15px; font-weight: 800; border-radius: 25px; cursor: pointer; margin-top: 12px; box-shadow: 0 4px 15px rgba(46,125,50,0.3); }' +
+    '@media print { .no-print { display: none !important; } body { background: #fff; padding: 0; } .slip { box-shadow: none; border: 2px solid #000; } }' +
+    '</style></head><body>' +
+    '<div class="slip">' +
+      '<div class="header">' +
+        '<h1>🌾 KisanMitra Procurement Token Slip</h1>' +
+        '<p>Government of India · Digital Procurement Initiative · Official Gate Pass</p>' +
+      '</div>' +
+      '<div class="token-box">' +
+        '<span>Official Token Number</span>' +
+        '<b>' + data.token + '</b>' +
+      '</div>' +
+      '<div class="details-grid">' +
+        '<div class="item"><label>Farmer Name</label><value>' + data.name + '</value></div>' +
+        '<div class="item"><label>Mobile Number</label><value>+91 ' + data.phone + '</value></div>' +
+        '<div class="item"><label>Crop Commodity</label><value>' + data.crop + '</value></div>' +
+        '<div class="item"><label>Quantity</label><value>' + data.qty + '</value></div>' +
+        '<div class="item"><label>Designated Mandi</label><value>' + data.mandi + '</value></div>' +
+        '<div class="item"><label>Issuance Date & Time</label><value>' + data.date + '</value></div>' +
+      '</div>' +
+      '<div class="instructions">' +
+        '<b>📋 Mandi Gate Entry Instructions:</b><br>' +
+        '1. Carry this Token Slip (printed or digital PDF on your phone) with your Aadhaar Card & Bank Passbook.<br>' +
+        '2. Reach ' + data.mandi + ' at your designated slot for direct express entry with zero waiting time.<br>' +
+        '3. Official MSP rate is guaranteed. Payment will be disbursed within 72 hours via Direct DBT.<br>' +
+        '4. 24x7 Farmer Helpline: <b>1800-180-1551</b>' +
+      '</div>' +
+      '<div class="footer">' +
+        'KisanMitra Smart Farm Procurement Portal · Digitally Certified Token · Keep Safe<br>' +
+        '<div class="no-print" style="margin-top:14px">' +
+          '<button class="btn-print" onclick="window.print()">🖨️ Print / Save as PDF</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '</body></html>';
+}
+
+function downloadTokenSlip(token) {
+  const DB = getDB();
+  const d = DB[token] || {
+    name: "Registered Farmer",
+    phone: "-",
+    crop: "Harvest",
+    qty: "As registered",
+    mandi: "Designated Mandi"
+  };
+
+  const slipData = {
+    token: token,
+    name: d.name || "Farmer",
+    phone: d.phone || "-",
+    crop: d.crop || "Wheat",
+    qty: d.qty || "Quintal",
+    mandi: d.mandi || "Mandi",
+    date: new Date().toLocaleString("en-IN")
+  };
+
+  const html = generateTokenSlipHTML(slipData);
+  const win = window.open("", "_blank");
+  if (win) {
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+  } else {
+    // Fallback: download as .html file
+    const blob = new Blob([html], { type: "text/html" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "KisanMitra_Token_" + token + ".html";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+}
+
+
+/* ============ REGISTRATION ============ */
+let counter = parseInt(localStorage.getItem("km_counter_v3") || "4");
+async function register(e){
+  e.preventDefault();
+  const name = document.getElementById("fName").value.trim();
+  const phone = document.getElementById("fPhone") ? document.getElementById("fPhone").value.trim() : "9876500000";
+  const crop = document.getElementById("fCrop").value;
+  const qty = document.getElementById("fQty").value;
+  const dist = document.getElementById("fDist").value.trim();
+
+  let token = "";
+  try {
+    const apiRes = await KM_API.createToken({ name, phone, crop, quantity: qty, district: dist });
+    if(apiRes && apiRes.token) {
+      token = apiRes.token;
+    }
+  } catch(err){}
+
+  if(!token) {
+    token = "KM2025" + String(counter).padStart(3,"0");
+    counter++;
+    localStorage.setItem("km_counter_v3", counter);
+  }
+
+  const DB = getDB();
+  DB[token] = {
+    name: name,
+    phone: phone,
+    crop: crop,
+    qty: qty + " quintal",
+    mandi: dist + " Mandi",
+    steps: [["Registration received",1],["Identity verified",0],["Deposit at mandi",0],["Quality check",0],["Payment",0]]
+  };
+  localStorage.setItem(DB_KEY, JSON.stringify(DB));
+  localStorage.setItem("km_new_token", token);
+
+  // Store in my saved tokens list permanently
+  try {
+    let myTokens = JSON.parse(localStorage.getItem("km_my_tokens") || "[]");
+    if (myTokens.indexOf(token) === -1) {
+      myTokens.unshift(token);
+      localStorage.setItem("km_my_tokens", JSON.stringify(myTokens));
+    }
+  } catch(e){}
+
+  const msg = document.getElementById("regMsg");
+  msg.style.display = "block";
+
+  msg.innerHTML = '<div style="background:var(--surface);border:2px solid var(--green);border-radius:18px;padding:22px;margin-top:18px;text-align:center;box-shadow:var(--shadow)">' +
+    '<div style="font-size:2.2rem">🎉</div>' +
+    '<h3 style="color:var(--green);margin:6px 0 2px">Congratulations ' + name + '!</h3>' +
+    '<p style="color:var(--muted);font-size:.9rem;margin-bottom:12px">Your procurement token has been generated &amp; stored securely in storage.</p>' +
+    '<div style="margin-bottom:16px"><span class="token-chip" style="font-size:1.3rem;padding:8px 24px">' + token + '</span></div>' +
+    '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">' +
+      '<button type="button" class="btn btn-primary" onclick="downloadTokenSlip(\'' + token + '\')" style="padding:12px 24px;font-size:.92rem">📄 Download / Print Token Slip (PDF)</button>' +
+      '<button type="button" class="btn btn-ghost" onclick="document.getElementById(\x27tokenInput\x27).value=\x27' + token + '\x27;trackStatus();" style="padding:12px 20px;font-size:.92rem">🔍 View Live Status</button>' +
+    '</div>' +
+  '</div>';
+
+  document.getElementById("tokenInput").value = token;
+  trackStatus();
+  e.target.reset();
+  msg.scrollIntoView({behavior:"smooth", block:"center"});
+}
+
+/* ============ VIDEO DEMO SLIDESHOW ============ */
+const demoFrames = [
+  {emoji:"📝", txt:"Step 1: Fill the registration form — name, mobile, Aadhaar"},
+  {emoji:"🌾", txt:"Step 2: Choose your crop and quantity"},
+  {emoji:"✅", txt:"Step 3: Press the 'Issue Token' button"},
+  {emoji:"📱", txt:"Step 4: Receive your token + SMS confirmation"},
+  {emoji:"🔍", txt:"Step 5: Track your status with the token"},
+  {emoji:"💰", txt:"Step 6: Visit the mandi — paid within 72 hours!"}
+];
+let demoTimer = null, demoIdx = 0;
+function playDemo(){
+  const box = document.getElementById("videoBox");
+  let html = '<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#1a3d28,#0e1a12);color:#fff;text-align:center;padding:24px">';
+  html += '<div id="demoEmoji" style="font-size:5rem;animation:bob 2s ease-in-out infinite">' + demoFrames[0].emoji + '</div>';
+  html += '<h2 id="demoTxt" style="margin-top:20px;font-size:1.25rem;max-width:90%">' + demoFrames[0].txt + '</h2>';
+  html += '<div id="demoDots" style="display:flex;gap:8px;margin-top:22px">';
+  demoFrames.forEach(function(_, i){
+    html += '<span class="dot" style="width:11px;height:11px;border-radius:50%;background:' + (i===0 ? "var(--gold)" : "#ffffff44") + ';transition:.3s"></span>';
+  });
+  html += '</div><p style="margin-top:16px;opacity:.6;font-size:.8rem">⏸ Click to pause</p></div>';
+  box.innerHTML = html;
+  demoIdx = 0;
+  demoTimer = setInterval(nextFrame, 2800);
+  box.onclick = stopDemo;
+}
+function nextFrame(){
+  demoIdx = (demoIdx+1) % demoFrames.length;
+  const em = document.getElementById("demoEmoji"), tx = document.getElementById("demoTxt");
+  if(!em){ stopDemo(); return; }
+  em.style.animation = "none"; void em.offsetWidth;
+  em.style.animation = "bob 2s ease-in-out infinite";
+  em.textContent = demoFrames[demoIdx].emoji;
+  tx.textContent = demoFrames[demoIdx].txt;
+  document.querySelectorAll("#demoDots .dot").forEach(function(d, i){
+    d.style.background = i===demoIdx ? "var(--gold)" : "#ffffff44";
+  });
+}
+function stopDemo(){
+  clearInterval(demoTimer);
+  const box = document.getElementById("videoBox");
+  box.innerHTML = '<div class="video-fallback"><div class="play">▶</div><h3 style="margin-top:16px">Play Demo Again</h3><p style="opacity:.7;font-size:.85rem;margin-top:6px">Click to restart</p></div>';
+  box.onclick = playDemo;
+}
+
+/* ============ MANDI DATA — 70 Mandis Pan-India ============ */
+const MANDIS = [
+  {name:"Lucknow Mandi",       state:"Uttar Pradesh",  crop:"Wheat",   lat:26.8467, lon:80.9462},
+  {name:"Kanpur Mandi",        state:"Uttar Pradesh",  crop:"Wheat",   lat:26.4499, lon:80.3319},
+  {name:"Varanasi Mandi",      state:"Uttar Pradesh",  crop:"Paddy",   lat:25.3176, lon:82.9739},
+  {name:"Meerut Mandi",        state:"Uttar Pradesh",  crop:"Sugarcane",lat:28.9845, lon:77.7064},
+  {name:"Agra Mandi",          state:"Uttar Pradesh",  crop:"Potato",  lat:27.1767, lon:78.0081},
+  {name:"Patna Mandi",         state:"Bihar",          crop:"Paddy",   lat:25.5941, lon:85.1376},
+  {name:"Muzaffarpur Mandi",   state:"Bihar",          crop:"Litchi",  lat:26.1209, lon:85.3647},
+  {name:"Jaipur Mandi",        state:"Rajasthan",      crop:"Mustard", lat:26.9124, lon:75.7873},
+  {name:"Kota Mandi",          state:"Rajasthan",      crop:"Soybean", lat:25.2138, lon:75.8648},
+  {name:"Bhopal Mandi",        state:"Madhya Pradesh", crop:"Gram",    lat:23.2599, lon:77.4126},
+  {name:"Indore Mandi",        state:"Madhya Pradesh", crop:"Soybean", lat:22.7196, lon:75.8577},
+  {name:"Chandigarh Mandi",    state:"Chandigarh",     crop:"Maize",   lat:30.7333, lon:76.7794},
+  {name:"Ludhiana Mandi",      state:"Punjab",         crop:"Wheat",   lat:30.9010, lon:75.8573},
+  {name:"Amritsar Mandi",      state:"Punjab",         crop:"Wheat",   lat:31.6340, lon:74.8723},
+  {name:"Karnal Mandi",        state:"Haryana",        crop:"Paddy",   lat:29.6857, lon:76.9905},
+  {name:"Hisar Mandi",         state:"Haryana",        crop:"Cotton",  lat:29.1492, lon:75.7217},
+  {name:"Delhi Azadpur Mandi", state:"Delhi",          crop:"Vegetables",lat:28.6989, lon:77.1546},
+  {name:"Dehradun Mandi",      state:"Uttarakhand",    crop:"Rice",    lat:30.3165, lon:78.0322},
+  {name:"Nagpur Mandi",        state:"Maharashtra",    crop:"Cotton",  lat:21.1458, lon:79.0882},
+  {name:"Pune Mandi",          state:"Maharashtra",    crop:"Onion",   lat:18.5204, lon:73.8567},
+  {name:"Nashik Mandi",        state:"Maharashtra",    crop:"Grapes",  lat:19.9975, lon:73.7898},
+  {name:"Guwahati Mandi",      state:"Assam",          crop:"Mustard", lat:26.1445, lon:91.7362},
+  {name:"Guntur Mandi",        state:"Andhra Pradesh", crop:"Chilli",  lat:16.3067, lon:80.4365},
+  {name:"Vijayawada Mandi",    state:"Andhra Pradesh", crop:"Paddy",   lat:16.5062, lon:80.6480},
+  {name:"Tadepalligudem Mandi",state:"Andhra Pradesh", crop:"Paddy",   lat:16.8143, lon:81.8470},
+  {name:"Kurnool Mandi",       state:"Andhra Pradesh", crop:"Sunflower",lat:15.8281, lon:78.0373},
+  {name:"Kadiri Mandi",        state:"Andhra Pradesh", crop:"Groundnut",lat:14.1128, lon:78.1608},
+  {name:"Anantapur Mandi",     state:"Andhra Pradesh", crop:"Groundnut",lat:14.6819, lon:77.6006},
+  {name:"Tirupati Mandi",      state:"Andhra Pradesh", crop:"Paddy",   lat:13.6288, lon:79.4192},
+  {name:"Kakinada Mandi",      state:"Andhra Pradesh", crop:"Coconut", lat:16.9891, lon:82.2475},
+  {name:"Eluru Mandi",         state:"Andhra Pradesh", crop:"Paddy",   lat:16.7107, lon:81.0945},
+  {name:"Hyderabad Mandi (Bowenpally)", state:"Telangana", crop:"Vegetables", lat:17.4630, lon:78.4827},
+  {name:"Warangal Mandi",      state:"Telangana",      crop:"Cotton",  lat:17.9689, lon:79.5941},
+  {name:"Nizamabad Mandi",     state:"Telangana",      crop:"Turmeric",lat:18.6725, lon:78.0941},
+  {name:"Karimnagar Mandi",    state:"Telangana",      crop:"Paddy",   lat:18.4386, lon:79.1288},
+  {name:"Khammam Mandi",       state:"Telangana",      crop:"Chilli",  lat:17.2473, lon:80.1514},
+  {name:"Mahbubnagar Mandi",   state:"Telangana",      crop:"Castor",  lat:16.7419, lon:77.9846},
+  {name:"Adilabad Mandi",      state:"Telangana",      crop:"Cotton",  lat:19.6640, lon:78.5325},
+  {name:"Siddipet Mandi",      state:"Telangana",      crop:"Paddy",   lat:18.1033, lon:78.8491},
+  {name:"Bengaluru Mandi (Binny Mills)", state:"Karnataka", crop:"Ragi", lat:12.9716, lon:77.5946},
+  {name:"Mysuru Mandi",        state:"Karnataka",      crop:"Ragi",    lat:12.2958, lon:76.6394},
+  {name:"Hubballi Mandi",      state:"Karnataka",      crop:"Chilli",  lat:15.3647, lon:75.1240},
+  {name:"Belagavi Mandi",      state:"Karnataka",      crop:"Sugarcane",lat:15.8497, lon:74.4977},
+  {name:"Ballari Mandi",       state:"Karnataka",      crop:"Cotton",  lat:15.1394, lon:76.9214},
+  {name:"Raichur Mandi",       state:"Karnataka",      crop:"Paddy",   lat:16.2120, lon:77.3566},
+  {name:"Tumakuru Mandi",      state:"Karnataka",      crop:"Coconut", lat:13.3392, lon:77.1140},
+  {name:"Shivamogga Mandi",    state:"Karnataka",      crop:"Areca nut",lat:13.9299, lon:75.5681},
+  {name:"Davangere Mandi",     state:"Karnataka",      crop:"Maize",   lat:14.4644, lon:75.9218},
+  {name:"Bijapura Mandi",      state:"Karnataka",      crop:"Tur",     lat:16.8302, lon:75.7100},
+  {name:"Kalaburagi Mandi",    state:"Karnataka",      crop:"Tur",     lat:17.3297, lon:76.8343},
+  {name:"Chennai Koyambedu Mandi", state:"Tamil Nadu", crop:"Vegetables", lat:13.0698, lon:80.1940},
+  {name:"Coimbatore Mandi",    state:"Tamil Nadu",     crop:"Coconut", lat:11.0168, lon:76.9558},
+  {name:"Madurai Mandi",       state:"Tamil Nadu",     crop:"Cotton",  lat:9.9252,  lon:78.1198},
+  {name:"Erode Turmeric Mandi",state:"Tamil Nadu",     crop:"Turmeric",lat:11.3410, lon:77.7172},
+  {name:"Salem Mandi",         state:"Tamil Nadu",     crop:"Tapioca", lat:11.6643, lon:78.1460},
+  {name:"Thanjavur Mandi",     state:"Tamil Nadu",     crop:"Paddy",   lat:10.7870, lon:79.1378},
+  {name:"Tiruchirappalli Mandi",state:"Tamil Nadu",    crop:"Paddy",   lat:10.7905, lon:78.7047},
+  {name:"Dindigul Mandi",      state:"Tamil Nadu",     crop:"Chilli",  lat:10.3673, lon:77.9803},
+  {name:"Villupuram Mandi",    state:"Tamil Nadu",     crop:"Groundnut",lat:11.9401, lon:79.4861},
+  {name:"Thoothukudi Mandi",   state:"Tamil Nadu",     crop:"Pulses",  lat:8.7642,  lon:78.1348},
+  {name:"Ernakulam Mandi",     state:"Kerala",         crop:"Rice",    lat:9.9312,  lon:76.2673},
+  {name:"Thrissur Mandi",      state:"Kerala",         crop:"Coconut", lat:10.5276, lon:76.2144},
+  {name:"Palakkad Mandi",      state:"Kerala",         crop:"Paddy",   lat:10.7867, lon:76.6548},
+  {name:"Kozhikode Mandi",     state:"Kerala",         crop:"Pepper",  lat:11.2588, lon:75.7804},
+  {name:"Kannur Mandi",        state:"Kerala",         crop:"Cashew",  lat:11.8745, lon:75.3704},
+  {name:"Kottayam Mandi",      state:"Kerala",         crop:"Rubber",  lat:9.5916,  lon:76.5222},
+  {name:"Alappuzha Mandi",     state:"Kerala",         crop:"Rice",    lat:9.4981,  lon:76.3388}
+];
+
+let userPos = null;
+let activeMandi = null;
+
+function distanceKm(lat1, lon1, lat2, lon2){
+  const R = 6371;
+  const dLat = (lat2-lat1) * Math.PI/180;
+  const dLon = (lon2-lon1) * Math.PI/180;
+  const a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+            Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
+            Math.sin(dLon/2)*Math.sin(dLon/2);
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+}
+
+/* ============ LEAFLET MAP + CLUSTERING ============ */
+const map = L.map('mapBox', {scrollWheelZoom: false}).setView([22.5, 80], 4.4);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  subdomains: 'abcd',
+  maxZoom: 20
+}).addTo(map);
+
+let userMarker = null;
+const mandiMarkers = [];
+const clusterGroup = L.markerClusterGroup({showCoverageOnHover:false, maxClusterRadius:45});
+
+MANDIS.forEach(function(m){
+  const icon = L.divIcon({className:'', html:'<div class="mandi-pin-icon">🏢</div>', iconSize:[40,40], iconAnchor:[20,20]});
+  const marker = L.marker([m.lat, m.lon], {icon: icon, title: m.name})
+    .bindPopup('<div class="mandi-pin">🏢<br><b>' + m.name + '</b><br><small>' + m.state + ' · ' + m.crop +
+      '</small><br><button class="gmap-btn" onclick="selectMandiByName(\'' + m.name.replace(/[^a-zA-Z0-9]/g,'_') + '\')">Check Weather 🌦️</button></div>');
+  clusterGroup.addLayer(marker);
+  mandiMarkers.push({m: m, marker: marker});
+});
+clusterGroup.addTo(map);
+
+setTimeout(function(){ map.invalidateSize(); }, 400);
+document.querySelector('a[href="#mandis"]').addEventListener('click', function(){
+  setTimeout(function(){ map.invalidateSize(); }, 600);
+});
+
+function selectMandiByName(name){
+  const target = mandiMarkers.find(function(x){ return x.m.name.replace(/[^a-zA-Z0-9]/g,'_') === name; });
+  if(target){
+    activeMandi = target.m.name;
+    renderMandiList(userPos);
+    loadWeather(target.m);
+    clusterGroup.zoomToShowLayer(target.marker, function(){
+      target.marker.openPopup();
+    });
+  }
+}
+
+function showUserOnMap(){
+  if(!userPos) return;
+  if(userMarker) map.removeLayer(userMarker);
+  userMarker = L.circleMarker([userPos.lat, userPos.lon], {
+    radius: 10, color: '#ffc44d', fillColor: '#ffc44d', fillOpacity: .9
+  }).addTo(map).bindPopup('📍 You are here');
+  const bounds = L.latLngBounds(
+    mandiMarkers.map(function(x){ return [x.m.lat, x.m.lon]; }).concat([[userPos.lat, userPos.lon]])
+  );
+  map.fitBounds(bounds, {padding: [40, 40]});
+}
+
+/* ============ SEARCH + GPS ============ */
+function searchMandis(){
+  const q = document.getElementById("mandiSearch").value.trim().toLowerCase();
+  if(q.length < 2){ renderMandiList(null); return; }
+  document.getElementById("mandiNote").textContent = "🔎 Searching for \"" + q + "\"...";
+  fetch("https://geocoding-api.open-meteo.com/v1/search?name=" + encodeURIComponent(q) + "&count=1&language=en&format=json")
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(!data.results || !data.results.length){
+        document.getElementById("mandiNote").textContent = "❌ City not found — try a bigger nearby city (e.g. Coimbatore, Lucknow, Warangal)";
+        return;
+      }
+      const res = data.results[0];
+      userPos = {lat: res.latitude, lon: res.longitude};
+      document.getElementById("mandiNote").textContent =
+        "✅ Showing 15 nearest mandis to " + res.name + ", " + (res.admin1 || "") + ". Tap one for weather.";
+      renderMandiList(userPos);
+      showUserOnMap();
+      const nearest = MANDIS.slice().sort(function(a,b){
+        return distanceKm(userPos.lat,userPos.lon,a.lat,a.lon) - distanceKm(userPos.lat,userPos.lon,b.lat,b.lon);
+      })[0];
+      setTimeout(function(){
+        const cards = document.querySelectorAll("#mandiList .mandi-card");
+        const target = Array.from(cards).find(function(c){ return c.textContent.indexOf(nearest.name) !== -1; });
+        if(target) target.click();
+      }, 100);
+    })
+    .catch(function(){
+      document.getElementById("mandiNote").textContent = "📡 Search failed — check internet connection.";
+    });
+}
+
+function locateMe(){
+  const note = document.getElementById("mandiNote");
+  if(!navigator.geolocation){ note.textContent = "⚠️ GPS not supported — please use the search box instead."; return; }
+  if(location.protocol === "file:"){
+    note.textContent = "⚠️ GPS is blocked on file:// pages — please use the search box, or host on Netlify for GPS.";
+    return;
+  }
+  note.textContent = "📡 Detecting your location...";
+  navigator.geolocation.getCurrentPosition(function(pos){
+    userPos = {lat: pos.coords.latitude, lon: pos.coords.longitude};
+    note.textContent = "✅ GPS found you! 15 nearest mandis shown.";
+    renderMandiList(userPos);
+    showUserOnMap();
+    const nearest = MANDIS.slice().sort(function(a,b){
+      return distanceKm(userPos.lat,userPos.lon,a.lat,a.lon) - distanceKm(userPos.lat,userPos.lon,b.lat,b.lon);
+    })[0];
+    setTimeout(function(){
+      const cards = document.querySelectorAll("#mandiList .mandi-card");
+      const target = Array.from(cards).find(function(c){ return c.textContent.indexOf(nearest.name) !== -1; });
+      if(target) target.click();
+    }, 100);
+  }, function(){
+    note.textContent = "⚠️ Location permission denied — please use the search box instead.";
+  }, {timeout: 10000});
+}
+
+/* ============ MANDI LIST ============ */
+function renderMandiList(pos){
+  const list = document.getElementById("mandiList");
+  list.innerHTML = "";
+  const sorted = MANDIS.map(function(m){
+    m.dist = pos ? distanceKm(pos.lat, pos.lon, m.lat, m.lon) : null;
+    return m;
+  });
+  if(pos) sorted.sort(function(a,b){ return a.dist - b.dist; });
+  const shown = pos ? sorted.slice(0, 15) : sorted;
+  shown.forEach(function(m){
+    const card = document.createElement("div");
+    card.className = "mandi-card" + (activeMandi === m.name ? " active" : "");
+    card.onclick = function(){
+      activeMandi = m.name;
+      document.querySelectorAll(".mandi-card").forEach(function(c){ c.classList.remove("active"); });
+      card.classList.add("active");
+      loadWeather(m);
+      map.setView([m.lat, m.lon], 8);
+      const hit = mandiMarkers.find(function(x){ return x.m.name === m.name; });
+      if(hit) clusterGroup.zoomToShowLayer(hit.marker, function(){ hit.marker.openPopup(); });
+    };
+    const distHTML = m.dist !== null
+      ? '<span class="dist-chip">📍 ' + (m.dist < 1 ? "<1" : m.dist) + ' km</span>'
+      : '<span class="dist-chip">' + m.crop + '</span>';
+    card.innerHTML = '<span class="m-emoji">🏢</span><div><b>' + m.name + '</b><small>' + m.state + ' · Main crop: ' + m.crop + '</small></div>' + distHTML;
+    list.appendChild(card);
+  });
+}
+
+/* ============ WEATHER (Open-Meteo) ============ */
+function wxInfo(code){
+  if(code === 0) return {e:"☀️", t:"Clear sky"};
+  if(code <= 2)  return {e:"🌤️", t:"Partly cloudy"};
+  if(code === 3) return {e:"☁️", t:"Overcast"};
+  if(code <= 48) return {e:"🌫️", t:"Foggy"};
+  if(code <= 57) return {e:"🌦️", t:"Drizzle"};
+  if(code <= 67) return {e:"🌧️", t:"Rain"};
+  if(code <= 77) return {e:"❄️", t:"Snow"};
+  if(code <= 82) return {e:"🌧️", t:"Rain showers"};
+  if(code <= 86) return {e:"🌨️", t:"Snow showers"};
+  return {e:"⛈️", t:"Thunderstorm"};
+}
+
+function loadWeather(m){
+  const panel = document.getElementById("weatherPanel");
+  panel.innerHTML = '<h3>🌦️ ' + m.name + '</h3><p style="color:var(--muted);font-size:.85rem">⏳ Loading live forecast...</p>';
+  const url = "https://api.open-meteo.com/v1/forecast?latitude=" + m.lat + "&longitude=" + m.lon +
+              "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max" +
+              "&current=temperature_2m,weather_code&timezone=auto&forecast_days=5";
+  fetch(url)
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      const cur = data.current;
+      const curWx = wxInfo(cur.weather_code);
+      const days = data.daily;
+      const names = ["Today","Tomorrow"];
+      const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      let dayCards = "";
+      for(let i = 0; i < 5; i++){
+        const wx = wxInfo(days.weather_code[i]);
+        const dt = new Date(days.time[i]);
+        const label = i < 2 ? names[i] : dayNames[dt.getDay()];
+        dayCards += '<div class="wx-day"><span class="d-emoji">' + wx.e + '</span>' +
+          '<b>' + Math.round(days.temperature_2m_max[i]) + '°C</b>' +
+          '<small>' + label + ' · 💧' + days.precipitation_probability_max[i] + '%</small></div>';
+      }
+      let alertHTML;
+      const riskyDay = days.precipitation_probability_max.slice(0,3).findIndex(function(p){ return p >= 60; });
+      if(riskyDay !== -1){
+        alertHTML = '<div class="wx-alert rain">⚠️ <span>Rain expected (' +
+          days.precipitation_probability_max[riskyDay] + '% chance ' +
+          (riskyDay === 0 ? "today" : riskyDay === 1 ? "tomorrow" : "day after") +
+          '). <b>Delay transporting your crop</b> — cover tarpaulin mandatory if you must travel.</span></div>';
+      } else {
+        alertHTML = '<div class="wx-alert safe">✅ <span>Skies look safe for the next 3 days. Good conditions to transport your harvest to ' + m.name + '.</span></div>';
+      }
+      panel.innerHTML =
+        '<h3>🌦️ ' + m.name + '</h3>' +
+        '<p style="color:var(--muted);font-size:.85rem">' + m.state + ' · Live forecast</p>' +
+        '<div class="wx-now"><span class="w-emoji">' + curWx.e + '</span>' +
+        '<div><b>' + Math.round(cur.temperature_2m) + '°C</b><small>' + curWx.t + ' · right now</small></div></div>' +
+        '<div class="wx-days">' + dayCards + '</div>' + alertHTML;
+    })
+    .catch(function(){
+      panel.innerHTML = '<h3>🌦️ ' + m.name + '</h3>' +
+           '<div class="wx-alert rain">📡 <span>Could not load weather (check internet connection). Try again in a moment.</span></div>';
+    });
+}
+
+/* ============ LIVE AGMARKNET PRICES ============ */
+const AGMARK_KEY = "579b464db66ec23bdd000001f37bbca8e0684df7653a8bd4fac86363";
+const AGMARK_URL = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070";
+
+function loadPrices(){
+  const crop = document.getElementById("priceCrop").value;
+  const note = document.getElementById("priceNote");
+  const wrap = document.getElementById("priceTableWrap");
+  note.textContent = "⏳ Fetching live " + crop + " prices from AGMARKNET...";
+  wrap.querySelector("table").innerHTML =
+    '<tr><th>Mandi</th><th>District / State</th><th>Min ₹</th><th>Max ₹</th><th>Modal ₹ (per quintal)</th></tr>';
+
+  fetch(AGMARK_URL + "?api-key=" + AGMARK_KEY + "&format=json&limit=40&filters[commodity]=" + encodeURIComponent(crop))
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      const recs = data.records || [];
+      if(!recs.length){
+        note.textContent = "ℹ️ No records today for " + crop + " — try another crop (Wheat, Onion and Potato almost always have data).";
+        return;
+      }
+      let rows = "";
+      recs.forEach(function(r){
+        rows += '<tr><td><b>' + (r.market || "-") + '</b></td><td>' + (r.district || "-") + ', ' + (r.state || "-") +
+          '</td><td>₹' + (r.min_price || "-") + '</td><td>₹' + (r.max_price || "-") +
+          '</td><td><b style="color:var(--green)">₹' + (r.modal_price || "-") + '</b></td></tr>';
+      });
+      wrap.querySelector("table").innerHTML =
+        '<tr><th>Mandi</th><th>District / State</th><th>Min ₹</th><th>Max ₹</th><th>Modal ₹ (per quintal)</th></tr>' + rows;
+      note.textContent = "✅ " + recs.length + " live mandi prices for " + crop + " · Source: AGMARKNET, Govt. of India";
+    })
+    .catch(function(){
+      note.textContent = "📡 Could not fetch prices — check your internet connection and try Refresh.";
+    });
+}
+
+/* ============ AUTO-LOADS ON PAGE OPEN ============ */
+window.addEventListener("load", function(){
+  renderMandiList(null);
+  loadPrices();
+  changeLanguage(currentLang);
+  setTimeout(function(){
+    showSMS("KisanMitra: 🌾 70+ mandis mapped across India! Voice assistant & live prices ready. Helpline 1800-180-1551 -VM-KISANMT");
+  }, 3000);
+});
+
+/* ============ SCROLL REVEAL & MOBILE NAV ============ */
+const io = new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
+  });
+},{threshold:.12});
+document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
+
+document.querySelectorAll('nav a').forEach(function(a){
+  a.onclick = function(){ document.getElementById('nav').classList.remove('open'); };
+});
+</script>
+
+</body>
+</html>
