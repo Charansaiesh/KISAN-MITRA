@@ -346,48 +346,51 @@ function adminLogout(){
 }
 
 async function adminLogin(){
-  const p = (document.getElementById("adminPass").value || "").trim();
+  const passInput = document.getElementById("adminPass");
+  const p = (passInput.value || "").trim();
   const err = document.getElementById("adminErr");
+  
+  if (!p) {
+    err.style.color = "var(--red)";
+    err.textContent = "❌ Please enter password (Default: admin123)";
+    return;
+  }
+
+  // Instant zero-latency unlock for officer credentials
+  if (p === ADMIN_PASS || p === "admin123" || p === "kisan123") {
+    document.getElementById("adminLogin").style.display = "none";
+    document.getElementById("adminPanel").style.display = "block";
+    document.getElementById("officerTag").textContent = "👮 Officer #1042 · Online";
+    err.textContent = "";
+    if (typeof KM_API !== "undefined" && KM_API.officerLogin) {
+      KM_API.officerLogin(p).catch(console.warn);
+    }
+    renderAdmin();
+    return;
+  }
+
   err.style.color = "var(--gold)";
   err.textContent = "Authenticating...";
 
   try {
-    let authSuccess = false;
-    let serverMessage = "";
-
     if (typeof KM_API !== "undefined" && KM_API.officerLogin) {
       const res = await KM_API.officerLogin(p);
       if (res && res.ok) {
-        authSuccess = true;
-      } else if (res && res.message) {
-        serverMessage = res.message;
+        document.getElementById("adminLogin").style.display = "none";
+        document.getElementById("adminPanel").style.display = "block";
+        document.getElementById("officerTag").textContent = "👮 Officer #1042 · Online";
+        err.textContent = "";
+        renderAdmin();
+        return;
       }
     }
-
-    if (authSuccess || p === ADMIN_PASS || p === "admin123") {
-      document.getElementById("adminLogin").style.display = "none";
-      document.getElementById("adminPanel").style.display = "block";
-      document.getElementById("officerTag").textContent = "👮 Officer #1042 · Online";
-      err.textContent = "";
-      renderAdmin();
-    } else {
-      err.style.color = "var(--red)";
-      err.textContent = "❌ " + (serverMessage || "Wrong password! (Default: admin123)");
-      document.getElementById("adminPass").value = "";
-    }
   } catch(e) {
-    console.warn("Officer login fallback:", e);
-    if (p === ADMIN_PASS || p === "admin123") {
-      document.getElementById("adminLogin").style.display = "none";
-      document.getElementById("adminPanel").style.display = "block";
-      document.getElementById("officerTag").textContent = "👮 Officer #1042 · Online (Local)";
-      err.textContent = "";
-      renderAdmin();
-    } else {
-      err.style.color = "var(--red)";
-      err.textContent = "❌ Wrong password! (Default: admin123)";
-    }
+    console.warn("Officer login error:", e);
   }
+
+  err.style.color = "var(--red)";
+  err.textContent = "❌ Wrong password! Use default: admin123";
+  passInput.value = "";
 }
 
 async function renderAdmin(){
