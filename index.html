@@ -864,10 +864,7 @@ async function trackStatus(){
   const doneCount = d.steps.filter(function(s){ return s[1]; }).length;
   const pct = Math.round(doneCount/d.steps.length*100);
   let html = '<h3 style="color:var(--green)">✅ ' + d.name + ' — ' + d.crop + ' (' + d.qty + ')</h3>';
-  const qPosTag = (d.queue_position && pct < 100)
-    ? ' <span style="background:rgba(255,196,77,0.18);color:var(--gold);padding:3px 10px;border-radius:12px;font-size:0.82rem;font-weight:700">⏳ Queue Position: #' + d.queue_position + '</span>'
-    : (pct === 100 ? ' <span style="background:rgba(62,207,111,0.18);color:var(--green);padding:3px 10px;border-radius:12px;font-size:0.82rem;font-weight:700">✔ Completed / Disbursed</span>' : '');
-  html += '<p style="color:var(--muted);margin-top:4px;font-size:.9rem">📍 ' + d.mandi + ' • Progress: <b style="color:var(--txt)">' + pct + '%</b>' + qPosTag + '</p>';
+  html += '<p style="color:var(--muted);margin-top:4px;font-size:.9rem">📍 ' + d.mandi + ' • Progress: <b style="color:var(--txt)">' + pct + '%</b></p>';
   html += '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div><ul class="steps">';
   d.steps.forEach(function(s){
     html += '<li class="' + (s[1] ? "done" : "pending") + '"><span>' + (s[1] ? "✔" : "○") + ' ' + s[0] + '</span><span>' + (s[1] ? "Done" : "Pending") + '</span></li>';
@@ -986,39 +983,26 @@ async function register(e){
   if (!dist && mandiName) dist = mandiName.replace(/\s*mandi\b/i, '').trim();
 
   let token = "";
-  let queuePosition = null;
-  let smsStatus = null;
   try {
     const apiRes = await KM_API.createToken({ name, phone, crop, quantity: qty, district: dist || mandiName, mandi: mandiName });
     if(apiRes && apiRes.token) {
       token = apiRes.token;
-      queuePosition = apiRes.queue_position;
-      smsStatus = apiRes.sms_status;
     }
   } catch(err){}
 
-  const DB = getDB();
   if(!token) {
     token = "KM2025" + String(counter).padStart(3,"0");
     counter++;
     localStorage.setItem("km_counter_v3", counter);
-    // Local fallback queue position
-    const activeLocal = Object.values(DB).filter(function(item){
-      const dn = (item.steps||[]).filter(function(s){return s[1];}).length;
-      return dn < (item.steps||[]).length;
-    });
-    queuePosition = activeLocal.length + 1;
-    smsStatus = { success: true, status: 'sent', message: 'SMS simulated' };
   }
 
+  const DB = getDB();
   DB[token] = {
     name: name,
     phone: phone,
     crop: crop,
     qty: qty + " quintal",
     mandi: mandiName || (dist ? (dist + " Mandi") : "Central APMC Mandi"),
-    queue_position: queuePosition,
-    sms_status: smsStatus,
     steps: [["Registration received",1],["Identity verified",0],["Deposit at mandi",0],["Quality check",0],["Payment",0]]
   };
   localStorage.setItem(DB_KEY, JSON.stringify(DB));
@@ -1036,26 +1020,16 @@ async function register(e){
   const msg = document.getElementById("regMsg");
   msg.style.display = "block";
 
-  const smsIsSuccess = smsStatus && (smsStatus.success === true || smsStatus.status === 'sent');
-  const smsNoticeHtml = smsIsSuccess
-    ? '<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(62,207,111,0.15);color:var(--green);padding:6px 16px;border-radius:20px;font-size:0.85rem;font-weight:700;margin-top:8px">📱 SMS Sent to +91 ' + phone + ' (Fast2SMS)</div>'
-    : '<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,196,77,0.15);color:var(--gold);padding:6px 16px;border-radius:20px;font-size:0.85rem;font-weight:700;margin-top:8px">⚠️ Fast2SMS Status: ' + ((smsStatus && smsStatus.message) ? smsStatus.message : 'API Key active / check whitelist') + '</div>';
-
   msg.innerHTML = '<div style="background:var(--surface);border:2px solid var(--green);border-radius:18px;padding:22px;margin-top:18px;text-align:center;box-shadow:var(--shadow)">' +
     '<div style="font-size:2.2rem">🎉</div>' +
     '<h3 style="color:var(--green);margin:6px 0 2px">Congratulations ' + name + '!</h3>' +
-    '<p style="color:var(--muted);font-size:.9rem;margin-bottom:12px">Your procurement token has been generated &amp; stored securely.</p>' +
-    '<div style="margin-bottom:10px"><span class="token-chip" style="font-size:1.3rem;padding:8px 24px">' + token + '</span></div>' +
-    '<div style="margin-bottom:12px"><span style="background:rgba(255,196,77,0.18);color:var(--gold);padding:6px 16px;border-radius:20px;font-weight:800;font-size:0.95rem;display:inline-block">📍 Current Queue Position: #' + (queuePosition || 1) + '</span></div>' +
-    '<div style="margin-bottom:16px">' + smsNoticeHtml + '</div>' +
+    '<p style="color:var(--muted);font-size:.9rem;margin-bottom:12px">Your procurement token has been generated &amp; stored securely in storage.</p>' +
+    '<div style="margin-bottom:16px"><span class="token-chip" style="font-size:1.3rem;padding:8px 24px">' + token + '</span></div>' +
     '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">' +
       '<button type="button" class="btn btn-primary" onclick="downloadTokenSlip(\'' + token + '\')" style="padding:12px 24px;font-size:.92rem">📄 Download / Print Token Slip (PDF)</button>' +
       '<button type="button" class="btn btn-ghost" onclick="document.getElementById(\x27tokenInput\x27).value=\x27' + token + '\x27;trackStatus();" style="padding:12px 20px;font-size:.92rem">🔍 View Live Status</button>' +
     '</div>' +
   '</div>';
-
-  // Simulated live handset SMS popup matching exact template
-  showSMS("KisanMitra: Your token is " + token + ". Your current queue position is #" + (queuePosition || 1) + ". We will notify you about further updates.");
 
   document.getElementById("tokenInput").value = token;
   trackStatus();

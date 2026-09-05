@@ -125,7 +125,7 @@ async function runAllTests() {
     );
     officerToken = officerRes.data.token;
 
-    // 5. Create Crop Report / Smart Token with Fast2SMS & Queue
+    // 5. Create Crop Report / Smart Token
     const createTokRes = await request('/tokens', 'POST', {
       name: 'Rameshwar Lal',
       phone: '9876501234',
@@ -135,23 +135,23 @@ async function runAllTests() {
     });
     generatedTokenId = createTokRes.data.token;
     assert(
-      createTokRes.status === 201 && !!generatedTokenId && createTokRes.data.data.steps.length === 5 && typeof createTokRes.data.queue_position === 'number' && !!createTokRes.data.sms_status,
-      '5. POST /api/tokens (Token issued with Fast2SMS & Queue Position tracking)',
-      `Issued: ${generatedTokenId}, Queue: #${createTokRes.data.queue_position}, SMS Status: ${createTokRes.data.sms_status.status || 'checked'}`
+      createTokRes.status === 201 && !!generatedTokenId && createTokRes.data.data.steps.length === 5,
+      '5. POST /api/tokens (Crop report created, token issued & steps initialized)',
+      `Issued: ${generatedTokenId}`
     );
 
     // 6. Track Token Status
     const trackRes = await request(`/tokens/${generatedTokenId}`);
     assert(
-      trackRes.status === 200 && trackRes.data.token === generatedTokenId && trackRes.data.crop === 'Mustard' && typeof trackRes.data.queue_position === 'number',
-      '6. GET /api/tokens/:token (Real-time token lookup with live queue position & progress)'
+      trackRes.status === 200 && trackRes.data.token === generatedTokenId && trackRes.data.crop === 'Mustard',
+      '6. GET /api/tokens/:token (Real-time token lookup & progress retrieval)'
     );
 
-    // 7. Officer Advance Step (Authorized & triggers Level 1 Approved notification)
+    // 7. Officer Advance Step (Authorized)
     const advRes = await request(`/tokens/${generatedTokenId}/advance`, 'PATCH', null, officerToken);
     assert(
-      advRes.status === 200 && advRes.data.success === true && advRes.data.level1_approved === true,
-      '7. PATCH /api/tokens/:token/advance (Officer advanced step & triggered Level 1 Approved SMS)'
+      advRes.status === 200 && advRes.data.success === true,
+      '7. PATCH /api/tokens/:token/advance (Officer successfully advanced step with JWT)'
     );
 
     // 8. Role-Based Guard Check (Without JWT or with Farmer JWT)
