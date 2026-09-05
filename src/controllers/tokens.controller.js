@@ -1,4 +1,4 @@
-﻿const supabase = require('../config/supabase');
+const supabase = require('../config/supabase');
 // Clean token management
 
 const DEFAULT_STEPS = [
@@ -68,15 +68,16 @@ let memoryTokens = {
 // CREATE CROP REPORT / SMART TOKEN & DISPATCH REAL SMS
 exports.createToken = async (req, res, next) => {
   try {
-    const { name, phone, crop, quantity, district } = req.body;
+    let { name, phone, crop, quantity, district, mandi } = req.body;
 
-    if (!name || !crop || !quantity || !district) {
-      return res.status(400).json({ success: false, message: 'Name, crop, quantity and district are required.' });
+    if (!name || !crop || !quantity) {
+      return res.status(400).json({ success: false, message: 'Name, crop, and quantity are required.' });
     }
 
+    district = (district || mandi || 'Central District').trim();
     const tokenNumber = `KM2025${String(tokenCounter++).padStart(3, '0')}`;
     const qtyStr = `${quantity} quintal`;
-    const mandiStr = district.toLowerCase().includes('mandi') ? district : `${district} Mandi`;
+    const mandiStr = (mandi || (district.toLowerCase().includes('mandi') ? district : `${district} Mandi`)).trim();
     const cleanPhone = (phone || (req.user ? req.user.phone : '9876500000')).replace(/\D/g, '').slice(-10);
 
     // Token record created

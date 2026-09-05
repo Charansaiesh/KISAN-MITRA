@@ -393,6 +393,41 @@ async function adminLogin(){
   passInput.value = "";
 }
 
+let knownTokensMap = new Set();
+let isInitialAdminRender = true;
+
+function showNewTokenAlert(token, d){
+  if(!d) return;
+  const a = document.getElementById("newAlert");
+  if(!a) return;
+  document.getElementById("newAlertTxt").innerHTML =
+    "<b>" + (d.name || 'Farmer') + "</b> booked token <b>" + token + "</b><br>" +
+    (d.crop || '') + " · " + (d.qty || '') + " · " + (d.mandi || '');
+  a.style.display = "block";
+  if(navigator.vibrate) try{ navigator.vibrate([120,60,120]); }catch(e){}
+
+  // Play subtle audio alert tone if browser allows
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if(AudioContext){
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.35);
+    }
+  } catch(e){}
+
+  setTimeout(function(){ if(a) a.style.display = "none"; }, 10000);
+}
+
 async function renderAdmin(){
   let db = getDB();
   const q = (document.getElementById("adminSearch").value || "").toLowerCase();
@@ -403,13 +438,31 @@ async function renderAdmin(){
     if (typeof KM_API !== "undefined" && KM_API.getAllTokens) {
       const apiRes = await KM_API.getAllTokens();
       if (apiRes && apiRes.data && Object.keys(apiRes.data).length > 0) {
-        db = apiRes.data;
+        const remoteData = apiRes.data;
+
+        // Check for new tokens from remote phones/devices
+        if (!isInitialAdminRender) {
+          for (let tk in remoteData) {
+            if (!knownTokensMap.has(tk) && isNew(tk)) {
+              showNewTokenAlert(tk, remoteData[tk]);
+              break;
+            }
+          }
+        }
+
+        db = remoteData;
         saveDB(db);
       }
     }
-  } catch(e){}
+  } catch(e){
+    console.warn("renderAdmin API fetch fallback:", e);
+  }
 
-  const tokens = Object.keys(db).sort();
+  // Update known tokens set
+  Object.keys(db).forEach(tk => knownTokensMap.add(tk));
+  isInitialAdminRender = false;
+
+  const tokens = Object.keys(db).sort().reverse();
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
     const d = db[token];
@@ -418,7 +471,7 @@ async function renderAdmin(){
     if (q && !(token.toLowerCase().indexOf(q) !== -1 || (d.name || "").toLowerCase().indexOf(q) !== -1 ||
               (d.crop || "").toLowerCase().indexOf(q) !== -1 || (d.mandi || "").toLowerCase().indexOf(q) !== -1)) continue;
     total++;
-    const dn = d.steps.filter(function(s){ return s[1]; }).length;
+    const dn = d.steps.filter(function(s){ return s[1] === 1 || s[1] === true; }).length;
     const pct = Math.round(dn / d.steps.length * 100);
     if (pct === 100) done++; else pend++;
     const finished = dn >= d.steps.length;
@@ -660,8 +713,17 @@ window.addEventListener("storage", function(e){
 });
 
 setInterval(function(){
-  if(document.getElementById("adminPanel").style.display === "block") renderAdmin();
-}, 3000);
+  if(document.getElementById("adminPanel").style.display === "block") {
+    const activeTab = document.querySelector(".atab.active");
+    if(activeTab && activeTab.id === "tabCommBtn") {
+      // background refresh community
+    } else if(activeTab && activeTab.id === "tabFeedbackBtn") {
+      // background refresh feedback
+    } else {
+      renderAdmin();
+    }
+  }
+}, 2500);
 
 window.addEventListener("load", function(){
   changeLanguage(currentLang);

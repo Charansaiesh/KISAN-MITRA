@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="js/api.js"></script>
 <style>
   :root{
     --bg:#0b0f0d; --surface:#131a16; --surface2:#1a241e; --line:#26332b;
@@ -221,7 +222,6 @@
   .scard .benefit{color:var(--green);font-weight:700;font-size:.95rem;margin-bottom:8px}
   .scard .elig{color:var(--muted);font-size:.85rem;line-height:1.5}
 </style>
-  <script src="js/api.js"></script>
 </head>
 <body>
 
@@ -840,36 +840,79 @@ function showSMS(text){
 }
 
 
-/* ============ TRACKER ============ */
-async function trackStatus(){
+/* ============ TRACKER & LIVE SYNC ============ */
+let activeTrackTimer = null;
+let currentTrackingToken = null;
+
+async function trackStatus(isBackgroundSync = false){
   const t = document.getElementById("tokenInput").value.trim().toUpperCase();
   const r = document.getElementById("result");
-  r.style.display = "block";
-  if(!t){ r.innerHTML = '<p style="color:#ff7b7b;font-weight:700">⚠️ Please enter a token number.</p>'; return; }
+  if(!isBackgroundSync) r.style.display = "block";
+  if(!t){ 
+    if(!isBackgroundSync) r.innerHTML = '<p style="color:#ff7b7b;font-weight:700">⚠️ Please enter a token number.</p>'; 
+    return; 
+  }
 
+  currentTrackingToken = t;
   let d = null;
+
   try {
-    const apiRes = await KM_API.getToken(t);
-    if(apiRes && apiRes.success) {
-      d = apiRes;
+    if (typeof KM_API !== "undefined" && KM_API.getToken) {
+      const apiRes = await KM_API.getToken(t);
+      if(apiRes && (apiRes.success || apiRes.token)) {
+        d = apiRes;
+        // Update local cache
+        const DB = getDB();
+        DB[t] = {
+          name: d.name,
+          phone: d.phone,
+          crop: d.crop,
+          qty: d.qty,
+          mandi: d.mandi,
+          district: d.district,
+          steps: d.steps
+        };
+        localStorage.setItem(DB_KEY, JSON.stringify(DB));
+      }
     }
-  } catch(e){}
+  } catch(e){
+    console.warn("Tracker API fetch error:", e);
+  }
 
   if(!d) {
     const DB = getDB();
     d = DB[t];
   }
 
-  if(!d){ r.innerHTML = '<p style="color:#ff7b7b;font-weight:700">❌ Token not found! Please check and try again.</p>'; return; }
-  const doneCount = d.steps.filter(function(s){ return s[1]; }).length;
-  const pct = Math.round(doneCount/d.steps.length*100);
-  let html = '<h3 style="color:var(--green)">✅ ' + d.name + ' — ' + d.crop + ' (' + d.qty + ')</h3>';
+  if(!d){ 
+    if(!isBackgroundSync) r.innerHTML = '<p style="color:#ff7b7b;font-weight:700">❌ Token not found! Please check and try again.</p>'; 
+    return; 
+  }
+
+  const stepsList = d.steps || [];
+  const doneCount = stepsList.filter(function(s){ return s[1] === 1 || s[1] === true; }).length;
+  const pct = Math.round((doneCount / (stepsList.length || 5)) * 100);
+  
+  let html = '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">' +
+    '<h3 style="color:var(--green)">✅ ' + d.name + ' — ' + d.crop + ' (' + d.qty + ')</h3>' +
+    '<span style="font-size:0.75rem;color:var(--green);background:rgba(62,207,111,0.12);padding:4px 10px;border-radius:12px;font-weight:700">● Live Auto-Sync Active</span>' +
+  '</div>';
   html += '<p style="color:var(--muted);margin-top:4px;font-size:.9rem">📍 ' + d.mandi + ' • Progress: <b style="color:var(--txt)">' + pct + '%</b></p>';
   html += '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div><ul class="steps">';
-  d.steps.forEach(function(s){
-    html += '<li class="' + (s[1] ? "done" : "pending") + '"><span>' + (s[1] ? "✔" : "○") + ' ' + s[0] + '</span><span>' + (s[1] ? "Done" : "Pending") + '</span></li>';
+  stepsList.forEach(function(s){
+    const isDone = (s[1] === 1 || s[1] === true);
+    html += '<li class="' + (isDone ? "done" : "pending") + '"><span>' + (isDone ? "✔" : "○") + ' ' + s[0] + '</span><span>' + (isDone ? "Done" : "Pending") + '</span></li>';
   });
   r.innerHTML = html + '</ul>';
+
+  // Start background auto-sync so officer step advances reflect live on farmer screen!
+  if (!activeTrackTimer) {
+    activeTrackTimer = setInterval(() => {
+      if (currentTrackingToken && document.getElementById("result").style.display !== "none") {
+        trackStatus(true);
+      }
+    }, 2500);
+  }
 }
 
 
@@ -981,14 +1024,26 @@ async function register(e){
   const mandiName = mandiInput ? mandiInput.value.trim() : "";
   let dist = document.getElementById("fDist") ? document.getElementById("fDist").value.trim() : "";
   if (!dist && mandiName) dist = mandiName.replace(/\s*mandi\b/i, '').trim();
+  if (!dist) dist = "Central APMC District";
 
   let token = "";
   try {
-    const apiRes = await KM_API.createToken({ name, phone, crop, quantity: qty, district: dist || mandiName, mandi: mandiName });
-    if(apiRes && apiRes.token) {
-      token = apiRes.token;
+    if (typeof KM_API !== "undefined" && KM_API.createToken) {
+      const apiRes = await KM_API.createToken({
+        name,
+        phone,
+        crop,
+        quantity: qty,
+        district: dist || mandiName || "Central District",
+        mandi: mandiName || (dist ? (dist + " Mandi") : "Central APMC Mandi")
+      });
+      if(apiRes && apiRes.token) {
+        token = apiRes.token;
+      }
     }
-  } catch(err){}
+  } catch(err){
+    console.warn("KM_API createToken error:", err);
+  }
 
   if(!token) {
     token = "KM2025" + String(counter).padStart(3,"0");
@@ -1003,6 +1058,7 @@ async function register(e){
     crop: crop,
     qty: qty + " quintal",
     mandi: mandiName || (dist ? (dist + " Mandi") : "Central APMC Mandi"),
+    district: dist,
     steps: [["Registration received",1],["Identity verified",0],["Deposit at mandi",0],["Quality check",0],["Payment",0]]
   };
   localStorage.setItem(DB_KEY, JSON.stringify(DB));
@@ -1023,7 +1079,7 @@ async function register(e){
   msg.innerHTML = '<div style="background:var(--surface);border:2px solid var(--green);border-radius:18px;padding:22px;margin-top:18px;text-align:center;box-shadow:var(--shadow)">' +
     '<div style="font-size:2.2rem">🎉</div>' +
     '<h3 style="color:var(--green);margin:6px 0 2px">Congratulations ' + name + '!</h3>' +
-    '<p style="color:var(--muted);font-size:.9rem;margin-bottom:12px">Your procurement token has been generated &amp; stored securely in storage.</p>' +
+    '<p style="color:var(--muted);font-size:.9rem;margin-bottom:12px">Your procurement token has been generated &amp; synced across all mandis.</p>' +
     '<div style="margin-bottom:16px"><span class="token-chip" style="font-size:1.3rem;padding:8px 24px">' + token + '</span></div>' +
     '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">' +
       '<button type="button" class="btn btn-primary" onclick="downloadTokenSlip(\'' + token + '\')" style="padding:12px 24px;font-size:.92rem">📄 Download / Print Token Slip (PDF)</button>' +
