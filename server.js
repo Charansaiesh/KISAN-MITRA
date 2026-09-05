@@ -46,7 +46,7 @@ app.get('/community', (req, res) => {
 });
 
 // 1. HEALTH CHECK ENDPOINT
-app.get('/api/health', (req, res) => {
+app.get(['/api/health', '/health'], (req, res) => {
   res.json({
     status: 'OK',
     app: 'KisanMitra Unified Backend',
@@ -57,14 +57,18 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// 2. API ROUTES
-app.use('/api/auth', authRoutes);
-app.use('/api/tokens', tokensRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/mandis', mandisRoutes);
-app.use('/api/community', communityRoutes);
-app.use('/api/feedback', feedbackRoutes);
-app.use('/api/schemes', schemesRoutes);
+// 2. API ROUTES (Mount on both /api and root for serverless flexibility)
+const mountRoutes = (prefix) => {
+  app.use(`${prefix}/auth`, authRoutes);
+  app.use(`${prefix}/tokens`, tokensRoutes);
+  app.use(`${prefix}/admin`, adminRoutes);
+  app.use(`${prefix}/mandis`, mandisRoutes);
+  app.use(`${prefix}/community`, communityRoutes);
+  app.use(`${prefix}/feedback`, feedbackRoutes);
+  app.use(`${prefix}/schemes`, schemesRoutes);
+};
+mountRoutes('/api');
+mountRoutes('');
 
 // Error Handling Middleware
 app.use(errorHandler);

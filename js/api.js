@@ -43,15 +43,29 @@ const KM_API = (function() {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+
     try {
       const response = await fetch(`${BASE_URL}${endpoint}`, {
         ...options,
-        headers
+        headers,
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
 
-      const data = await response.json();
+      const contentType = response.headers.get('content-type') || '';
+      let data = {};
+      if (contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        data = { text };
+      }
+
       return { ok: response.ok, status: response.status, ...data };
     } catch (error) {
+      clearTimeout(timeoutId);
       console.warn(`[KM_API] Request to ${endpoint} failed:`, error.message);
       return { ok: false, status: 0, success: false, message: error.message };
     }
