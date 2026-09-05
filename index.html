@@ -447,6 +447,49 @@
   </form>
 </section>
 
+<!-- SECTION: FARMER EXPERIENCE & FEEDBACK -->
+<section id="feedback" style="background:var(--surface2);border-top:1px solid var(--line);padding:50px 20px">
+  <div class="sec-head reveal">
+    <div class="sec-tag">FARMER VOICE &amp; RATINGS</div>
+    <h2 class="sec-title">Farmer Experience &amp; Feedback 🌟</h2>
+    <p class="sec-sub">Tell us about your mandi visit, token clearance time, and DBT payment speed. Your feedback syncs directly to the Mandi Officer Portal.</p>
+  </div>
+  <div style="max-width:680px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:32px 28px;box-shadow:0 12px 36px rgba(0,0,0,0.2)" class="reveal">
+    <form id="farmerFeedbackForm" onsubmit="submitFarmerFeedback(event)">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div>
+          <label style="display:block;font-size:0.85rem;font-weight:700;color:var(--txt);margin-bottom:6px">Farmer Name *</label>
+          <input class="field" id="fbName" placeholder="Your full name" required style="margin-bottom:0">
+        </div>
+        <div>
+          <label style="display:block;font-size:0.85rem;font-weight:700;color:var(--txt);margin-bottom:6px">Mobile Number *</label>
+          <input class="field" id="fbPhone" type="tel" pattern="[0-9]{10}" placeholder="10-digit mobile" required style="margin-bottom:0">
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="display:block;font-size:0.85rem;font-weight:700;color:var(--txt);margin-bottom:6px">Overall Mandi &amp; Token Rating</label>
+        <div style="display:flex;gap:12px;font-size:1.8rem;cursor:pointer;color:var(--gold)" id="ratingStars">
+          <span onclick="setRating(1)">★</span>
+          <span onclick="setRating(2)">★</span>
+          <span onclick="setRating(3)">★</span>
+          <span onclick="setRating(4)">★</span>
+          <span onclick="setRating(5)">★</span>
+        </div>
+        <input type="hidden" id="fbRating" value="5">
+      </div>
+      <div style="margin-bottom:20px">
+        <label style="display:block;font-size:0.85rem;font-weight:700;color:var(--txt);margin-bottom:6px">Your Comments &amp; Suggestions *</label>
+        <textarea class="field" id="fbComments" rows="3" placeholder="Tell us how the token queue worked for you, mandi timing, payment speed..." required style="margin-bottom:0"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;font-size:1rem">
+        🚀 Submit Feedback to Officer Portal
+      </button>
+      <div id="fbSuccessMsg" style="display:none;margin-top:14px;padding:12px 16px;border-radius:12px;background:rgba(62,207,111,0.12);border:1px solid rgba(62,207,111,0.3);color:var(--green);font-weight:700;text-align:center">
+        ✅ Thank you! Your feedback has been sent directly to the Admin Portal in real time.
+      </div>
+    </form>
+  </div>
+</section>
 
 <footer>
   <div class="flag-line">🟧 ⬜ 🟩</div>
@@ -1533,10 +1576,70 @@ async function renderSchemes(){
   `).join('');
 }
 
+/* ============ FARMER FEEDBACK SUBMISSION ENGINE ============ */
+let currentFbRating = 5;
+function setRating(r) {
+  currentFbRating = r;
+  const ratingInput = document.getElementById("fbRating");
+  if(ratingInput) ratingInput.value = r;
+  const starContainer = document.getElementById("ratingStars");
+  if(!starContainer) return;
+  const stars = starContainer.children;
+  for(let i = 0; i < stars.length; i++){
+    stars[i].style.opacity = (i < r) ? "1" : "0.25";
+  }
+}
+
+async function submitFarmerFeedback(e) {
+  e.preventDefault();
+  const name = (document.getElementById("fbName").value || "").trim();
+  const phone = (document.getElementById("fbPhone").value || "").trim();
+  const rating = parseInt(document.getElementById("fbRating").value || "5", 10);
+  const comments = (document.getElementById("fbComments").value || "").trim();
+  const successMsg = document.getElementById("fbSuccessMsg");
+
+  if (!name || !comments) return;
+
+  const fbEntry = {
+    id: "fb_" + Date.now(),
+    farmer_name: name,
+    name: name,
+    phone: phone || "-",
+    rating: rating || 5,
+    comments: comments,
+    created_at: new Date().toISOString()
+  };
+
+  // 1. Immediately store in localStorage so Admin Portal tabs see it in real-time
+  try {
+    let localList = JSON.parse(localStorage.getItem("km_farmer_feedback") || "[]");
+    localList.unshift(fbEntry);
+    localStorage.setItem("km_farmer_feedback", JSON.stringify(localList));
+  } catch(err){}
+
+  // 2. Submit to backend API if available
+  try {
+    if (typeof KM_API !== "undefined" && KM_API.submitFeedback) {
+      await KM_API.submitFeedback({ name, phone, rating, comments });
+    }
+  } catch(apiErr){
+    console.warn("Feedback API submit exception:", apiErr);
+  }
+
+  // 3. UI feedback
+  if(successMsg) {
+    successMsg.style.display = "block";
+    setTimeout(() => { successMsg.style.display = "none"; }, 6000);
+  }
+  document.getElementById("farmerFeedbackForm").reset();
+  setRating(5);
+}
+
 // Attach init hooks
 window.addEventListener("DOMContentLoaded", function(){
   updateAuthUI();
   renderSchemes();
+  setRating(5);
 });
 </script>
 

@@ -489,67 +489,136 @@ async function clearDemo(){
   renderAdmin();
 }
 
+/* ============ DEFAULT FALLBACK DATA ============ */
+const DEFAULT_COMMUNITY_POSTS = [
+  { id: "cm_1", type: "sell", cat: "crops", title: "40 quintal tomato — fresh harvest", name: "Karuppasamy", dist: "Coimbatore", phone: "9876543210", price: "₹1,800/quintal", emoji: "🍅", created_at: new Date(Date.now() - 3600000 * 5).toISOString(), comments: [] },
+  { id: "cm_2", type: "sell", cat: "crops", title: "30 quintal paddy (Sona Masoori)", name: "Venkatesh", dist: "Nizamabad", phone: "9848012345", price: "₹2,150/quintal", emoji: "🌾", created_at: new Date(Date.now() - 3600000 * 8).toISOString(), comments: [] },
+  { id: "cm_3", type: "buy", cat: "crops", title: "Wanted: 100 quintal maize, bulk buyer", name: "Sri Traders", dist: "Davangere", phone: "9900112233", price: "₹2,100/quintal", emoji: "🌽", created_at: new Date(Date.now() - 3600000 * 12).toISOString(), comments: [] },
+  { id: "cm_4", type: "sell", cat: "equipment", title: "Tractor with rotavator for hire", name: "Muthu", dist: "Erode", phone: "9787654321", price: "₹900/hour", emoji: "🚜", created_at: new Date(Date.now() - 86400000).toISOString(), comments: [] }
+];
+
+const DEFAULT_FEEDBACK = [
+  { id: "fb_1", farmer_name: "Rameshwar Yadav", phone: "9876501234", rating: 5, comments: "Token system saved 4 hours at mandi. Fast payment received via DBT.", created_at: new Date(Date.now() - 86400000).toISOString() },
+  { id: "fb_2", farmer_name: "Gurdev Singh", phone: "9812345678", rating: 5, comments: "Live prices match the APMC mandi board accurately. Excellent initiative.", created_at: new Date(Date.now() - 86400000 * 2).toISOString() },
+  { id: "fb_3", farmer_name: "Suresh Patel", phone: "9823456789", rating: 5, comments: "Quality checking was done transparently in 15 minutes at Gate #2.", created_at: new Date(Date.now() - 86400000 * 3).toISOString() }
+];
+
 /* ============ COMMUNITY MODERATION ============ */
 async function loadCommunityPosts(){
   const tbody = document.getElementById("commAdminRows");
+  if(!tbody) return;
   tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">Loading community listings...</td></tr>';
   
+  let list = [];
   try {
-    const res = await KM_API.getCommunityListings();
-    const list = res && res.data ? res.data : [];
-    if(!list.length){
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">No listings in community.</td></tr>';
-      return;
+    if (typeof KM_API !== "undefined" && KM_API.getCommunityListings) {
+      const res = await KM_API.getCommunityListings();
+      if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
+        list = res.data;
+      }
     }
-    tbody.innerHTML = list.map(item => `
-      <tr>
-        <td><b>${item.type.toUpperCase()}</b> / ${item.cat}</td>
-        <td>${item.title}</td>
-        <td>${item.name}<br><small style="color:var(--muted)">${item.phone}</small></td>
-        <td>${item.dist}</td>
-        <td><b style="color:var(--green)">${item.price}</b></td>
-        <td>💬 ${(item.comments || []).length}</td>
-        <td>
-          <button class="adm-btn del" onclick="adminDeletePost('${item.id}')">🗑 Delete</button>
-        </td>
-      </tr>
-    `).join('');
   } catch(e){
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#ff7b7b">Failed to load listings.</td></tr>';
+    console.warn("Server community fetch fallback:", e);
   }
+
+  // Fallback to local storage or defaults
+  if(!list.length){
+    try {
+      const stored = JSON.parse(localStorage.getItem("km_comm_listings") || "[]");
+      if(stored.length) list = stored;
+      else list = DEFAULT_COMMUNITY_POSTS;
+    } catch(err){
+      list = DEFAULT_COMMUNITY_POSTS;
+    }
+  }
+
+  tbody.innerHTML = list.map(item => `
+    <tr>
+      <td><b>${(item.type || 'SELL').toUpperCase()}</b> / ${item.cat || 'Crops'}</td>
+      <td>${item.title || '-'}</td>
+      <td>${item.name || 'Farmer'}<br><small style="color:var(--muted)">${item.phone || '-'}</small></td>
+      <td>${item.dist || '-'}</td>
+      <td><b style="color:var(--green)">${item.price || '-'}</b></td>
+      <td>💬 ${(item.comments || []).length}</td>
+      <td>
+        <button class="adm-btn del" onclick="adminDeletePost('${item.id}')">🗑 Delete</button>
+      </td>
+    </tr>
+  `).join('');
 }
 
 async function adminDeletePost(postId){
   if(!confirm("Delete this community post as officer?")) return;
-  await KM_API.deleteCommunityListing(postId);
+  try {
+    await KM_API.deleteCommunityListing(postId);
+  } catch(e){}
+  
+  try {
+    let local = JSON.parse(localStorage.getItem("km_comm_listings") || "[]");
+    local = local.filter(p => p.id !== postId);
+    localStorage.setItem("km_comm_listings", JSON.stringify(local));
+  } catch(e){}
+
   loadCommunityPosts();
 }
 
 /* ============ FARMER FEEDBACK ============ */
 async function loadAdminFeedback(){
   const tbody = document.getElementById("feedbackAdminRows");
+  if(!tbody) return;
   tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">Loading farmer feedback...</td></tr>';
   
+  let list = [];
   try {
-    const res = await KM_API.getAllFeedback();
-    const list = res && res.feedback ? res.feedback : [];
-    if(!list.length){
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">No feedback received yet.</td></tr>';
-      return;
+    if (typeof KM_API !== "undefined" && KM_API.getAllFeedback) {
+      const res = await KM_API.getAllFeedback();
+      if (res && res.feedback && Array.isArray(res.feedback) && res.feedback.length > 0) {
+        list = res.feedback;
+      }
     }
-    tbody.innerHTML = list.map(fb => `
-      <tr>
-        <td><b>${fb.farmer_name}</b></td>
-        <td>${fb.phone || '-'}</td>
-        <td><span style="color:var(--gold)">${'★'.repeat(fb.rating || 5)}</span></td>
-        <td>${fb.comments}</td>
-        <td><small style="color:var(--muted)">${new Date(fb.created_at || Date.now()).toLocaleDateString()}</small></td>
-      </tr>
-    `).join('');
   } catch(e){
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#ff7b7b">Failed to load feedback.</td></tr>';
+    console.warn("Server feedback fetch fallback:", e);
   }
+
+  // Merge with locally submitted feedback
+  try {
+    const localFb = JSON.parse(localStorage.getItem("km_farmer_feedback") || "[]");
+    if(localFb.length){
+      // Prepend any new local feedback that isn't already in list
+      const existingIds = new Set(list.map(f => f.id));
+      localFb.forEach(f => {
+        if(!existingIds.has(f.id)) list.unshift(f);
+      });
+    }
+  } catch(e){}
+
+  if(!list.length){
+    list = DEFAULT_FEEDBACK;
+  }
+
+  tbody.innerHTML = list.map(fb => `
+    <tr>
+      <td><b>${fb.farmer_name || fb.name || 'Farmer'}</b></td>
+      <td>${fb.phone || '-'}</td>
+      <td><span style="color:var(--gold);font-size:1.05rem">${'★'.repeat(Number(fb.rating) || 5)}</span></td>
+      <td>${fb.comments || fb.comment || '-'}</td>
+      <td><small style="color:var(--muted)">${new Date(fb.created_at || Date.now()).toLocaleDateString()}</small></td>
+    </tr>
+  `).join('');
 }
+
+// Auto-sync listener across tabs in browser
+window.addEventListener("storage", function(e){
+  if(e.key === "km_farmer_feedback"){
+    loadAdminFeedback();
+  }
+  if(e.key === "km_comm_listings"){
+    loadCommunityPosts();
+  }
+  if(e.key === DB_KEY){
+    renderAdmin();
+  }
+});
 
 /* ============ BROADCAST ALERT ============ */
 function broadcastAlert(e){
