@@ -58,7 +58,7 @@ app.use('/api/schemes', schemesRoutes);
 app.use(errorHandler);
 
 // Start HTTP Server
-if (process.env.NODE_ENV !== 'test') {
+if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`🌾 KisanMitra Backend running at http://localhost:${PORT}`);
     console.log(`🛡️ Admin Portal: http://localhost:${PORT}/admin.html`);
