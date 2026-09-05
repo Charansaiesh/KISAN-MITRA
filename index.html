@@ -441,7 +441,20 @@
     <div><label data-i18n="lbl_crop">Select Crop *</label>
       <select class="field" required id="fCrop"><option value="">— Choose —</option><option>Wheat</option><option>Paddy</option><option>Mustard</option><option>Gram</option><option>Maize</option><option>Sugarcane</option><option>Cotton</option><option>Chilli</option><option>Turmeric</option><option>Groundnut</option><option>Coconut</option><option>Onion</option></select></div>
     <div><label data-i18n="lbl_qty">Quantity (quintal) *</label><input class="field" required type="number" min="1" id="fQty" placeholder="e.g. 50" data-i18n-ph="ph_qty"></div>
-    <div><label data-i18n="lbl_dist">District *</label><input class="field" required id="fDist" placeholder="Your district" data-i18n-ph="ph_dist"></div>
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <label style="font-weight:700">Preferred Mandi *</label>
+        <button type="button" class="btn btn-ghost" onclick="detectNearestMandiForToken()" style="padding:4px 10px;font-size:0.75rem;border-radius:20px;display:inline-flex;align-items:center;gap:4px">
+          📍 <span id="gpsBtnText">Detect Nearest (GPS)</span>
+        </button>
+      </div>
+      <div style="position:relative">
+        <input class="field" required id="fMandi" placeholder="Type city/mandi (e.g. CHE, HYD, Coimbatore)" style="margin-bottom:0" oninput="onMandiInput(this.value)" autocomplete="off" onfocus="onMandiInput(this.value)">
+        <input type="hidden" id="fDist" name="district">
+        <div id="mandiSuggestions" style="position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--green);border-radius:12px;max-height:220px;overflow-y:auto;z-index:999;display:none;box-shadow:0 12px 28px rgba(0,0,0,0.5);margin-top:4px"></div>
+      </div>
+      <div id="mandiGpsStatus" style="font-size:0.78rem;color:var(--muted);margin-top:4px">💡 Tap GPS to auto-detect nearest mandi, or type shorthand like <b>CHE</b>, <b>HYD</b>, <b>DEL</b>.</div>
+    </div>
     <div class="full"><button class="btn btn-primary" style="width:100%;justify-content:center" data-i18n="btn_issue_token">✅ Issue Token — with SMS</button></div>
     <div id="regMsg"></div>
   </form>
@@ -964,11 +977,14 @@ async function register(e){
   const phone = document.getElementById("fPhone") ? document.getElementById("fPhone").value.trim() : "9876500000";
   const crop = document.getElementById("fCrop").value;
   const qty = document.getElementById("fQty").value;
-  const dist = document.getElementById("fDist").value.trim();
+  const mandiInput = document.getElementById("fMandi");
+  const mandiName = mandiInput ? mandiInput.value.trim() : "";
+  let dist = document.getElementById("fDist") ? document.getElementById("fDist").value.trim() : "";
+  if (!dist && mandiName) dist = mandiName.replace(/\s*mandi\b/i, '').trim();
 
   let token = "";
   try {
-    const apiRes = await KM_API.createToken({ name, phone, crop, quantity: qty, district: dist });
+    const apiRes = await KM_API.createToken({ name, phone, crop, quantity: qty, district: dist || mandiName, mandi: mandiName });
     if(apiRes && apiRes.token) {
       token = apiRes.token;
     }
@@ -986,7 +1002,7 @@ async function register(e){
     phone: phone,
     crop: crop,
     qty: qty + " quintal",
-    mandi: dist + " Mandi",
+    mandi: mandiName || (dist ? (dist + " Mandi") : "Central APMC Mandi"),
     steps: [["Registration received",1],["Identity verified",0],["Deposit at mandi",0],["Quality check",0],["Payment",0]]
   };
   localStorage.setItem(DB_KEY, JSON.stringify(DB));
@@ -1634,6 +1650,165 @@ async function submitFarmerFeedback(e) {
   document.getElementById("farmerFeedbackForm").reset();
   setRating(5);
 }
+
+/* ============ MANDI SMART SELECTOR & GPS ENGINE ============ */
+const ALL_MANDIS = [
+  { name: "Chennai Koyambedu Mandi", dist: "Chennai", state: "Tamil Nadu", lat: 13.0694, lon: 80.1948, codes: ["che", "maa", "chennai"] },
+  { name: "Coimbatore APMC Mandi", dist: "Coimbatore", state: "Tamil Nadu", lat: 11.0168, lon: 76.9558, codes: ["cjb", "coi", "coimbatore"] },
+  { name: "Madurai Central Mandi", dist: "Madurai", state: "Tamil Nadu", lat: 9.9252, lon: 78.1198, codes: ["ixm", "mdu", "madurai"] },
+  { name: "Erode Turmeric Mandi", dist: "Erode", state: "Tamil Nadu", lat: 11.3410, lon: 77.7172, codes: ["ero", "erode"] },
+  { name: "Salem APMC Mandi", dist: "Salem", state: "Tamil Nadu", lat: 11.6643, lon: 78.1460, codes: ["sxv", "salem"] },
+  { name: "Tiruchirappalli Mandi", dist: "Tiruchirappalli", state: "Tamil Nadu", lat: 10.7905, lon: 78.7047, codes: ["trz", "trichy"] },
+  { name: "Thanjavur Paddy Mandi", dist: "Thanjavur", state: "Tamil Nadu", lat: 10.7870, lon: 79.1378, codes: ["tj", "thanjavur"] },
+  { name: "Hyderabad Bowenpally Mandi", dist: "Hyderabad", state: "Telangana", lat: 17.4700, lon: 78.4800, codes: ["hyd", "hyderabad", "bowenpally"] },
+  { name: "Warangal Cotton Mandi", dist: "Warangal", state: "Telangana", lat: 17.9689, lon: 79.5941, codes: ["wgl", "warangal"] },
+  { name: "Nizamabad Turmeric Mandi", dist: "Nizamabad", state: "Telangana", lat: 18.6725, lon: 78.0941, codes: ["nzb", "nizamabad"] },
+  { name: "Khammam Chilli Mandi", dist: "Khammam", state: "Telangana", lat: 17.2473, lon: 80.1514, codes: ["kmm", "khammam"] },
+  { name: "Guntur Chilli Mandi", dist: "Guntur", state: "Andhra Pradesh", lat: 16.3067, lon: 80.4365, codes: ["gnt", "guntur"] },
+  { name: "Vijayawada Gollapudi Mandi", dist: "Vijayawada", state: "Andhra Pradesh", lat: 16.5414, lon: 80.5937, codes: ["vja", "bza", "vijayawada"] },
+  { name: "Kurnool APMC Mandi", dist: "Kurnool", state: "Andhra Pradesh", lat: 15.8281, lon: 78.0373, codes: ["knl", "kurnool"] },
+  { name: "Visakhapatnam Mandi", dist: "Visakhapatnam", state: "Andhra Pradesh", lat: 17.6868, lon: 83.2185, codes: ["vtz", "vizag"] },
+  { name: "Bengaluru Yeshwanthpur Mandi", dist: "Bengaluru", state: "Karnataka", lat: 13.0238, lon: 77.5529, codes: ["blr", "bng", "bangalore"] },
+  { name: "Mysuru APMC Mandi", dist: "Mysuru", state: "Karnataka", lat: 12.2958, lon: 76.6394, codes: ["myq", "mysore"] },
+  { name: "Davangere Maize Mandi", dist: "Davangere", state: "Karnataka", lat: 14.4644, lon: 75.9218, codes: ["dvr", "davangere"] },
+  { name: "Delhi Azadpur Mandi", dist: "North Delhi", state: "Delhi", lat: 28.6989, lon: 77.1546, codes: ["del", "delhi", "azadpur"] },
+  { name: "Delhi Ghazipur Mandi", dist: "East Delhi", state: "Delhi", lat: 28.6258, lon: 77.3326, codes: ["del", "ghazipur"] },
+  { name: "Lucknow Dubagga Mandi", dist: "Lucknow", state: "Uttar Pradesh", lat: 26.8643, lon: 80.8711, codes: ["lko", "lucknow"] },
+  { name: "Kanpur Chaubeypur Mandi", dist: "Kanpur", state: "Uttar Pradesh", lat: 26.6186, lon: 80.1718, codes: ["knp", "kanpur"] },
+  { name: "Varanasi Pahariya Mandi", dist: "Varanasi", state: "Uttar Pradesh", lat: 25.3486, lon: 83.0035, codes: ["vns", "varanasi", "banaras"] },
+  { name: "Agra APMC Mandi", dist: "Agra", state: "Uttar Pradesh", lat: 27.1767, lon: 78.0081, codes: ["agr", "agra"] },
+  { name: "Ludhiana Grain Market", dist: "Ludhiana", state: "Punjab", lat: 30.9010, lon: 75.8573, codes: ["ldh", "ludhiana"] },
+  { name: "Amritsar Bhagtanwala Mandi", dist: "Amritsar", state: "Punjab", lat: 31.6150, lon: 74.8820, codes: ["asr", "amritsar"] },
+  { name: "Karnal APMC Mandi", dist: "Karnal", state: "Haryana", lat: 29.6857, lon: 76.9905, codes: ["knl", "karnal"] },
+  { name: "Hisar Cotton Mandi", dist: "Hisar", state: "Haryana", lat: 29.1492, lon: 75.7217, codes: ["hsr", "hisar"] },
+  { name: "Jaipur Muhana Mandi", dist: "Jaipur", state: "Rajasthan", lat: 26.8042, lon: 75.7330, codes: ["jpr", "jaipur"] },
+  { name: "Kota Grain Mandi", dist: "Kota", state: "Rajasthan", lat: 25.1800, lon: 75.8300, codes: ["kta", "kota"] },
+  { name: "Bhopal Karond Mandi", dist: "Bhopal", state: "Madhya Pradesh", lat: 23.2980, lon: 77.4020, codes: ["bho", "bhopal"] },
+  { name: "Indore Chhavani Mandi", dist: "Indore", state: "Madhya Pradesh", lat: 22.7090, lon: 75.8750, codes: ["idr", "indore"] },
+  { name: "Mumbai Vashi APMC", dist: "Navi Mumbai", state: "Maharashtra", lat: 19.0760, lon: 73.0070, codes: ["bom", "mum", "mumbai"] },
+  { name: "Pune Gultekdi Market Yard", dist: "Pune", state: "Maharashtra", lat: 18.4960, lon: 73.8640, codes: ["pun", "pnq", "pune"] },
+  { name: "Nashik Onion Market", dist: "Nashik", state: "Maharashtra", lat: 20.1472, lon: 74.2250, codes: ["nsk", "nashik", "lasalgaon"] },
+  { name: "Ahmedabad Jamalpur Mandi", dist: "Ahmedabad", state: "Gujarat", lat: 23.0120, lon: 72.5830, codes: ["amd", "ahmedabad"] },
+  { name: "Surat APMC Mandi", dist: "Surat", state: "Gujarat", lat: 21.1702, lon: 72.8311, codes: ["stv", "surat"] },
+  { name: "Kolkata Posta Mandi", dist: "Kolkata", state: "West Bengal", lat: 22.5850, lon: 88.3560, codes: ["ccu", "kol", "kolkata"] },
+  { name: "Patna Bazaar Samiti Mandi", dist: "Patna", state: "Bihar", lat: 25.6030, lon: 85.1630, codes: ["pat", "patna"] },
+  { name: "Kochi Aluva Market", dist: "Ernakulam", state: "Kerala", lat: 10.1076, lon: 76.3516, codes: ["cok", "kochi"] }
+];
+
+function calcMandiDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return Math.round(R * c);
+}
+
+function detectNearestMandiForToken() {
+  const statusEl = document.getElementById("mandiGpsStatus");
+  const gpsBtn = document.getElementById("gpsBtnText");
+  if (!navigator.geolocation) {
+    if(statusEl) statusEl.innerHTML = "❌ Geolocation is not supported by your browser.";
+    return;
+  }
+  if(gpsBtn) gpsBtn.textContent = "Detecting...";
+  if(statusEl) statusEl.innerHTML = "⏳ Accessing device GPS coordinates...";
+
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    const userLat = pos.coords.latitude;
+    const userLon = pos.coords.longitude;
+    if(gpsBtn) gpsBtn.textContent = "GPS Active";
+
+    const ranked = ALL_MANDIS.map(m => {
+      return { ...m, distKm: calcMandiDistance(userLat, userLon, m.lat, m.lon) };
+    }).sort((a, b) => a.distKm - b.distKm);
+
+    const nearest = ranked[0];
+    selectMandi(nearest.name, nearest.dist, nearest.distKm);
+    renderMandiSuggestions(ranked.slice(0, 5), `📍 5 Nearest Mandis by your GPS:`);
+    if(statusEl) {
+      statusEl.innerHTML = `📍 Nearest: <b style="color:var(--green)">${nearest.name}</b> (~${nearest.distKm} km away). Choose below if you prefer another:`;
+    }
+  }, function(err) {
+    if(gpsBtn) gpsBtn.textContent = "Detect GPS";
+    if(statusEl) statusEl.innerHTML = `⚠️ GPS unavailable (${err.message}). You can type your city/code (e.g. CHE, HYD, DEL).`;
+    onMandiInput("");
+  }, { timeout: 8000, enableHighAccuracy: true });
+}
+
+function onMandiInput(val) {
+  const q = (val || "").trim().toLowerCase();
+  const box = document.getElementById("mandiSuggestions");
+  if (!box) return;
+
+  if (!q) {
+    renderMandiSuggestions(ALL_MANDIS.slice(0, 6), "Select or Search APMC Mandi:");
+    return;
+  }
+
+  const matches = ALL_MANDIS.filter(m => {
+    const nameMatch = m.name.toLowerCase().includes(q);
+    const distMatch = m.dist.toLowerCase().includes(q);
+    const stateMatch = m.state.toLowerCase().includes(q);
+    const codeMatch = m.codes && m.codes.some(c => c.startsWith(q) || q.startsWith(c));
+    return nameMatch || distMatch || stateMatch || codeMatch;
+  });
+
+  if (!matches.length) {
+    box.innerHTML = '<div style="padding:14px;text-align:center;color:var(--muted);font-size:0.85rem">No matching mandis. You can type custom mandi name directly.</div>';
+    box.style.display = "block";
+    return;
+  }
+
+  renderMandiSuggestions(matches.slice(0, 8), `Matching Mandis for "${val}":`);
+}
+
+function renderMandiSuggestions(list, heading) {
+  const box = document.getElementById("mandiSuggestions");
+  if (!box) return;
+
+  let html = `<div style="padding:8px 12px;font-size:0.75rem;font-weight:700;color:var(--muted);background:rgba(255,255,255,0.03);border-bottom:1px solid rgba(255,255,255,0.05)">${heading}</div>`;
+  list.forEach(m => {
+    const distTag = (m.distKm !== undefined) ? `<span style="color:var(--gold);font-size:0.78rem"> (~${m.distKm} km)</span>` : '';
+    html += `
+      <div onclick="selectMandi('${m.name}', '${m.dist}', ${m.distKm || 'null'})" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;justify-content:space-between;align-items:center;transition:background .2s" onmouseover="this.style.background='rgba(62,207,111,0.1)'" onmouseout="this.style.background='transparent'">
+        <div>
+          <b style="color:var(--txt);font-size:0.9rem">🏛️ ${m.name}</b>${distTag}
+          <div style="font-size:0.78rem;color:var(--muted)">${m.dist}, ${m.state}</div>
+        </div>
+        <span style="font-size:0.75rem;background:rgba(62,207,111,0.15);color:var(--green);padding:4px 8px;border-radius:12px;font-weight:700">Select</span>
+      </div>
+    `;
+  });
+  box.innerHTML = html;
+  box.style.display = "block";
+}
+
+function selectMandi(name, dist, distKm) {
+  const mandiInput = document.getElementById("fMandi");
+  const distInput = document.getElementById("fDist");
+  const statusEl = document.getElementById("mandiGpsStatus");
+  const box = document.getElementById("mandiSuggestions");
+
+  if (mandiInput) mandiInput.value = name;
+  if (distInput) distInput.value = dist || name;
+  if (box) box.style.display = "none";
+  if (statusEl) {
+    const kmText = distKm ? ` (~${distKm} km away)` : '';
+    statusEl.innerHTML = `✅ Selected Mandi: <b style="color:var(--green)">${name}</b>${kmText}`;
+  }
+}
+
+// Close suggestions on outside click
+document.addEventListener("click", function(e){
+  const box = document.getElementById("mandiSuggestions");
+  const input = document.getElementById("fMandi");
+  if(box && !box.contains(e.target) && e.target !== input){
+    box.style.display = "none";
+  }
+});
 
 // Attach init hooks
 window.addEventListener("DOMContentLoaded", function(){
