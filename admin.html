@@ -426,11 +426,24 @@ async function renderAdmin(){
     if (freshFlag) fresh++;
 
     let row = "<tr>";
-    row += '<td><b style="color:var(--green)">' + token + (freshFlag ? '<span class="new-badge">NEW</span>' : '') + '</b></td>';
-    row += "<td>" + (d.name || "-") + "<br><small style='color:var(--muted)'>" + (d.phone || "") + "</small></td>";
+    const qBadge = (!finished && d.queue_position)
+      ? '<br><span style="font-size:0.75rem;background:rgba(255,196,77,0.18);color:var(--gold);padding:2px 8px;border-radius:10px;font-weight:700">Queue #' + d.queue_position + '</span>'
+      : (finished ? '<br><span style="font-size:0.75rem;background:rgba(62,207,111,0.18);color:var(--green);padding:2px 8px;border-radius:10px;font-weight:700">Done</span>' : '');
+
+    const smsSent = d.sms_status && (d.sms_status.success === true || d.sms_status.status === 'sent');
+    const smsBadge = smsSent
+      ? '<span title="Fast2SMS: SMS Delivered" style="cursor:help;font-size:0.72rem;color:var(--green);background:rgba(62,207,111,0.15);padding:2px 6px;border-radius:8px;margin-left:4px">📱 Sent</span>'
+      : '<span title="Fast2SMS: ' + ((d.sms_status && d.sms_status.message) ? d.sms_status.message : 'Gateway active') + '" style="cursor:help;font-size:0.72rem;color:var(--gold);background:rgba(255,196,77,0.15);padding:2px 6px;border-radius:8px;margin-left:4px">📱 SMS</span>';
+
+    const lvl1Badge = (dn >= 2)
+      ? '<div style="margin-top:2px"><span style="font-size:0.72rem;background:rgba(62,207,111,0.2);color:var(--green);padding:2px 6px;border-radius:8px;font-weight:700">Level 1 Approved</span></div>'
+      : '';
+
+    row += '<td><b style="color:var(--green)">' + token + (freshFlag ? '<span class="new-badge">NEW</span>' : '') + '</b>' + qBadge + '</td>';
+    row += "<td>" + (d.name || "-") + "<br><small style='color:var(--muted)'>" + (d.phone || "") + "</small>" + smsBadge + "</td>";
     row += "<td>" + (d.crop || "-") + '<br><small style="color:var(--muted)">' + (d.qty || "-") + "</small></td>";
     row += "<td>" + (d.mandi || "-") + "</td>";
-    row += '<td><span style="color:' + (pct === 100 ? 'var(--green)' : 'var(--gold)') + ';font-weight:700">' + (d.steps[Math.min(dn, d.steps.length - 1)][0]) + '</span> <small style="color:var(--muted)">(' + pct + '%)</small><div class="mini-bar"><div class="mini-fill" style="width:' + pct + '%"></div></div></td>';
+    row += '<td><span style="color:' + (pct === 100 ? 'var(--green)' : 'var(--gold)') + ';font-weight:700">' + (d.steps[Math.min(dn, d.steps.length - 1)][0]) + '</span> <small style="color:var(--muted)">(' + pct + '%)</small>' + lvl1Badge + '<div class="mini-bar"><div class="mini-fill" style="width:' + pct + '%"></div></div></td>';
     row += '<td><button class="adm-btn ' + (finished ? "done-btn" : "") + '" ' + (finished ? "disabled" : "") + ' onclick="advanceStep(&apos;' + token + '&apos;)">' + (finished ? "✔ Done" : "▶ Advance") + '</button>';
     row += '<button class="adm-btn del" onclick="deleteToken(&apos;' + token + '&apos;)">🗑</button></td>';
     row += "</tr>";
@@ -452,7 +465,12 @@ async function renderAdmin(){
 
 async function advanceStep(token){
   try {
-    await KM_API.advanceStep(token);
+    const res = await KM_API.advanceStep(token);
+    if (res && res.data) {
+      const db = getDB();
+      db[token] = { ...db[token], ...res.data };
+      saveDB(db);
+    }
   } catch(e){}
   const db = getDB();
   const d = db[token];
@@ -462,7 +480,7 @@ async function advanceStep(token){
     saveDB(db);
   }
   markSeen(token);
-  renderAdmin();
+  await renderAdmin();
 }
 
 async function deleteToken(token){
