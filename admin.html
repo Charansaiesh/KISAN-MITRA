@@ -24,8 +24,8 @@
   .lang-select:hover,.lang-select:focus{border-color:var(--green)}
   nav a.back{color:var(--muted);text-decoration:none;font-weight:700;font-size:.85rem;padding:8px 16px;border-radius:24px;border:1.5px solid var(--line);transition:.25s;background:var(--surface2);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
   nav a.back:hover{color:var(--txt);border-color:var(--green);transform:translateY(-2px)}
-  main{max-width:1150px;margin:0 auto;padding:50px 5% 80px}
-  .sec-head{text-align:center;margin-bottom:40px}
+  main{max-width:1150px;margin:0 auto;padding:40px 5% 80px}
+  .sec-head{text-align:center;margin-bottom:30px}
   .sec-tag{color:var(--green);font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:3px}
   .sec-title{font-size:clamp(1.7rem,3.4vw,2.4rem);letter-spacing:-1px;margin-top:8px;font-weight:800}
   .sec-sub{color:var(--muted);margin-top:8px;font-size:.95rem}
@@ -34,9 +34,15 @@
   .live-dot i{width:8px;height:8px;border-radius:50%;background:var(--green);animation:blink 1.4s infinite;font-style:normal}
   @keyframes blink{50%{opacity:.25}}
 
+  /* Navigation Tabs */
+  .admin-tabs{display:flex;gap:10px;justify-content:center;margin-bottom:28px;flex-wrap:wrap}
+  .atab{padding:10px 22px;border-radius:24px;background:var(--surface);border:1px solid var(--line);color:var(--muted);font-weight:700;cursor:pointer;transition:.25s;font-size:.88rem}
+  .atab:hover{border-color:var(--green);color:var(--txt)}
+  .atab.active{background:var(--grad);color:#0b0f0d;border-color:transparent}
+
   .login-box{max-width:400px;margin:30px auto;background:var(--surface);border:1px solid var(--line);
       border-radius:var(--radius);padding:38px;text-align:center;box-shadow:var(--shadow)}
-  .field{width:100%;padding:15px 18px;background:var(--bg);border:1.5px solid var(--line);border-radius:14px;color:var(--txt);font-size:1rem;margin-bottom:14px}
+  .field{width:100%;padding:14px 18px;background:var(--bg);border:1.5px solid var(--line);border-radius:14px;color:var(--txt);font-size:1rem;margin-bottom:14px}
   .field:focus{outline:none;border-color:var(--green)}
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 30px;border-radius:30px;font-weight:700;cursor:pointer;border:none;font-size:.95rem;transition:.3s}
   .btn-primary{background:var(--grad);color:#0b0f0d;box-shadow:0 8px 30px rgba(62,207,111,.3)}
@@ -75,7 +81,7 @@
     .officer-tag{display:none}
   }
 </style>
-  <script src="js/api.js"></script>
+<script src="js/api.js"></script>
 </head>
 <body>
 
@@ -94,45 +100,130 @@
 </nav>
 
 <main>
-  <div class="sec-head">
-    <div class="sec-tag" data-i18n="admin_tag">Administration</div>
-    <h1 class="sec-title" data-i18n="admin_title">Procurement Control Center</h1>
-    <p class="sec-sub" data-i18n="admin_sub">New farmer registrations appear here <b style="color:var(--green)">automatically &amp; live</b>.</p>
-    <div class="live-dot"><i data-i18n="live_sync"></i> Live sync with farmer site</div>
+  <div class="sec-head" style="background:linear-gradient(180deg,rgba(62,207,111,0.06) 0%,transparent 100%);padding:28px 20px 20px;border-radius:24px;border:1px solid rgba(255,255,255,0.05);margin-bottom:28px">
+    <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(62,207,111,0.12);border:1px solid rgba(62,207,111,0.3);padding:6px 18px;border-radius:30px;margin-bottom:12px">
+      <span style="font-size:.85rem">🛡️</span>
+      <span class="sec-tag" style="letter-spacing:2px;font-size:.76rem" data-i18n="admin_tag">COMMAND &amp; CONTROL DASHBOARD</span>
+    </div>
+    <h1 class="sec-title" style="margin:4px 0 10px;font-size:clamp(1.9rem,3.2vw,2.6rem);background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent" data-i18n="admin_title">KisanMitra Officer Portal</h1>
+    <p class="sec-sub" style="max-width:620px;margin:0 auto 14px;font-size:.92rem" data-i18n="admin_sub">Real-time farmer token queue, fast MSP verification, automated queue clearance, and community moderation.</p>
+    <div class="live-dot" style="background:rgba(62,207,111,0.1);border-color:rgba(62,207,111,0.35);margin-top:4px"><i data-i18n="live_sync"></i> Live sync active with all 70+ state mandis</div>
   </div>
 
   <!-- LOGIN -->
   <div class="login-box" id="adminLogin">
     <div style="font-size:2.8rem">🔐</div>
     <h3 style="margin:10px 0 4px" data-i18n="login_head">Officer Login</h3>
-    <p style="color:var(--muted);font-size:.84rem"><span data-i18n="demo_pwd">Demo password:</span> <b style="color:var(--gold)">admin123</b></p>
-    <input class="field" type="password" id="adminPass" placeholder="Enter password" maxlength="20" style="text-align:center;margin-top:18px" data-i18n-ph="ph_pass">
+    <p style="color:var(--muted);font-size:.84rem" data-i18n="admin_login_sub">Authorized Officer Portal &amp; Live Queue Access</p>
+    <input class="field" type="password" id="adminPass" placeholder="Enter password" maxlength="20" style="text-align:center;margin-top:18px" data-i18n-ph="ph_pass" onkeydown="if(event.key==='Enter') adminLogin()" autofocus>
     <div id="adminErr"></div>
     <button class="btn btn-primary" style="width:100%" onclick="adminLogin()" data-i18n="btn_login">Login</button>
   </div>
 
   <!-- PANEL -->
   <div class="panel" id="adminPanel">
-    <div class="stats">
-      <div class="astat"><b id="stTotal">0</b><span data-i18n="stat_total">Total Tokens</span></div>
-      <div class="astat"><b id="stDone">0</b><span data-i18n="stat_paid">Paid ✅</span></div>
-      <div class="astat"><b id="stPend">0</b><span data-i18n="stat_process">In Process ⏳</span></div>
-      <div class="astat"><b id="stNew">0</b><span data-i18n="stat_unreviewed">🆕 New (unreviewed)</span></div>
+    
+    <!-- SUB-NAVIGATION TABS -->
+    <div class="admin-tabs">
+      <button class="atab active" id="tabTokensBtn" onclick="switchAdminTab('tokens', this)">🎟️ Token Queue</button>
+      <button class="atab" id="tabCommBtn" onclick="switchAdminTab('community', this)">💬 Community Moderation</button>
+      <button class="atab" id="tabFeedbackBtn" onclick="switchAdminTab('feedback', this)">🌟 Farmer Feedback</button>
+      <button class="atab" id="tabBroadcastBtn" onclick="switchAdminTab('broadcast', this)">📢 Send Announcement</button>
     </div>
-    <input class="field search-admin" id="adminSearch" placeholder="🔍 Search name / token / crop..." data-i18n-ph="ph_search" oninput="renderAdmin()">
-    <div class="table-wrap">
-      <table>
-        <tr>
-          <th data-i18n="th_token">Token</th>
-          <th data-i18n="th_farmer">Farmer</th>
-          <th data-i18n="th_crop_qty">Crop / Qty</th>
-          <th data-i18n="th_mandi">Mandi</th>
-          <th data-i18n="th_progress">Progress</th>
-          <th data-i18n="th_actions">Actions</th>
-        </tr>
-        <tbody id="adminRows"></tbody>
-      </table>
+
+    <!-- SECTION 1: TOKENS & QUEUE -->
+    <div id="sectionTokens">
+      <div class="stats">
+        <div class="astat"><b id="stTotal">0</b><span data-i18n="stat_total">Total Booked Tokens 🎟️</span></div>
+        <div class="astat" style="border-color:rgba(255,196,77,.35)"><b id="stPend" style="color:var(--gold)">0</b><span data-i18n="stat_process">Waiting in Queue ⏳</span></div>
+        <div class="astat"><b id="stDone" style="color:var(--green)">0</b><span data-i18n="stat_paid">Completed / Paid ✅</span></div>
+        <div class="astat"><b id="stNew">0</b><span data-i18n="stat_unreviewed">🆕 New Today</span></div>
+      </div>
+      
+      <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:12px 20px;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <span style="font-size:0.9rem;color:var(--muted)">📋 Live Queue Status: <b id="queueSummary" style="color:var(--gold)">0 farmers waiting</b></span>
+        <span style="font-size:0.8rem;color:var(--green);font-weight:700">● Live Auto-Sync Active</span>
+      </div>
+
+      <input class="field search-admin" id="adminSearch" placeholder="🔍 Search name / token / crop..." data-i18n-ph="ph_search" oninput="renderAdmin()">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="th_token">Token</th>
+              <th data-i18n="th_farmer">Farmer</th>
+              <th data-i18n="th_crop_qty">Crop / Qty</th>
+              <th data-i18n="th_mandi">Mandi</th>
+              <th data-i18n="th_progress">Queue / Progress Status</th>
+              <th data-i18n="th_actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminRows"></tbody>
+        </table>
+      </div>
     </div>
+
+    <!-- SECTION 2: COMMUNITY MODERATION -->
+    <div id="sectionCommunity" style="display:none">
+      <div style="margin-bottom:18px;display:flex;justify-content:space-between;align-items:center">
+        <h3>💬 Community Marketplace Listings</h3>
+        <button class="btn btn-ghost" onclick="loadCommunityPosts()" style="padding:6px 14px;font-size:.8rem">🔄 Refresh Listings</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Type / Cat</th>
+              <th>Title</th>
+              <th>Farmer / Contact</th>
+              <th>District</th>
+              <th>Price</th>
+              <th>Inquiries</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="commAdminRows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SECTION 3: FARMER FEEDBACK -->
+    <div id="sectionFeedback" style="display:none">
+      <div style="margin-bottom:18px;display:flex;justify-content:space-between;align-items:center">
+        <h3>🌟 Farmer Ratings &amp; Experience Feedback</h3>
+        <button class="btn btn-ghost" onclick="loadAdminFeedback()" style="padding:6px 14px;font-size:.8rem">🔄 Refresh Feedback</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Farmer Name</th>
+              <th>Phone</th>
+              <th>Rating</th>
+              <th>Comments</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="feedbackAdminRows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SECTION 4: BROADCAST ANNOUNCEMENT -->
+    <div id="sectionBroadcast" style="display:none">
+      <div class="login-box" style="max-width:600px;text-align:left">
+        <h3 style="margin-bottom:6px">📢 Broadcast Official Mandi Announcement</h3>
+        <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Send instant alerts to all farmers on the portal and SMS gateway.</p>
+        <form onsubmit="broadcastAlert(event)">
+          <input class="field" id="bcTitle" placeholder="Announcement Title (e.g. Wheat Gate #2 Timing Update)" required>
+          <textarea class="field" id="bcMessage" rows="3" placeholder="Message content for farmers..." required></textarea>
+          <button type="submit" class="btn btn-primary" style="width:100%">🚀 Send Notification Broadcast</button>
+        </form>
+        <div id="bcSuccess" style="color:var(--green);font-weight:700;font-size:.85rem;margin-top:10px;display:none">✅ Notification sent successfully!</div>
+      </div>
+    </div>
+
+    <!-- BOTTOM ACTIONS -->
     <div class="actions-row">
       <button class="btn btn-ghost" onclick="adminLogout()" data-i18n="btn_logout">🚪 Logout</button>
       <button class="btn btn-primary" onclick="clearDemo()" style="margin-left:12px" data-i18n="btn_reset">🗑️ Reset Demo Data</button>
@@ -146,7 +237,7 @@
   <p id="newAlertTxt"></p>
 </div>
 
-<footer>KisanMitra Officer Portal · Linked with Farmer Website · v4.0</footer>
+<footer>KisanMitra Officer Portal · Linked with Farmer Website &amp; Community · v4.1</footer>
 
 <script>
 /* ============ TRANSLATION SUPPORT ============ */
@@ -154,43 +245,43 @@ const I18N_ADMIN = {
   en: {
     btn_farmer_site: "← Farmer Site",
     admin_tag: "Administration",
-    admin_title: "Procurement Control Center",
-    admin_sub: "New farmer registrations appear here automatically & live.",
-    login_head: "Officer Login", demo_pwd: "Demo password:", ph_pass: "Enter password", btn_login: "Login",
-    stat_total: "Total Tokens", stat_paid: "Paid ✅", stat_process: "In Process ⏳", stat_unreviewed: "🆕 New (unreviewed)",
+    admin_title: "Procurement & Moderation Center",
+    admin_sub: "Real-time token queue management, community moderation, and farmer feedback hub.",
+    login_head: "Officer Login", ph_pass: "Enter password", btn_login: "Login",
+    stat_total: "Total Booked Tokens 🎟️", stat_paid: "Completed / Paid ✅", stat_process: "Waiting in Queue ⏳", stat_unreviewed: "🆕 New Today",
     ph_search: "🔍 Search name / token / crop...",
-    th_token: "Token", th_farmer: "Farmer", th_crop_qty: "Crop / Qty", th_mandi: "Mandi", th_progress: "Progress", th_actions: "Actions",
+    th_token: "Token", th_farmer: "Farmer", th_crop_qty: "Crop / Qty", th_mandi: "Mandi", th_progress: "Queue / Progress Status", th_actions: "Actions",
     btn_logout: "🚪 Logout", btn_reset: "🗑️ Reset Demo Data"
   },
   hi: {
     btn_farmer_site: "← किसान पोर्टल",
     admin_tag: "प्रशासन",
-    admin_title: "खरीद नियंत्रण केंद्र",
-    admin_sub: "नए किसान पंजीकरण यहाँ स्वतः व लाइव प्रदर्शित होते हैं।",
-    login_head: "अधिकारी लॉगिन", demo_pwd: "डेमो पासवर्ड:", ph_pass: "पासवर्ड दर्ज करें", btn_login: "लॉगिन करें",
-    stat_total: "कुल टोकन", stat_paid: "भुगतान पूर्ण ✅", stat_process: "प्रक्रिया जारी ⏳", stat_unreviewed: "🆕 नए (समीक्षा बाकी)",
+    admin_title: "खरीद एवं नियंत्रण केंद्र",
+    admin_sub: "वास्तविक समय टोकन कतार प्रबंधन, समुदाय निगरानी और किसान फीडबैक केंद्र।",
+    login_head: "अधिकारी लॉगिन", ph_pass: "पासवर्ड दर्ज करें", btn_login: "लॉगिन करें",
+    stat_total: "कुल टोकन 🎟️", stat_paid: "भुगतान पूर्ण ✅", stat_process: "कतार में प्रतीक्षारत ⏳", stat_unreviewed: "🆕 नए आज",
     ph_search: "🔍 नाम / टोकन / फसल खोजें...",
-    th_token: "टोकन", th_farmer: "किसान का नाम", th_crop_qty: "फसल / मात्रा", th_mandi: "मंडी", th_progress: "प्रगति", th_actions: "कार्यवाही",
+    th_token: "टोकन", th_farmer: "किसान का नाम", th_crop_qty: "फसल / मात्रा", th_mandi: "मंडी", th_progress: "कतार स्थिति", th_actions: "कार्यवाही",
     btn_logout: "🚪 लॉगआउट", btn_reset: "🗑️ डेटा रीसेट करें"
   },
   ta: {
     btn_farmer_site: "← உழவர் தளம்",
     admin_tag: "நிர்வாகம்",
     admin_title: "கொள்முதல் கட்டுப்பாட்டு மையம்",
-    admin_sub: "புதிய விவசாயிகள் பதிவுகள் உடனுக்குடன் இங்கு தோன்றும்.",
-    login_head: "அதிகாரி உள்நுழைவு", demo_pwd: "டெமோ கடவுச்சொல்:", ph_pass: "கடவுச்சொல் உள்ளிடவும்", btn_login: "உள்நுழைக",
-    stat_total: "மொத்த டோக்கன்கள்", stat_paid: "பணம் செலுத்தப்பட்டது ✅", stat_process: "செயல்பாட்டில் ⏳", stat_unreviewed: "🆕 புதியவை",
+    admin_sub: "டோக்கன் வரிசை மேலாண்மை மற்றும் விவசாயிகள் கருத்து மையம்.",
+    login_head: "அதிகாரி உள்நுழைவு", ph_pass: "கடவுச்சொல் உள்ளிடவும்", btn_login: "உள்நுழைக",
+    stat_total: "மொத்த டோக்கன்கள்", stat_paid: "பணம் செலுத்தப்பட்டது ✅", stat_process: "வரிசையில் ⏳", stat_unreviewed: "🆕 புதியவை",
     ph_search: "🔍 பெயர் / டோக்கன் / பயிர் தேடுக...",
-    th_token: "டோக்கன்", th_farmer: "விவசாயி", th_crop_qty: "பயிர் / அளவு", th_mandi: "மண்டி", th_progress: "முன்னேற்றம்", th_actions: "செயல்கள்",
+    th_token: "டோக்கன்", th_farmer: "விவசாயி", th_crop_qty: "பயிர் / அளவு", th_mandi: "மண்டி", th_progress: "நிலை", th_actions: "செயல்கள்",
     btn_logout: "🚪 வெளியேறு", btn_reset: "🗑️ மீட்டமைக்க"
   },
   te: {
     btn_farmer_site: "← రైతు పోర్టల్",
     admin_tag: "పరిపాలన",
     admin_title: "కొనుగోలు నియంత్రణ కేంద్రం",
-    admin_sub: "కొత్త రైతు రిజిస్ట్రేషన్లు ఇక్కడ ప్రత్యక్షంగా కనిపిస్తాయి.",
-    login_head: "అధికారి లాగిన్", demo_pwd: "డెమో పాస్‌వర్డ్:", ph_pass: "పాస్‌వర్డ్ నమోదు చేయండి", btn_login: "లాగిన్",
-    stat_total: "మొత్తం టోకెన్లు", stat_paid: "చెల్లింపు పూర్తయింది ✅", stat_process: "పురోగతిలో ఉంది ⏳", stat_unreviewed: "🆕 కొత్తవి",
+    admin_sub: "రియల్ టైమ్ టోకెన్ క్యూ నిర్వహణ మరియు ఫీడ్‌బ్యాక్ హబ్.",
+    login_head: "అధికారి లాగిన్", ph_pass: "పాస్‌వర్డ్ నమోదు చేయండి", btn_login: "లాగిన్",
+    stat_total: "మొత్తం టోకెన్లు", stat_paid: "చెల్లింపు పూర్తయింది ✅", stat_process: "క్యూలో ఉంది ⏳", stat_unreviewed: "🆕 కొత్తవి",
     ph_search: "🔍 పేరు / టోకెన్ / పంట శోధించండి...",
     th_token: "టోకెన్", th_farmer: "రైతు", th_crop_qty: "పంట / పరిమాణం", th_mandi: "మార్కెట్", th_progress: "పురోగతి", th_actions: "చర్యలు",
     btn_logout: "🚪 లాగౌట్", btn_reset: "🗑️ డేటా రీసెట్"
@@ -216,10 +307,23 @@ function changeLanguage(lang){
   });
 }
 
-/* ============ GUARANTEED NAVIGATION TO FARMER SITE ============ */
 function goToFarmerSite(e){
   if(e) e.preventDefault();
   window.location.href = "index.html";
+}
+
+/* ============ TAB NAVIGATION ============ */
+function switchAdminTab(tab, btn){
+  document.querySelectorAll(".atab").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+
+  document.getElementById("sectionTokens").style.display = tab === 'tokens' ? 'block' : 'none';
+  document.getElementById("sectionCommunity").style.display = tab === 'community' ? 'block' : 'none';
+  document.getElementById("sectionFeedback").style.display = tab === 'feedback' ? 'block' : 'none';
+  document.getElementById("sectionBroadcast").style.display = tab === 'broadcast' ? 'block' : 'none';
+
+  if (tab === 'community') loadCommunityPosts();
+  if (tab === 'feedback') loadAdminFeedback();
 }
 
 /* ============ SHARED DATABASE KEYS ============ */
@@ -233,8 +337,14 @@ function getSeen(){ try{ return JSON.parse(localStorage.getItem(SEEN_KEY) || "[]
 function markSeen(t){ const s = getSeen(); if(s.indexOf(t) === -1){ s.push(t); localStorage.setItem(SEEN_KEY, JSON.stringify(s)); } }
 function isNew(t){ return getSeen().indexOf(t) === -1; }
 
+function adminLogout(){
+  document.getElementById("adminPanel").style.display = "none";
+  document.getElementById("adminLogin").style.display = "block";
+  document.getElementById("officerTag").textContent = "🔒 Not logged in";
+  document.getElementById("adminPass").value = "";
+  if(typeof KM_API !== "undefined" && KM_API.clearAuth) KM_API.clearAuth();
+}
 
-/* ============ API BACKED ADMIN FUNCTIONS ============ */
 async function adminLogin(){
   const p = document.getElementById("adminPass").value;
   const err = document.getElementById("adminErr");
@@ -251,7 +361,6 @@ async function adminLogin(){
     document.getElementById("adminPass").value = "";
   }
 }
-
 
 async function renderAdmin(){
   let db = getDB();
@@ -287,10 +396,10 @@ async function renderAdmin(){
 
     let row = "<tr>";
     row += '<td><b style="color:var(--green)">' + token + (freshFlag ? '<span class="new-badge">NEW</span>' : '') + '</b></td>';
-    row += "<td>" + (d.name || "-") + "</td>";
+    row += "<td>" + (d.name || "-") + "<br><small style='color:var(--muted)'>" + (d.phone || "") + "</small></td>";
     row += "<td>" + (d.crop || "-") + '<br><small style="color:var(--muted)">' + (d.qty || "-") + "</small></td>";
     row += "<td>" + (d.mandi || "-") + "</td>";
-    row += '<td><small style="color:var(--muted)">' + pct + '%</small><div class="mini-bar"><div class="mini-fill" style="width:' + pct + '%"></div></div></td>';
+    row += '<td><span style="color:' + (pct === 100 ? 'var(--green)' : 'var(--gold)') + ';font-weight:700">' + (d.steps[Math.min(dn, d.steps.length - 1)][0]) + '</span> <small style="color:var(--muted)">(' + pct + '%)</small><div class="mini-bar"><div class="mini-fill" style="width:' + pct + '%"></div></div></td>';
     row += '<td><button class="adm-btn ' + (finished ? "done-btn" : "") + '" ' + (finished ? "disabled" : "") + ' onclick="advanceStep(&apos;' + token + '&apos;)">' + (finished ? "✔ Done" : "▶ Advance") + '</button>';
     row += '<button class="adm-btn del" onclick="deleteToken(&apos;' + token + '&apos;)">🗑</button></td>';
     row += "</tr>";
@@ -298,25 +407,13 @@ async function renderAdmin(){
   }
   tbody.innerHTML = rows || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">No tokens found</td></tr>';
 
-  try {
-    if (typeof KM_API !== "undefined" && KM_API.getAdminStats) {
-      const statsRes = await KM_API.getAdminStats();
-      if (statsRes && statsRes.stats) {
-        document.getElementById("stTotal").textContent = statsRes.stats.total_tokens || total;
-        document.getElementById("stDone").textContent = statsRes.stats.paid_completed || done;
-        document.getElementById("stPend").textContent = statsRes.stats.in_process || pend;
-        document.getElementById("stNew").textContent = statsRes.stats.new_unreviewed || fresh;
-        return;
-      }
-    }
-  } catch(e){}
-
+  const queueSummaryEl = document.getElementById("queueSummary");
+  if(queueSummaryEl) queueSummaryEl.textContent = pend + " farmers waiting in queue (" + total + " total bookings)";
   document.getElementById("stTotal").textContent = total;
   document.getElementById("stDone").textContent = done;
   document.getElementById("stPend").textContent = pend;
   document.getElementById("stNew").textContent = fresh;
 }
-
 
 async function advanceStep(token){
   try {
@@ -355,6 +452,88 @@ async function clearDemo(){
   localStorage.removeItem(SEEN_KEY);
   localStorage.removeItem("km_new_token");
   renderAdmin();
+}
+
+/* ============ COMMUNITY MODERATION ============ */
+async function loadCommunityPosts(){
+  const tbody = document.getElementById("commAdminRows");
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">Loading community listings...</td></tr>';
+  
+  try {
+    const res = await KM_API.getCommunityListings();
+    const list = res && res.data ? res.data : [];
+    if(!list.length){
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">No listings in community.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map(item => `
+      <tr>
+        <td><b>${item.type.toUpperCase()}</b> / ${item.cat}</td>
+        <td>${item.title}</td>
+        <td>${item.name}<br><small style="color:var(--muted)">${item.phone}</small></td>
+        <td>${item.dist}</td>
+        <td><b style="color:var(--green)">${item.price}</b></td>
+        <td>💬 ${(item.comments || []).length}</td>
+        <td>
+          <button class="adm-btn del" onclick="adminDeletePost('${item.id}')">🗑 Delete</button>
+        </td>
+      </tr>
+    `).join('');
+  } catch(e){
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#ff7b7b">Failed to load listings.</td></tr>';
+  }
+}
+
+async function adminDeletePost(postId){
+  if(!confirm("Delete this community post as officer?")) return;
+  await KM_API.deleteCommunityListing(postId);
+  loadCommunityPosts();
+}
+
+/* ============ FARMER FEEDBACK ============ */
+async function loadAdminFeedback(){
+  const tbody = document.getElementById("feedbackAdminRows");
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">Loading farmer feedback...</td></tr>';
+  
+  try {
+    const res = await KM_API.getAllFeedback();
+    const list = res && res.feedback ? res.feedback : [];
+    if(!list.length){
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">No feedback received yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map(fb => `
+      <tr>
+        <td><b>${fb.farmer_name}</b></td>
+        <td>${fb.phone || '-'}</td>
+        <td><span style="color:var(--gold)">${'★'.repeat(fb.rating || 5)}</span></td>
+        <td>${fb.comments}</td>
+        <td><small style="color:var(--muted)">${new Date(fb.created_at || Date.now()).toLocaleDateString()}</small></td>
+      </tr>
+    `).join('');
+  } catch(e){
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#ff7b7b">Failed to load feedback.</td></tr>';
+  }
+}
+
+/* ============ BROADCAST ALERT ============ */
+function broadcastAlert(e){
+  e.preventDefault();
+  const title = document.getElementById("bcTitle").value.trim();
+  const msg = document.getElementById("bcMessage").value.trim();
+  
+  let notifs = JSON.parse(localStorage.getItem("km_broadcast_alerts") || "[]");
+  notifs.unshift({
+    id: "notif_" + Date.now(),
+    title,
+    message: msg,
+    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  });
+  localStorage.setItem("km_broadcast_alerts", JSON.stringify(notifs));
+
+  document.getElementById("bcSuccess").style.display = "block";
+  e.target.reset();
+  setTimeout(() => { document.getElementById("bcSuccess").style.display = "none"; }, 3500);
 }
 
 /* ============ LIVE SYNC ============ */

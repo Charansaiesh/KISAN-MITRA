@@ -1,4 +1,4 @@
-﻿/**
+/**
  * KisanMitra Unified API Client
  * Shared across Farmer Portal, Admin Dashboard, and Community Marketplace
  */
@@ -140,12 +140,28 @@ const KM_API = (function() {
     },
 
     async addCommunityComment(postId, data) {
-      return request(`/community/listings/${postId}/comments`, { method: 'POST', body: JSON.stringify(data) });
+      return request(`/community/listings/${encodeURIComponent(postId)}/comments`, { method: 'POST', body: JSON.stringify(data) });
+    },
+
+    async deleteCommunityListing(postId) {
+      return request(`/community/listings/${encodeURIComponent(postId)}`, { method: 'DELETE' });
+    },
+
+    // Government Schemes
+    async getSchemes(cat, query) {
+      let url = '/schemes?';
+      if (cat && cat !== 'all') url += `cat=${encodeURIComponent(cat)}&`;
+      if (query) url += `q=${encodeURIComponent(query)}`;
+      return request(url);
     },
 
     // Feedback & Notifications
     async submitFeedback(data) {
       return request('/feedback', { method: 'POST', body: JSON.stringify(data) });
+    },
+
+    async getAllFeedback() {
+      return request('/feedback');
     },
 
     async getNotifications() {

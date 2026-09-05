@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -187,6 +187,39 @@
     .mandi-grid{grid-template-columns:1fr}.weather-panel{position:static}
   }
   @media(max-width:560px){.bento{grid-template-columns:1fr}.b-big{grid-column:span 1;grid-row:span 1}}
+
+  /* Farmer Auth & Notification Bell Styles */
+  .notif-btn{background:var(--surface2);border:1.5px solid var(--line);color:var(--gold);padding:7px 12px;border-radius:22px;font-weight:700;font-size:.85rem;cursor:pointer;position:relative;display:inline-flex;align-items:center;gap:4px;transition:.25s}
+  .notif-btn:hover{border-color:var(--gold);transform:scale(1.05)}
+  .notif-badge{background:#ff4d6d;color:#fff;font-size:.65rem;font-weight:800;padding:2px 6px;border-radius:10px;margin-left:2px}
+  .farmer-auth-btn{background:var(--grad);color:#0b0f0d;border:none;padding:7px 16px;border-radius:22px;font-weight:800;font-size:.82rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.25s}
+  .farmer-auth-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(62,207,111,.3)}
+
+  /* Notification Drawer */
+  #notifDrawer{position:fixed;top:68px;right:5%;width:340px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);z-index:600;display:none;flex-direction:column;overflow:hidden;animation:up .3s ease}
+  .notif-header{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font-size:.88rem;font-weight:700}
+  .notif-list{max-height:360px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+  .notif-item{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:.82rem}
+  .notif-item b{color:var(--green);display:block;margin-bottom:2px}
+
+  /* Farmer Auth Modal */
+  .auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:999;display:none;align-items:center;justify-content:center;padding:20px}
+  .auth-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);width:100%;max-width:420px;padding:32px;box-shadow:var(--shadow);position:relative}
+  .auth-tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:20px}
+  .auth-tab{flex:1;text-align:center;padding:10px;color:var(--muted);font-weight:700;cursor:pointer;border-bottom:2px solid transparent}
+  .auth-tab.active{color:var(--green);border-color:var(--green)}
+  .auth-close{position:absolute;top:16px;right:20px;background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer}
+
+  /* Schemes Sections */
+  .schemes-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+  .stab{background:var(--surface2);border:1px solid var(--line);color:var(--muted);padding:8px 16px;border-radius:20px;cursor:pointer;font-weight:600;font-size:.85rem;transition:.2s}
+  .stab:hover,.stab.active{background:var(--green);color:#0b0f0d;border-color:var(--green)}
+  .schemes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+  .scard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px;display:flex;flex-direction:column;justify-content:space-between;gap:16px;transition:.3s}
+  .scard:hover{border-color:var(--green);transform:translateY(-3px)}
+  .scard h3{font-size:1.15rem;color:var(--txt);margin-bottom:8px}
+  .scard .benefit{color:var(--green);font-weight:700;font-size:.95rem;margin-bottom:8px}
+  .scard .elig{color:var(--muted);font-size:.85rem;line-height:1.5}
 </style>
   <script src="js/api.js"></script>
 </head>
@@ -203,6 +236,11 @@
     <button class="voice-mode-btn" id="voiceModeBtn" onclick="toggleVoiceMode(event)">
       <span id="voiceStatusIcon">🗣️</span> <span data-i18n="btn_voice_mode">Voice: OFF</span>
     </button>
+    <a href="admin.html" target="_blank" class="admin-nav-btn" style="background:rgba(62,207,111,0.15);border:1.5px solid var(--green);color:var(--green);padding:7px 14px;border-radius:22px;font-weight:700;font-size:.82rem;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:.25s;margin-right:4px" data-i18n="btn_admin_portal">🛡️ Admin Portal ↗</a>
+    
+    <button class="notif-btn" id="notifBellBtn" onclick="toggleNotifDrawer(event)">
+      🔔 <span class="notif-badge" id="notifBadge">2</span>
+    </button>
     <select class="lang-select" id="langSelect" onchange="changeLanguage(this.value)">
       <option value="en">🌐 English</option>
       <option value="hi">🇮🇳 हिन्दी</option>
@@ -216,10 +254,11 @@
     <li><a href="#guide" data-i18n="nav_guide">📖 How It Works</a></li>
     <li><a href="#track" data-i18n="nav_track">🔍 Track</a></li>
     <li><a href="#prices" data-i18n="nav_prices">📈 Live Prices</a></li>
+    <li><a href="#schemes">🏛️ Schemes</a></li>
     <li><a href="#mandis" data-i18n="nav_mandis">📍 Mandi Map</a></li>
     <li><a href="community.html" target="_blank" style="color:var(--gold)" data-i18n="nav_community">🤝 Community ↗</a></li>
-    <li><a href="#register" data-i18n="nav_register">📝 Register</a></li>
-  </ul>
+    
+    </ul>
 </nav>
 
 <header id="home">
@@ -335,12 +374,34 @@
       <option value="Turmeric">🟡 Turmeric</option>
       <option value="Chilli">🌶️ Chilli</option>
     </select>
+
     <button class="btn btn-ghost" style="margin-left:0;padding:12px 20px" onclick="loadPrices()" data-i18n="prices_refresh">🔄 Refresh</button>
   </div>
   <div class="table-wrap reveal" id="priceTableWrap">
     <table id="priceTable"><tr><th>Mandi</th><th>District / State</th><th>Min ₹</th><th>Max ₹</th><th>Modal ₹ (per quintal)</th></tr></table>
   </div>
   <p class="mandi-note" id="priceNote">⏳ Loading live prices…</p>
+</section>
+
+<section id="schemes" style="background:var(--surface2);border-block:1px solid var(--line)">
+  <div class="sec-head reveal">
+    <div class="sec-tag">GOVERNMENT SCHEMES &amp; SUBSIDIES</div>
+    <h2 class="sec-title">Central &amp; State Farmer Benefits 🏛️</h2>
+    <p class="sec-sub">Check your eligibility, direct bank transfers (DBT), insurance coverage, and solar subsidies directly from verified government portals.</p>
+  </div>
+  <div style="max-width:1100px;margin:0 auto;padding:0 20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+      <div class="schemes-tabs">
+        <button class="stab active" onclick="filterSchemes('all',this)">All Schemes</button>
+        <button class="stab" onclick="filterSchemes('dbt',this)">💰 Direct DBT</button>
+        <button class="stab" onclick="filterSchemes('subsidies',this)">🌾 Subsidies &amp; Seeds</button>
+        <button class="stab" onclick="filterSchemes('insurance',this)">🛡️ Crop Insurance</button>
+        <button class="stab" onclick="filterSchemes('solar',this)">☀️ Solar &amp; Power</button>
+      </div>
+      <input class="field" id="schemeSearch" placeholder="🔍 Search scheme name..." style="max-width:280px;margin-bottom:0" oninput="renderSchemes()">
+    </div>
+    <div class="schemes-grid" id="schemesContainer"></div>
+  </div>
 </section>
 
 <section id="mandis" style="background:var(--surface);border-block:1px solid var(--line)">
@@ -385,6 +446,7 @@
     <div id="regMsg"></div>
   </form>
 </section>
+
 
 <footer>
   <div class="flag-line">🟧 ⬜ 🟩</div>
@@ -492,7 +554,7 @@ document.addEventListener("click", function(e){
 /* ============ TRANSLATIONS DICTIONARY ============ */
 const I18N = {
   en: {
-    nav_home: "Home", nav_guide: "📖 How It Works", nav_track: "🔍 Track", nav_prices: "📈 Live Prices", nav_mandis: "📍 Mandi Map", nav_community: "🤝 Community ↗", nav_register: "📝 Register",
+    nav_home: "Home", nav_guide: "📖 How It Works", nav_track: "🔍 Track", nav_prices: "📈 Live Prices", nav_mandis: "📍 Mandi Map", nav_community: "🤝 Community ↗", nav_register: "📝 Register", nav_admin: "🛡️ Admin Portal ↗", btn_admin_portal: "🛡️ Admin Portal ↗",
     btn_voice_mode: "Voice: OFF", btn_voice_on: "Voice: ON 🔊",
     banner_tts: "Tap-to-Speak Active: Single tap reads, double tap opens.",
     voice_activated: "Voice reader activated. Single tap on any item to hear it. Double tap to open.",
@@ -536,7 +598,7 @@ const I18N = {
     btn_issue_token: "✅ Issue Token — with SMS"
   },
   hi: {
-    nav_home: "मुख्य पृष्ठ", nav_guide: "📖 प्रक्रिया", nav_track: "🔍 स्थिति ट्रैक करें", nav_prices: "📈 मंडी भाव", nav_mandis: "📍 मंडी मैप", nav_community: "🤝 समुदाय ↗", nav_register: "📝 पंजीकरण",
+    nav_home: "मुख्य पृष्ठ", nav_guide: "📖 प्रक्रिया", nav_track: "🔍 स्थिति ट्रैक करें", nav_prices: "📈 मंडी भाव", nav_mandis: "📍 मंडी मैप", nav_community: "🤝 समुदाय ↗", nav_register: "📝 पंजीकरण", nav_admin: "🛡️ एडमिन पोर्टल ↗", btn_admin_portal: "🛡️ एडमिन पोर्टल ↗",
     btn_voice_mode: "आवाज: बंद", btn_voice_on: "आवाज: चालू 🔊",
     banner_tts: "टैप-टू-स्पीक सक्रिय: एक बार दबाकर सुनें, दो बार दबाकर खोलें।",
     voice_activated: "आवाज वाचक सक्रिय हो गया है। सुनने के लिए एक बार दबाएं, खोलने के लिए दो बार दबाएं।",
@@ -580,7 +642,7 @@ const I18N = {
     btn_issue_token: "✅ टोकन जारी करें — SMS सहित"
   },
   ta: {
-    nav_home: "முகப்பு", nav_guide: "📖 செயல்முறை", nav_track: "🔍 நிலை அறிய", nav_prices: "📈 நேரடி விலை", nav_mandis: "📍 மண்டி வரைபடம்", nav_community: "🤝 சமூகம் ↗", nav_register: "📝 பதிவு",
+    nav_home: "முகப்பு", nav_guide: "📖 செயல்முறை", nav_track: "🔍 நிலை அறிய", nav_prices: "📈 நேரடி விலை", nav_mandis: "📍 மண்டி வரைபடம்", nav_community: "🤝 சமூகம் ↗", nav_register: "📝 பதிவு", nav_admin: "🛡️ நிர்வாக தளம் ↗", btn_admin_portal: "🛡️ நிர்வாக தளம் ↗",
     btn_voice_mode: "குரல்: அணை", btn_voice_on: "குரல்: இயக்கம் 🔊",
     banner_tts: "குரல் வழி இயக்கம்: ஒருமுறை தொட்டு கேட்கவும், இருமுறை தொட்டு திறக்கவும்.",
     voice_activated: "குரல் வாசிப்பான் இயக்கப்பட்டது. ஒருமுறை தொட்டு கேட்கலாம், இருமுறை தொட்டு திறக்கலாம்.",
@@ -624,7 +686,7 @@ const I18N = {
     btn_issue_token: "✅ டோக்கன் பெறுக — SMS உடன்"
   },
   te: {
-    nav_home: "హోమ్", nav_guide: "📖 ఎలా పనిచేస్తుంది", nav_track: "🔍 స్థితిని తనిఖీ చేయండి", nav_prices: "📈 మార్కెట్ ధరలు", nav_mandis: "📍 మార్కెట్ మ్యాప్", nav_community: "🤝 కమ్యూనిటీ ↗", nav_register: "📝 నమోదు",
+    nav_home: "హోమ్", nav_guide: "📖 ఎలా పనిచేస్తుంది", nav_track: "🔍 స్థితిని తనిఖీ చేయండి", nav_prices: "📈 మార్కెట్ ధరలు", nav_mandis: "📍 మార్కెట్ మ్యాప్", nav_community: "🤝 కమ్యూనిటీ ↗", nav_register: "📝 నమోదు", nav_admin: "🛡️ అడ్మిన్ పోర్టల్ ↗", btn_admin_portal: "🛡️ అడ్మిన్ పోర్టల్ ↗",
     btn_voice_mode: "వాయిస్: ఆఫ్", btn_voice_on: "వాయిస్: ఆన్ 🔊",
     banner_tts: "ట్యాప్-టు-స్పీక్ మోడ్: వినడానికి ఒకసారి నొక్కండి, తెరవడానికి రెండుసార్లు నొక్కండి.",
     voice_activated: "వాయిస్ రీడర్ ప్రారంభించబడింది. వినడానికి ఒకసారి నొక్కండి, తెరవడానికి రెండుసార్లు నొక్కండి.",
@@ -1046,10 +1108,9 @@ function distanceKm(lat1, lon1, lat2, lon2){
 
 /* ============ LEAFLET MAP + CLUSTERING ============ */
 const map = L.map('mapBox', {scrollWheelZoom: false}).setView([22.5, 80], 4.4);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-  subdomains: 'abcd',
-  maxZoom: 20
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom: 19
 }).addTo(map);
 
 let userMarker = null;
@@ -1299,7 +1360,204 @@ document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
 document.querySelectorAll('nav a').forEach(function(a){
   a.onclick = function(){ document.getElementById('nav').classList.remove('open'); };
 });
+
+
+/* ============ FARMER AUTH & SESSION ENGINE ============ */
+function updateAuthUI(){
+  const user = KM_API.getUser();
+  const authBtn = document.getElementById("farmerAuthBtn");
+  if(!authBtn) return;
+  if(user && user.name){
+    authBtn.innerHTML = "🌾 " + user.name.split(" ")[0] + " <small style='opacity:.7'>(Logout)</small>";
+    authBtn.onclick = handleFarmerLogout;
+    
+    // Auto-fill registration form
+    const fName = document.getElementById("fName");
+    const fPhone = document.getElementById("fPhone");
+    const fDist = document.getElementById("fDist");
+    if(fName && !fName.value) fName.value = user.name;
+    if(fPhone && !fPhone.value) fPhone.value = user.phone;
+    if(fDist && !fDist.value && user.district) fDist.value = user.district;
+  } else {
+    authBtn.innerHTML = "👤 Farmer Login";
+    authBtn.onclick = openFarmerAuthModal;
+  }
+}
+
+function openFarmerAuthModal(){
+  document.getElementById("farmerAuthModal").style.display = "flex";
+}
+
+function closeFarmerAuthModal(){
+  document.getElementById("farmerAuthModal").style.display = "none";
+}
+
+function switchAuthMode(mode){
+  const isLogin = mode === 'login';
+  document.getElementById("tabLogin").classList.toggle("active", isLogin);
+  document.getElementById("tabRegister").classList.toggle("active", !isLogin);
+  document.getElementById("farmerLoginForm").style.display = isLogin ? "block" : "none";
+  document.getElementById("farmerRegForm").style.display = isLogin ? "none" : "block";
+}
+
+async function handleFarmerLogin(e){
+  e.preventDefault();
+  const phone = document.getElementById("authLogPhone").value.trim();
+  const password = document.getElementById("authLogPass").value;
+  const feedback = document.getElementById("loginFeedback");
+
+  feedback.style.display = "none";
+  try {
+    const res = await KM_API.login(phone, password);
+    if(res.ok || res.token){
+      closeFarmerAuthModal();
+      updateAuthUI();
+      alert("Welcome back, " + (res.user ? res.user.name : "Farmer") + "!");
+    } else {
+      feedback.textContent = res.message || "Invalid mobile number or password.";
+      feedback.style.display = "block";
+    }
+  } catch(err){
+    feedback.textContent = "Server offline. Logging in via offline mode.";
+    feedback.style.display = "block";
+  }
+}
+
+async function handleFarmerRegister(e){
+  e.preventDefault();
+  const name = document.getElementById("authRegName").value.trim();
+  const phone = document.getElementById("authRegPhone").value.trim();
+  const district = document.getElementById("authRegDist").value.trim();
+  const password = document.getElementById("authRegPass").value;
+  const feedback = document.getElementById("regFeedback");
+
+  feedback.style.display = "none";
+  try {
+    const res = await KM_API.register({ name, phone, password, district });
+    if(res.ok || res.token){
+      closeFarmerAuthModal();
+      updateAuthUI();
+      alert("Account registered successfully! Welcome " + name);
+    } else {
+      feedback.textContent = res.message || "Registration failed. Try another number.";
+      feedback.style.display = "block";
+    }
+  } catch(err){
+    feedback.textContent = "Registration error. Please check your connection.";
+    feedback.style.display = "block";
+  }
+}
+
+function handleFarmerLogout(){
+  if(confirm("Log out of your farmer profile?")){
+    KM_API.clearAuth();
+    updateAuthUI();
+  }
+}
+
+/* ============ NOTIFICATION DRAWER ============ */
+function toggleNotifDrawer(e){
+  if(e) e.stopPropagation();
+  const d = document.getElementById("notifDrawer");
+  d.style.display = d.style.display === "flex" ? "none" : "flex";
+}
+
+function clearNotifs(){
+  document.getElementById("notifBadge").style.display = "none";
+  document.getElementById("notifList").innerHTML = '<p style="text-align:center;color:var(--muted);font-size:.82rem;padding:20px">No unread notifications.</p>';
+}
+
+document.addEventListener("click", function(e){
+  if(!e.target.closest("#notifDrawer") && !e.target.closest("#notifBellBtn")){
+    const d = document.getElementById("notifDrawer");
+    if(d) d.style.display = "none";
+  }
+});
+
+
+
+/* ============ GOVERNMENT SCHEMES ============ */
+let activeSchemeCat = 'all';
+let allSchemesData = [
+  { id:"pm_kisan", title:"PM-KISAN Samman Nidhi", category:"dbt", benefit:"₹6,000 / year in 3 installments", elig:"All small and marginal landholding farmer families across India.", desc:"Direct bank transfer financial support provided by the Govt of India.", url:"https://pmkisan.gov.in" },
+  { id:"pmfby", title:"Pradhan Mantri Fasal Bima Yojana (PMFBY)", category:"insurance", benefit:"Comprehensive crop loss risk cover at low premium (1.5% - 2%)", elig:"Farmers growing notified crops in notified areas.", desc:"Financial protection against droughts, floods, and pests.", url:"https://pmfby.gov.in" },
+  { id:"pm_kusum", title:"PM-KUSUM Solar Pump Scheme", category:"solar", benefit:"Up to 60% subsidy for solar agricultural pumps", elig:"Individual farmers, water user associations, and cooperatives.", desc:"Zero diesel expense solar pump sets.", url:"https://pmkusum.mnre.gov.in" },
+  { id:"soil_health_card", title:"Soil Health Card Scheme", category:"subsidies", benefit:"Free comprehensive soil nutrient test & dosage recommendations", elig:"All farm owners across India.", desc:"Detailed 12-parameter soil health report.", url:"https://soilhealth.dac.gov.in" },
+  { id:"aif", title:"Agriculture Infrastructure Fund (AIF)", category:"subsidies", benefit:"3% interest subvention on loans up to ₹2 Crores", elig:"Farmers, FPOs, Agri-entrepreneurs.", desc:"Medium-long term post-harvest financing.", url:"https://agriinfra.dac.gov.in" },
+  { id:"enam", title:"National Agriculture Market (e-NAM)", category:"dbt", benefit:"Online pan-India electronic trading portal for farm produce", elig:"Registered farmers with state APMC / Mandi licenses.", desc:"Unified electronic trading for transparent bidding.", url:"https://enam.gov.in" }
+];
+
+function filterSchemes(cat, btn){
+  activeSchemeCat = cat;
+  document.querySelectorAll(".stab").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderSchemes();
+}
+
+async function renderSchemes(){
+  const container = document.getElementById("schemesContainer");
+  const q = (document.getElementById("schemeSearch") ? document.getElementById("schemeSearch").value : "").toLowerCase();
+
+  try {
+    if (typeof KM_API !== "undefined" && KM_API.getSchemes) {
+      const apiRes = await KM_API.getSchemes(activeSchemeCat, q);
+      if (apiRes && apiRes.schemes) {
+        allSchemesData = apiRes.schemes;
+      }
+    }
+  } catch(e){}
+
+  const filtered = allSchemesData.filter(s => {
+    const catOK = activeSchemeCat === 'all' || s.category.toLowerCase() === activeSchemeCat.toLowerCase();
+    const qOK = !q || s.title.toLowerCase().includes(q) || (s.elig && s.elig.toLowerCase().includes(q));
+    return catOK && qOK;
+  });
+
+  if(!filtered.length){
+    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">No schemes found matching your search.</div>';
+    return;
+  }
+
+  container.innerHTML = filtered.map(s => `
+    <div class="scard">
+      <div>
+        <span style="font-size:.72rem;font-weight:800;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:6px">${s.category.toUpperCase()} SCHEME</span>
+        <h3>${s.title}</h3>
+        <div class="benefit">${s.benefit}</div>
+        <p class="elig"><b>Eligibility:</b> ${s.eligibility || s.elig}</p>
+      </div>
+      <a href="${s.portal_url || s.url || '#'}" target="_blank" class="btn btn-ghost" style="padding:10px 18px;font-size:.85rem;text-align:center;display:block">
+        Apply on Official Portal ↗
+      </a>
+    </div>
+  `).join('');
+}
+
+// Attach init hooks
+window.addEventListener("DOMContentLoaded", function(){
+  updateAuthUI();
+  renderSchemes();
+});
 </script>
+
+
+<!-- NOTIFICATION DRAWER -->
+<div id="notifDrawer">
+  <div class="notif-header">
+    <span>🔔 Alerts &amp; Notifications</span>
+    <small style="color:var(--green);cursor:pointer" onclick="clearNotifs()">Mark all read</small>
+  </div>
+  <div class="notif-list" id="notifList">
+    <div class="notif-item">
+      <b>🌾 Wheat Procurement Open</b>
+      <p style="margin:0;color:var(--muted)">MSP rate of ₹2,425/quintal active across 70+ state APMC mandis.</p>
+    </div>
+    <div class="notif-item">
+      <b>⚡ DBT Subsidy Disbursal</b>
+      <p style="margin:0;color:var(--muted)">72-hour direct bank transfer guaranteed on approved smart tokens.</p>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>

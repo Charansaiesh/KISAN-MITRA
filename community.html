@@ -38,7 +38,7 @@
   .field{padding:14px 18px;background:var(--surface);border:1.5px solid var(--line);border-radius:14px;color:var(--txt);font-size:.95rem;font-family:inherit;width:100%}
   .field:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 4px rgba(62,207,111,.12)}
   .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px;position:relative;transition:.3s;animation:up .4s ease}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px;position:relative;transition:.3s;animation:up .4s ease;display:flex;flex-direction:column;justify-content:space-between}
   @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
   .card:hover{transform:translateY(-5px);border-color:var(--green);box-shadow:0 16px 40px rgba(62,207,111,.1)}
   .card .tag{position:absolute;top:16px;right:16px;font-size:.7rem;font-weight:800;padding:5px 12px;border-radius:16px}
@@ -50,9 +50,12 @@
   .price{font-size:1.3rem;font-weight:800;color:var(--green);margin:10px 0 4px;letter-spacing:-1px}
   .price small{font-size:.72rem;color:var(--muted);font-weight:500}
   .contact{display:flex;gap:8px;margin-top:14px}
-  .cbtn{flex:1;text-align:center;padding:10px;border-radius:12px;font-weight:700;font-size:.85rem;text-decoration:none;transition:.25s;display:inline-block}
+  .cbtn{flex:1;text-align:center;padding:10px;border-radius:12px;font-weight:700;font-size:.85rem;text-decoration:none;transition:.25s;display:inline-block;cursor:pointer;border:none}
   .c-call{background:var(--green);color:#0b0f0d}
   .c-wa{background:var(--surface2);border:1px solid var(--line);color:var(--gold)}
+  .c-comm{background:rgba(62,207,111,.12);border:1px solid var(--line);color:var(--txt);margin-top:8px;padding:8px;border-radius:10px;font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.2s}
+  .c-comm:hover{border-color:var(--green);background:rgba(62,207,111,.2)}
+  .c-del{background:rgba(224,82,82,.15);color:#ff7b7b;border:none;border-radius:8px;padding:4px 8px;font-size:.72rem;cursor:pointer;margin-top:6px;float:right}
   .cbtn:hover{transform:translateY(-2px)}
   .post-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:32px;max-width:820px;margin:0 auto 50px;box-shadow:var(--shadow)}
   .post-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
@@ -60,10 +63,26 @@
   .full{grid-column:1/-1}
   #postMsg{text-align:center;font-weight:800;margin-top:14px;display:none;color:var(--green);animation:up .4s ease}
   footer{border-top:1px solid var(--line);text-align:center;padding:34px;color:var(--muted);font-size:.85rem;line-height:2}
+
+  /* Comments Modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:999;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);width:100%;max-width:550px;max-height:85vh;display:flex;flex-direction:column;box-shadow:var(--shadow);overflow:hidden}
+  .modal-head{padding:18px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .modal-head h3{font-size:1.1rem;color:var(--txt)}
+  .modal-close{background:none;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer}
+  .comments-list{padding:20px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:12px}
+  .comment-bubble{background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:12px 16px}
+  .comment-meta{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted);margin-bottom:4px}
+  .comment-meta b{color:var(--gold)}
+  .comment-text{font-size:.88rem;color:var(--txt);line-height:1.5}
+  .comment-form{padding:16px 20px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px;background:var(--bg)}
+  .comment-form input, .comment-form textarea{background:var(--surface);border:1.5px solid var(--line);color:var(--txt);border-radius:10px;padding:10px;font-family:inherit;font-size:.85rem;outline:none}
+  .comment-form input:focus, .comment-form textarea:focus{border-color:var(--green)}
+
   @media(max-width:820px){.grid{grid-template-columns:1fr 1fr}.post-grid{grid-template-columns:1fr}}
   @media(max-width:540px){.grid{grid-template-columns:1fr}}
 </style>
-  <script src="js/api.js"></script>
+<script src="js/api.js"></script>
 </head>
 <body>
 
@@ -83,13 +102,13 @@
 <header>
   <div class="aurora a1"></div><div class="aurora a2"></div>
   <h1 data-i18n="comm_title">Community <span class="grad-txt">Marketplace</span> 🤝</h1>
-  <p class="hero-p" data-i18n="comm_sub">Farmers helping farmers. Sell your produce, buy equipment & seeds, or book tractors and lorries — directly. No middlemen, no commission.</p>
+  <p class="hero-p" data-i18n="comm_sub">Farmers helping farmers. Sell your produce, buy equipment &amp; seeds, or book tractors and lorries — directly. No middlemen, no commission.</p>
 </header>
 
 <section>
   <div class="post-box">
     <h2 style="font-size:1.3rem;margin-bottom:4px" data-i18n="post_h">📢 Post a Listing</h2>
-    <p style="color:var(--muted);font-size:.88rem;margin-bottom:6px" data-i18n="post_sub">Your post appears below instantly and is saved safely on this device.</p>
+    <p style="color:var(--muted);font-size:.88rem;margin-bottom:6px" data-i18n="post_sub">Your post appears below instantly and is synchronized with the community database.</p>
     <form class="post-grid" onsubmit="postListing(event)">
       <div>
         <label data-i18n="lbl_iwant">I want to *</label>
@@ -146,8 +165,29 @@
   <div class="grid" id="listings"></div>
 </section>
 
+<!-- COMMENTS & DISCUSSION MODAL -->
+<div class="modal-overlay" id="commentModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div>
+        <h3 id="modalPostTitle">💬 Discussion &amp; Inquiries</h3>
+        <small id="modalPostMeta" style="color:var(--muted);font-size:.78rem"></small>
+      </div>
+      <button class="modal-close" onclick="closeComments()">✕</button>
+    </div>
+    <div class="comments-list" id="commentsList">
+      <!-- Injected dynamically -->
+    </div>
+    <form class="comment-form" onsubmit="submitComment(event)">
+      <input type="text" id="commAuthor" placeholder="Your Name or Farm Name *" required>
+      <textarea id="commText" rows="2" placeholder="Ask a question or offer price..." required></textarea>
+      <button type="submit" class="cbtn c-call" style="border:none;padding:10px;font-weight:700">💬 Post Reply</button>
+    </form>
+  </div>
+</div>
+
 <footer>
-  🌾 <b style="color:var(--txt)">KisanMitra Community</b> · <span data-i18n="foot_txt">Buy, sell & transport directly</span><br>
+  🌾 <b style="color:var(--txt)">KisanMitra Community</b> · <span data-i18n="foot_txt">Buy, sell &amp; transport directly</span><br>
   Developed with ❤️ by <b style="color:var(--green)">Team TechNova</b><br>
   <a href="index.html" style="color:var(--green);text-decoration:none;font-weight:700" data-i18n="back_portal">← Back to Main Portal</a>
 </footer>
@@ -159,7 +199,7 @@ const I18N_COMM = {
     comm_title: 'Community <span class="grad-txt">Marketplace</span> 🤝',
     comm_sub: "Farmers helping farmers. Sell your produce, buy equipment & seeds, or book tractors and lorries — directly. No middlemen, no commission.",
     post_h: "📢 Post a Listing",
-    post_sub: "Your post appears below instantly and is saved safely on this device.",
+    post_sub: "Your post appears below instantly and is synchronized with the community database.",
     lbl_iwant: "I want to *", opt_sell: "💰 Sell", opt_buy: "🛒 Buy / Wanted",
     lbl_cat: "Category *", cat_crops: "🌾 Crops", cat_equip: "🚜 Equipment", cat_trans: "🚛 Transport",
     lbl_item: "Item / Crop *", ph_item: "e.g. 40 quintal onion / tractor for hire",
@@ -199,12 +239,12 @@ const I18N_COMM = {
   ta: {
     back_portal: "← முதன்மை போர்ட்டலுக்கு திரும்பு",
     comm_title: 'உழவர் சமூகம் <span class="grad-txt">சந்தை</span> 🤝',
-    comm_sub: "விவசாயிகள் விவசாயிகளுக்காக. உங்கள் விளைபொருட்களை விற்கவும், கருவிகளை வாங்கவும், டிராக்டர்/லாரி வாடகைக்கு எடுக்கவும் — இடைத்தரகர்கள் இல்லாமல்.",
+    comm_sub: "விவசாயிகள் விவசாயிகளுக்காக. விளைபொருட்களை விற்கவும், கருவிகளை வாங்கவும், வாடகைக்கு எடுக்கவும் — இடைத்தரகர்கள் இல்லாமல்.",
     post_h: "📢 புதிய பட்டியல் இடுக",
     post_sub: "உங்கள் பட்டியல் உடனடியாக கீழே தோன்றும்.",
     lbl_iwant: "நோக்கம் *", opt_sell: "💰 விற்க", opt_buy: "🛒 வாங்க / தேவை",
     lbl_cat: "வகை *", cat_crops: "🌾 பயிர்கள்", cat_equip: "🚜 கருவிகள்", cat_trans: "🚛 போக்குவரத்து",
-    lbl_item: "பொருள் / பயிர் *", ph_item: "எ.கா. 40 குவிண்டால் வெங்காயம் / வாடகை டிராக்டர்",
+    lbl_item: "பொருள் / பயிர் *", ph_item: "எ.கா. 40 குவிண்டால் வெங்காயம்",
     lbl_name: "உங்கள் பெயர் *", ph_name: "பெயர்",
     lbl_dist: "மாவட்டம் / ஊர் *", ph_dist: "எ.கா. Erode",
     lbl_phone: "தொலைபேசி எண் *", ph_phone: "10 இலக்க எண்",
@@ -212,7 +252,7 @@ const I18N_COMM = {
     btn_post: "✅ பட்டியலை இடுக",
     msg_posted: "🎉 வெளியிடப்பட்டது! கீழே பார்க்கவும்.",
     tab_all: "🌐 அனைத்தும்", tab_crops: "🌾 பயிர்கள்", tab_equip: "🚜 கருவிகள்", tab_trans: "🚛 போக்குவரத்து",
-    ph_search: "🔍 தேடுக (பயிர், மாவட்டம், பெயர்)...",
+    ph_search: "🔍 தேடுக...",
     foot_txt: "நேரடியாக வாங்கவும், விற்கவும்",
     tag_sell: "விற்பனைக்கு", tag_buy: "தேவை",
     btn_call: "📞 அழைக்க", btn_wa: "💬 வாட்ஸ்அப்"
@@ -220,12 +260,12 @@ const I18N_COMM = {
   te: {
     back_portal: "← ప్రధాన పోర్టల్‌కు తిరిగి వెళ్ళండి",
     comm_title: 'రైతు కమ్యూనిటీ <span class="grad-txt">మార్కెట్</span> 🤝',
-    comm_sub: "రైతుల సహాయంతో రైతులు. పంటలను విక్రయించండి, వ్యవసాయ పనిముట్లు కొనండి లేదా ట్రాక్టర్-లారీలను అద్దెకు తీసుకోండి — నేరుగా దళారుల ప్రమేయం లేకుండా.",
+    comm_sub: "రైతుల సహాయంతో రైతులు. పంటలను విక్రయించండి, పనిముట్లు కొనండి — నేరుగా దళారుల ప్రమేయం లేకుండా.",
     post_h: "📢 ప్రకటన పోస్ట్ చేయండి",
     post_sub: "మీ ప్రకటన క్రింద వెంటనే కనిపిస్తుంది.",
     lbl_iwant: "నేను కోరుకుంటున్నది *", opt_sell: "💰 అమ్మడం", opt_buy: "🛒 కొనడం / కావలెను",
     lbl_cat: "వర్గం *", cat_crops: "🌾 పంటలు", cat_equip: "🚜 పనిముట్లు", cat_trans: "🚛 రవాణా",
-    lbl_item: "పంట / వస్తువు పేరు *", ph_item: "ఉదా. 40 క్వింటాళ్ల ఉల్లిపాయలు / అద్దె ట్రాక్టర్",
+    lbl_item: "పంట / వస్తువు పేరు *", ph_item: "ఉదా. 40 క్వింటాళ్ల ఉల్లిపాయలు",
     lbl_name: "మీ పేరు *", ph_name: "పూర్తి పేరు",
     lbl_dist: "జిల్లా / నగరం *", ph_dist: "ఉదా. Warangal",
     lbl_phone: "మొబైల్ నంబర్ *", ph_phone: "10 అంకెల నంబర్",
@@ -233,7 +273,7 @@ const I18N_COMM = {
     btn_post: "✅ ప్రకటనను పోస్ట్ చేయండి",
     msg_posted: "🎉 పోస్ట్ చేయబడింది! క్రింద చూడండి.",
     tab_all: "🌐 అన్నీ", tab_crops: "🌾 పంటలు", tab_equip: "🚜 పనిముట్లు", tab_trans: "🚛 రవాణా",
-    ph_search: "🔍 శోధించండి (పంట, జిల్లా, పేరు)...",
+    ph_search: "🔍 శోధించండి...",
     foot_txt: "నేరుగా అమ్మండి, కొనండి మరియు రవాణా చేయండి",
     tag_sell: "అమ్మకానికి", tag_buy: "కావలెను",
     btn_call: "📞 కాల్ చేయండి", btn_wa: "💬 వాట్సాప్"
@@ -262,18 +302,19 @@ function changeLanguage(lang){
 }
 
 const CKEY = "kisanmitra_community_v1";
-function getListings(){
+
+function getLocalListings(){
   let l = JSON.parse(localStorage.getItem(CKEY) || "null");
   if(!l){
     l = [
-      {type:"sell",cat:"crops",title:"40 quintal tomato — fresh harvest",name:"Karuppasamy",dist:"Coimbatore",phone:"9876543210",price:"₹1,800/quintal",emoji:"🍅"},
-      {type:"sell",cat:"crops",title:"30 quintal paddy (Sona Masoori)",name:"Venkatesh",dist:"Nizamabad",phone:"9848012345",price:"₹2,150/quintal",emoji:"🌾"},
-      {type:"buy",cat:"crops",title:"Wanted: 100 quintal maize, bulk buyer",name:"Sri Traders",dist:"Davangere",phone:"9900112233",price:"₹2,100/quintal",emoji:"🌽"},
-      {type:"sell",cat:"equipment",title:"Tractor with rotavator for hire",name:"Muthu",dist:"Erode",phone:"9787654321",price:"₹900/hour",emoji:"🚜"},
-      {type:"sell",cat:"transport",title:"10-wheel lorry — all South India",name:"Bala Transport",dist:"Salem",phone:"9445566778",price:"₹35/km",emoji:"🚛"},
-      {type:"sell",cat:"transport",title:"Tractor trolley — local mandi trips",name:"Suresh",dist:"Warangal",phone:"9652123456",price:"₹28/km",emoji:"🚛"},
-      {type:"buy",cat:"equipment",title:"Wanted: second-hand seed drill",name:"Lakshmi FPO",dist:"Kurnool",phone:"9000112233",price:"Budget ₹45,000",emoji:"🌱"},
-      {type:"sell",cat:"crops",title:"25 quintal onion — Nashik quality",name:"Jitendra",dist:"Pune",phone:"9822011223",price:"₹1,400/quintal",emoji:"🧅"}
+      {id:"cm_1", type:"sell",cat:"crops",title:"40 quintal tomato — fresh harvest",name:"Karuppasamy",dist:"Coimbatore",phone:"9876543210",price:"₹1,800/quintal",emoji:"🍅", comments:[]},
+      {id:"cm_2", type:"sell",cat:"crops",title:"30 quintal paddy (Sona Masoori)",name:"Venkatesh",dist:"Nizamabad",phone:"9848012345",price:"₹2,150/quintal",emoji:"🌾", comments:[]},
+      {id:"cm_3", type:"buy",cat:"crops",title:"Wanted: 100 quintal maize, bulk buyer",name:"Sri Traders",dist:"Davangere",phone:"9900112233",price:"₹2,100/quintal",emoji:"🌽", comments:[]},
+      {id:"cm_4", type:"sell",cat:"equipment",title:"Tractor with rotavator for hire",name:"Muthu",dist:"Erode",phone:"9787654321",price:"₹900/hour",emoji:"🚜", comments:[]},
+      {id:"cm_5", type:"sell",cat:"transport",title:"10-wheel lorry — all South India",name:"Bala Transport",dist:"Salem",phone:"9445566778",price:"₹35/km",emoji:"🚚", comments:[]},
+      {id:"cm_6", type:"sell",cat:"transport",title:"Tractor trolley — local mandi trips",name:"Suresh",dist:"Warangal",phone:"9652123456",price:"₹28/km",emoji:"🚚", comments:[]},
+      {id:"cm_7", type:"buy",cat:"equipment",title:"Wanted: second-hand seed drill",name:"Lakshmi FPO",dist:"Kurnool",phone:"9000112233",price:"Budget ₹45,000",emoji:"🚜", comments:[]},
+      {id:"cm_8", type:"sell",cat:"crops",title:"25 quintal onion — Nashik quality",name:"Jitendra",dist:"Pune",phone:"9822011223",price:"₹1,400/quintal",emoji:"🧅", comments:[]}
     ];
     localStorage.setItem(CKEY, JSON.stringify(l));
   }
@@ -281,6 +322,9 @@ function getListings(){
 }
 
 let activeCat = "all";
+let cachedListings = [];
+let currentActivePostId = null;
+
 function filterCat(c, btn){
   activeCat = c;
   document.querySelectorAll(".tab").forEach(function(b){ b.classList.remove("active"); });
@@ -288,14 +332,35 @@ function filterCat(c, btn){
   render();
 }
 
-function render(){
+async function fetchListings(){
+  try {
+    if (typeof KM_API !== "undefined" && KM_API.getCommunityListings) {
+      const res = await KM_API.getCommunityListings(activeCat);
+      if (res && res.data && res.data.length > 0) {
+        cachedListings = res.data;
+        localStorage.setItem(CKEY, JSON.stringify(cachedListings));
+        return cachedListings;
+      }
+    }
+  } catch(e){}
+  cachedListings = getLocalListings();
+  return cachedListings;
+}
+
+async function render(){
   const dict = I18N_COMM[currentLang] || I18N_COMM.en;
   const q = document.getElementById("searchBox").value.trim().toLowerCase();
-  const list = getListings().filter(function(x){
+  
+  if (!cachedListings.length) {
+    await fetchListings();
+  }
+
+  const list = cachedListings.filter(function(x){
     const catOK = activeCat === "all" || x.cat === activeCat;
     const qOK = !q || (x.title + " " + x.name + " " + x.dist).toLowerCase().indexOf(q) !== -1;
     return catOK && qOK;
   });
+
   const grid = document.getElementById("listings");
   if(!list.length){
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px"><div style="font-size:3.4rem;margin-bottom:12px">📭</div><b>No listings found</b><br><small style="color:var(--muted)">Try another filter or post the first listing above!</small></div>';
@@ -306,42 +371,58 @@ function render(){
     const card = document.createElement("div");
     card.className = "card";
     const tagText = x.type === "sell" ? dict.tag_sell : dict.tag_buy;
+    const commCount = (x.comments || []).length;
+
     card.innerHTML =
       '<span class="tag ' + (x.type === "sell" ? "tag-sell" : "tag-buy") + '">' + tagText + '</span>' +
-      '<div class="emoji">' + x.emoji + '</div>' +
-      '<h3>' + x.title + '</h3>' +
-      '<p class="meta">👤 ' + x.name + ' · 📍 ' + x.dist + '</p>' +
-      '<div class="price">' + x.price + ' <small>' + (x.cat === "transport" ? "per trip/km" : x.cat === "equipment" ? "one-time" : "per quintal") + '</small></div>' +
-      '<div class="contact"><a class="cbtn c-call" href="tel:+91' + x.phone + '">' + dict.btn_call + '</a>' +
-      '<a class="cbtn c-wa" target="_blank" href="https://wa.me/91' + x.phone + '?text=' + encodeURIComponent("Hi " + x.name + ", I saw your KisanMitra listing: " + x.title) + '">' + dict.btn_wa + '</a></div>';
+      '<div>' +
+        '<div class="emoji">' + (x.emoji || "🌾") + '</div>' +
+        '<h3>' + x.title + '</h3>' +
+        '<p class="meta">👤 ' + x.name + ' · 📍 ' + x.dist + '</p>' +
+        '<div class="price">' + x.price + ' <small>' + (x.cat === "transport" ? "per trip/km" : x.cat === "equipment" ? "one-time" : "per quintal") + '</small></div>' +
+      '</div>' +
+      '<div>' +
+        '<div class="contact">' +
+          '<a class="cbtn c-call" href="tel:+91' + x.phone + '">' + dict.btn_call + '</a>' +
+          '<a class="cbtn c-wa" target="_blank" href="https://wa.me/91' + x.phone + '?text=' + encodeURIComponent("Hi " + x.name + ", I saw your KisanMitra listing: " + x.title) + '">' + dict.btn_wa + '</a>' +
+        '</div>' +
+        '<button class="c-comm" onclick="openComments(\'' + x.id + '\')">💬 ' + commCount + ' Questions & Comments</button>' +
+        '<button class="c-del" onclick="deleteListing(\'' + x.id + '\')">🗑 Remove</button>' +
+      '</div>';
     grid.appendChild(card);
   });
 }
 
-
-/* ============ API BACKED COMMUNITY ============ */
+/* ============ POST LISTING ============ */
 async function postListing(e){
   e.preventDefault();
   const type = document.getElementById("pType").value;
   const cat = document.getElementById("pCat").value;
-  const title = (document.getElementById("pTitle") || document.getElementById("pItem")).value.trim();
+  const title = (document.getElementById("pTitle") ? document.getElementById("pTitle").value : "").trim();
   const name = document.getElementById("pName").value.trim();
   const dist = document.getElementById("pDist").value.trim();
   const phone = document.getElementById("pPhone").value.trim();
   const price = document.getElementById("pPrice").value.trim();
   const emojis = {crops:"🌾", equipment:"🚜", transport:"🚚"};
 
-  try {
-    await KM_API.createCommunityListing({ type, cat, title, name, dist, phone, price });
-  } catch(e){}
-
-  const item = {
+  const newListing = {
+    id: "cm_" + Date.now(),
     type, cat, title, name, dist, phone, price,
-    emoji: emojis[cat] || "🌾"
+    emoji: emojis[cat] || "🌾",
+    comments: []
   };
-  const list = getListings();
-  list.unshift(item);
-  localStorage.setItem(CKEY, JSON.stringify(list));
+
+  try {
+    if (typeof KM_API !== "undefined" && KM_API.createCommunityListing) {
+      const apiRes = await KM_API.createCommunityListing({ type, cat, title, name, dist, phone, price });
+      if (apiRes && apiRes.data) {
+        newListing.id = apiRes.data.id;
+      }
+    }
+  } catch(err){}
+
+  cachedListings.unshift(newListing);
+  localStorage.setItem(CKEY, JSON.stringify(cachedListings));
 
   (e.target.reset ? e.target.reset() : document.querySelector("form.post-grid").reset());
   const msg = document.getElementById("postMsg");
@@ -350,8 +431,93 @@ async function postListing(e){
   render();
 }
 
-window.addEventListener("load", function(){
+/* ============ COMMENTS SYSTEM ============ */
+function openComments(postId){
+  currentActivePostId = postId;
+  const post = cachedListings.find(p => p.id === postId);
+  if(!post) return;
+
+  document.getElementById("modalPostTitle").textContent = post.title;
+  document.getElementById("modalPostMeta").textContent = "Posted by " + post.name + " (" + post.dist + ") · " + post.price;
+  
+  renderCommentsList(post.comments || []);
+  document.getElementById("commentModal").style.display = "flex";
+}
+
+function closeComments(){
+  document.getElementById("commentModal").style.display = "none";
+  currentActivePostId = null;
+}
+
+function renderCommentsList(comments){
+  const listEl = document.getElementById("commentsList");
+  if(!comments.length){
+    listEl.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px;font-size:.85rem">No comments or questions yet. Be the first to ask about price, quality, or transport!</p>';
+    return;
+  }
+  listEl.innerHTML = comments.map(c => `
+    <div class="comment-bubble">
+      <div class="comment-meta">
+        <b>${c.author_name || 'Farmer'}</b>
+        <span>${new Date(c.created_at || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</span>
+      </div>
+      <div class="comment-text">${c.comment}</div>
+    </div>
+  `).join('');
+}
+
+async function submitComment(e){
+  e.preventDefault();
+  if(!currentActivePostId) return;
+
+  const author = document.getElementById("commAuthor").value.trim();
+  const comment = document.getElementById("commText").value.trim();
+  if(!comment) return;
+
+  const newCommentObj = {
+    id: "c_" + Date.now(),
+    author_name: author || "Kisan Mitra",
+    comment: comment,
+    created_at: new Date().toISOString()
+  };
+
+  try {
+    if (typeof KM_API !== "undefined" && KM_API.addCommunityComment) {
+      await KM_API.addCommunityComment(currentActivePostId, { author_name: author, comment });
+    }
+  } catch(err){}
+
+  const post = cachedListings.find(p => p.id === currentActivePostId);
+  if(post){
+    post.comments = post.comments || [];
+    post.comments.push(newCommentObj);
+    localStorage.setItem(CKEY, JSON.stringify(cachedListings));
+    renderCommentsList(post.comments);
+    render();
+  }
+
+  document.getElementById("commText").value = "";
+}
+
+/* ============ DELETE LISTING ============ */
+async function deleteListing(postId){
+  if(!confirm("Remove this listing from the community board?")) return;
+
+  try {
+    if (typeof KM_API !== "undefined" && KM_API.deleteCommunityListing) {
+      await KM_API.deleteCommunityListing(postId);
+    }
+  } catch(err){}
+
+  cachedListings = cachedListings.filter(p => p.id !== postId);
+  localStorage.setItem(CKEY, JSON.stringify(cachedListings));
+  render();
+}
+
+window.addEventListener("load", async function(){
   changeLanguage(currentLang);
+  await fetchListings();
+  render();
 });
 </script>
 </body>

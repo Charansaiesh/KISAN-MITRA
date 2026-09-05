@@ -1,12 +1,18 @@
-﻿const http = require('http');
+const http = require('http');
 require('dotenv').config();
 
+process.env.NODE_ENV = 'test';
 const PORT = process.env.PORT || 5000;
 const BASE_URL = `http://localhost:${PORT}/api`;
+const app = require('./server');
+
+let serverInstance = null;
 
 function request(path, method = 'GET', body = null, token = null) {
   return new Promise((resolve, reject) => {
-    const url = new URL(`${BASE_URL}${path}`);
+    // If path starts with /api/, strip it to avoid /api/api/...
+    const cleanPath = path.startsWith('/api/') ? path.substring(4) : path;
+    const url = new URL(`${BASE_URL}${cleanPath}`);
     const options = {
       hostname: url.hostname,
       port: url.port,
@@ -43,10 +49,26 @@ function request(path, method = 'GET', body = null, token = null) {
   });
 }
 
+// Ensure server is listening before tests run
+async function ensureServerRunning() {
+  try {
+    await request('/health');
+  } catch (e) {
+    // Server not running, start it in-process
+    await new Promise((resolve) => {
+      serverInstance = app.listen(PORT, () => {
+        resolve();
+      });
+    });
+  }
+}
+
 async function runAllTests() {
   console.log('====================================================');
   console.log('🌾 KISANMITRA COMPLETE AUTOMATED TEST SUITE');
   console.log('====================================================\n');
+
+  await ensureServerRunning();
 
   let passed = 0;
   let failed = 0;
@@ -132,7 +154,7 @@ async function runAllTests() {
       '7. PATCH /api/tokens/:token/advance (Officer successfully advanced step with JWT)'
     );
 
-    // 8. Unauthorized Advance Step Guard (Without JWT or with Farmer JWT)
+    // 8. Role-Based Guard Check (Without JWT or with Farmer JWT)
     const unauthRes = await request(`/tokens/${generatedTokenId}/advance`, 'PATCH', null, null);
     const farmerForbiddenRes = await request(`/tokens/${generatedTokenId}/advance`, 'PATCH', null, farmerToken);
     assert(
@@ -184,16 +206,21 @@ async function runAllTests() {
       '12. POST /api/community/listings/:id/comments (Comment added to community thread)'
     );
 
-    // 13. Feedback Submission
+    // 13. Feedback Submission & Retrieval
     const fbRes = await request('/feedback', 'POST', {
       name: 'Gurdev Singh',
       phone: '9876543210',
       rating: 5,
       comments: 'Smart token system saved 4 hours at the mandi. Direct payment arrived within 48 hours.'
     });
-    assert(fbRes.status === 201 && fbRes.data.success === true, '13. POST /api/feedback (User feedback persisted)');
+    const allFbRes = await request('/feedback', 'GET');
+    assert(
+      fbRes.status === 201 && fbRes.data.success === true && allFbRes.status === 200 && allFbRes.data.count > 0,
+      '13. POST & GET /api/feedback (User feedback submitted and retrieved for admin)',
+      `Total Feedback: ${allFbRes.data.count}`
+    );
 
-    // 14. Notifications
+    // 14. Notifications Delivery
     const notifRes = await request('/feedback/notifications');
     assert(notifRes.status === 200 && Array.isArray(notifRes.data.notifications), '14. GET /api/feedback/notifications (Notifications delivered)');
 
@@ -201,9 +228,28 @@ async function runAllTests() {
     const delRes = await request(`/tokens/${generatedTokenId}`, 'DELETE', null, officerToken);
     assert(delRes.status === 200 && delRes.data.success === true, '15. DELETE /api/tokens/:token (Officer token removal verified)');
 
+    // 16. Government Schemes Catalogue & Filtering
+    const schemesRes = await request('/schemes?cat=dbt');
+    assert(
+      schemesRes.status === 200 && schemesRes.data.success === true && schemesRes.data.count > 0,
+      '16. GET /api/schemes (Government schemes & subsidies filtered by category)',
+      `Schemes Found: ${schemesRes.data.count}`
+    );
+
+    // 17. Community Post Deletion Moderation
+    const delPostRes = await request(`/community/listings/${communityPostId}`, 'DELETE');
+    assert(
+      delPostRes.status === 200 && delPostRes.data.success === true,
+      '17. DELETE /api/community/listings/:id (Community post deleted successfully)'
+    );
+
   } catch (err) {
     console.error('⚠️ Unexpected test exception:', err);
     failed++;
+  } finally {
+    if (serverInstance) {
+      serverInstance.close();
+    }
   }
 
   console.log('\n====================================================');
