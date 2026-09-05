@@ -33,6 +33,18 @@ app.use('/api/', apiLimiter);
 // Serve Static Frontend Portals
 app.use(express.static(__dirname));
 
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+app.get('/community', (req, res) => {
+  res.sendFile(path.join(__dirname, 'community.html'));
+});
+
 // 1. HEALTH CHECK ENDPOINT
 app.get('/api/health', (req, res) => {
   res.json({
