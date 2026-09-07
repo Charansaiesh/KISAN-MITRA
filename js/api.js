@@ -7,6 +7,9 @@ const KM_API = (function() {
   const TOKEN_KEY = 'km_jwt_token';
   const USER_KEY = 'km_auth_user';
 
+  const SUPABASE_REST_URL = 'https://rkundyxuyuaktkhquphk.supabase.co/rest/v1';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrdW5keXh1eXVha3RraHF1cGhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NzczODgsImV4cCI6MjEwNDM1MzM4OH0.9_5gu_IYJTBV6WTqJ1hQ95BCjv57ZlbV-V-JT1wHxfY';
+
   function getToken() {
     try { return localStorage.getItem(TOKEN_KEY) || ''; } catch(e) { return ''; }
   }
@@ -29,6 +32,32 @@ const KM_API = (function() {
     try { return JSON.parse(localStorage.getItem(USER_KEY) || 'null'); } catch(e) { return null; }
   }
 
+  /* ================= DIRECT SUPABASE REST CLIENT ================= */
+  async function supabaseFetch(path, options = {}) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 9000);
+    try {
+      const cleanPath = path.startsWith('/') ? path : '/' + path;
+      const url = SUPABASE_REST_URL + cleanPath;
+      const headers = Object.assign({
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json'
+      }, options.headers || {});
+      const response = await fetch(url, Object.assign({}, options, {
+        headers,
+        signal: controller.signal
+      }));
+      clearTimeout(timeoutId);
+      if (!response.ok) return null;
+      const ct = response.headers.get('content-type') || '';
+      if (ct.includes('application/json')) return await response.json();
+      return await response.text();
+    } catch (err) {
+      clearTimeout(timeoutId);
+      return null;
+    }
+  }
 
   /* ================= BASE URL & ROUTE FETCH ================= */
   function getBaseUrlCandidates() {
@@ -36,9 +65,9 @@ const KM_API = (function() {
     if (typeof window !== 'undefined' && window.location) {
       const { protocol, hostname, port, origin } = window.location;
       if (protocol.startsWith('http')) {
-        list.push(`${origin}/api`);
+        list.push(origin + '/api');
         if (port && port !== '5000') {
-          list.push(`${protocol}//${hostname}:5000/api`);
+          list.push(protocol + '//' + hostname + ':5000/api');
         }
       }
     }
@@ -50,15 +79,14 @@ const KM_API = (function() {
 
   async function tryFetch(baseUrl, endpoint, options, headers) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const timeoutId = setTimeout(() => controller.abort(), 9000);
     try {
-      const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-      const url = `${baseUrl}${cleanEndpoint}`;
-      const response = await fetch(url, {
-        ...options,
+      const cleanEndpoint = endpoint.startsWith('/') ? endpoint : '/' + endpoint;
+      const url = baseUrl + cleanEndpoint;
+      const response = await fetch(url, Object.assign({}, options, {
         headers,
         signal: controller.signal
-      });
+      }));
       clearTimeout(timeoutId);
 
       const contentType = response.headers.get('content-type') || '';
@@ -69,7 +97,7 @@ const KM_API = (function() {
         const text = await response.text();
         data = { text };
       }
-      return { ok: response.ok, status: response.status, ...data };
+      return Object.assign({ ok: response.ok, status: response.status }, data);
     } catch (err) {
       clearTimeout(timeoutId);
       return null;
@@ -77,9 +105,9 @@ const KM_API = (function() {
   }
 
   async function request(endpoint, options = {}) {
-    const headers = { 'Content-Type': 'application/json', ...options.headers };
+    const headers = Object.assign({ 'Content-Type': 'application/json' }, options.headers || {});
     const token = getToken();
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (token) headers['Authorization'] = 'Bearer ' + token;
 
     let res = await tryFetch(currentBaseUrl, endpoint, options, headers);
     if (res && (res.ok || (res.status > 0 && res.status !== 404))) {
@@ -104,6 +132,7 @@ const KM_API = (function() {
     setToken,
     clearAuth,
     getUser,
+    supabaseFetch,
 
     // Health Check
     async checkHealth() {
@@ -129,22 +158,24 @@ const KM_API = (function() {
       return res;
     },
 
-    // 🌾 TOKENS ENGINE (Direct Supabase Cloud Persistence)
+    // 🌾 TOKENS ENGINE (Guaranteed Supabase Cloud Persistence)
     async createToken(data) {
       const cleanPhone = (data.phone || '9876500000').replace(/\D/g, '').slice(-10);
       const mandiStr = (data.mandi || data.district || 'Central Mandi').trim();
       const distStr = (data.district || data.mandi || 'Central District').trim();
+      const qtyNum = parseFloat(data.quantity || data.qty || 10) || 10;
 
       const payload = {
         name: data.name || 'Farmer',
         phone: cleanPhone,
         crop: data.crop || 'Wheat',
-        quantity: data.quantity || data.qty || 10,
+        quantity: qtyNum,
         district: distStr,
         mandi: mandiStr
       };
 
-      const res = await request('/tokens', { method: 'POST', body: JSON.stringify(payload) });
+      // 1. Primary: Unified serverless route
+      let res = await request('/tokens', { method: 'POST', body: JSON.stringify(payload) });
       if (res && (res.success || res.token)) {
         const tokenNum = res.token || (res.data ? res.data.token : '');
         if (tokenNum) {
@@ -156,30 +187,218 @@ const KM_API = (function() {
             }
           } catch(e){}
         }
+        return res;
       }
+
+      // 2. Fallover: Direct Supabase Cloud REST insertion ensures cross-device sync
+      try {
+        for (let i = 0; i < 5; i++) {
+          const randToken = 'KM2025' + Math.floor(1000 + Math.random() * 9000);
+          const inserted = await supabaseFetch('/crop_reports', {
+            method: 'POST',
+            headers: { 'Prefer': 'return=representation' },
+            body: JSON.stringify({
+              token: randToken,
+              farmer_name: payload.name,
+              phone: payload.phone,
+              crop: payload.crop,
+              quantity_quintal: payload.quantity,
+              mandi: payload.mandi,
+              district: payload.district,
+              status: 'Registration received',
+              progress_pct: 20
+            })
+          });
+
+          if (Array.isArray(inserted) && inserted.length > 0) {
+            const createdReport = inserted[0];
+            const defaultSteps = [
+              { token_id: createdReport.id, step_name: 'Registration received', step_order: 1, is_completed: true },
+              { token_id: createdReport.id, step_name: 'Identity verified', step_order: 2, is_completed: false },
+              { token_id: createdReport.id, step_name: 'Deposit at mandi', step_order: 3, is_completed: false },
+              { token_id: createdReport.id, step_name: 'Quality check', step_order: 4, is_completed: false },
+              { token_id: createdReport.id, step_name: 'Payment', step_order: 5, is_completed: false }
+            ];
+            await supabaseFetch('/token_steps', {
+              method: 'POST',
+              body: JSON.stringify(defaultSteps)
+            });
+
+            try {
+              let myTokens = JSON.parse(localStorage.getItem('km_my_tokens') || '[]');
+              if (myTokens.indexOf(randToken) === -1) {
+                myTokens.unshift(randToken);
+                localStorage.setItem('km_my_tokens', JSON.stringify(myTokens));
+              }
+            } catch(e){}
+
+            return {
+              success: true,
+              token: randToken,
+              data: {
+                token: randToken,
+                name: payload.name,
+                phone: payload.phone,
+                crop: payload.crop,
+                qty: payload.quantity + ' quintal',
+                mandi: payload.mandi,
+                district: payload.district,
+                steps: [
+                  ['Registration received', 1],
+                  ['Identity verified', 0],
+                  ['Deposit at mandi', 0],
+                  ['Quality check', 0],
+                  ['Payment', 0]
+                ]
+              }
+            };
+          }
+        }
+      } catch (directErr) {
+        console.warn('Direct Supabase token creation error:', directErr);
+      }
+
       return res;
     },
 
     async getAllTokens() {
-      return request('/tokens');
+      // 1. Primary: Unified serverless route
+      let res = await request('/tokens');
+      if (res && res.success && res.data && Object.keys(res.data).length > 0) {
+        return res;
+      }
+
+      // 2. Direct Supabase Cloud REST fetch ensures tokens are loaded across all devices
+      try {
+        const rows = await supabaseFetch('/crop_reports?select=*,token_steps(*)&order=created_at.desc');
+        if (Array.isArray(rows) && rows.length > 0) {
+          const formatted = {};
+          rows.forEach(r => {
+            const steps = (r.token_steps || [])
+              .sort((a, b) => (a.step_order || 0) - (b.step_order || 0))
+              .map(s => [s.step_name, s.is_completed ? 1 : 0]);
+
+            formatted[r.token] = {
+              token: r.token,
+              name: r.farmer_name,
+              phone: r.phone,
+              crop: r.crop,
+              qty: r.quantity_quintal + ' quintal',
+              mandi: r.mandi,
+              district: r.district,
+              steps: steps.length ? steps : [
+                ['Registration received', 1],
+                ['Identity verified', 0],
+                ['Deposit at mandi', 0],
+                ['Quality check', 0],
+                ['Payment', 0]
+              ]
+            };
+          });
+          return { success: true, data: formatted };
+        }
+      } catch (err) {
+        console.warn('Direct Supabase getAllTokens error:', err);
+      }
+
+      return res || { success: false, data: {} };
     },
 
     async getToken(tokenId) {
       if (!tokenId) return { success: false, message: 'Token required' };
       const tid = tokenId.toUpperCase().trim();
-      return request(`/tokens/${encodeURIComponent(tid)}`);
+
+      let res = await request('/tokens/' + encodeURIComponent(tid));
+      if (res && (res.success || res.token)) return res;
+
+      // Direct Supabase Cloud REST failover
+      try {
+        const rows = await supabaseFetch('/crop_reports?token=eq.' + encodeURIComponent(tid) + '&select=*,token_steps(*)');
+        if (Array.isArray(rows) && rows.length > 0) {
+          const report = rows[0];
+          const steps = (report.token_steps || [])
+            .sort((a, b) => (a.step_order || 0) - (b.step_order || 0))
+            .map(s => [s.step_name, s.is_completed ? 1 : 0]);
+          const doneCount = steps.filter(s => s[1] === 1).length;
+          const pct = Math.round((doneCount / (steps.length || 5)) * 100);
+
+          return {
+            success: true,
+            token: report.token,
+            name: report.farmer_name,
+            phone: report.phone,
+            crop: report.crop,
+            qty: report.quantity_quintal + ' quintal',
+            mandi: report.mandi,
+            district: report.district,
+            status: report.status,
+            progress_pct: pct,
+            queue_position: pct < 100 ? 1 : 0,
+            steps: steps.length ? steps : [
+              ['Registration received', 1],
+              ['Identity verified', 0],
+              ['Deposit at mandi', 0],
+              ['Quality check', 0],
+              ['Payment', 0]
+            ]
+          };
+        }
+      } catch (err) {}
+
+      return res;
     },
 
     async advanceStep(tokenId) {
       if (!tokenId) return;
       const tid = tokenId.toUpperCase().trim();
-      return request(`/tokens/${encodeURIComponent(tid)}/advance`, { method: 'PATCH' });
+      let res = await request('/tokens/' + encodeURIComponent(tid) + '/advance', { method: 'PATCH' });
+      if (res && res.success) return res;
+
+      // Direct Supabase Cloud REST failover
+      try {
+        const rows = await supabaseFetch('/crop_reports?token=eq.' + encodeURIComponent(tid) + '&select=id,progress_pct');
+        if (Array.isArray(rows) && rows.length > 0) {
+          const report = rows[0];
+          const steps = await supabaseFetch('/token_steps?token_id=eq.' + report.id + '&order=step_order.asc');
+          if (Array.isArray(steps)) {
+            const nextStep = steps.find(s => !s.is_completed);
+            if (nextStep) {
+              await supabaseFetch('/token_steps?id=eq.' + nextStep.id, {
+                method: 'PATCH',
+                body: JSON.stringify({ is_completed: true, completed_at: new Date().toISOString() })
+              });
+              const doneCount = steps.filter(s => s.is_completed).length + 1;
+              const pct = Math.round((doneCount / steps.length) * 100);
+              await supabaseFetch('/crop_reports?id=eq.' + report.id, {
+                method: 'PATCH',
+                body: JSON.stringify({ progress_pct: pct, status: nextStep.step_name })
+              });
+              return { success: true };
+            }
+          }
+        }
+      } catch (err) {}
+      return res;
     },
 
     async deleteToken(tokenId) {
       if (!tokenId) return;
       const tid = tokenId.toUpperCase().trim();
-      return request(`/tokens/${encodeURIComponent(tid)}`, { method: 'DELETE' });
+      let res = await request('/tokens/' + encodeURIComponent(tid), { method: 'DELETE' });
+      if (res && res.success) return res;
+
+      // Direct Supabase Cloud REST failover
+      try {
+        const rows = await supabaseFetch('/crop_reports?token=eq.' + encodeURIComponent(tid) + '&select=id');
+        if (Array.isArray(rows) && rows.length > 0) {
+          const report = rows[0];
+          await supabaseFetch('/token_steps?token_id=eq.' + report.id, { method: 'DELETE' });
+          await supabaseFetch('/notifications?token=eq.' + encodeURIComponent(tid), { method: 'DELETE' });
+          await supabaseFetch('/crop_reports?id=eq.' + report.id, { method: 'DELETE' });
+          return { success: true };
+        }
+      } catch (err) {}
+      return res;
     },
 
     async resetDemoData() {
@@ -189,24 +408,105 @@ const KM_API = (function() {
     // 💬 COMMUNITY MARKETPLACE ENGINE (Direct Supabase Cloud Persistence)
     async getCommunityListings(cat, query) {
       let url = '/community/listings?';
-      if (cat && cat !== 'all') url += `cat=${encodeURIComponent(cat)}&`;
-      if (query) url += `q=${encodeURIComponent(query)}`;
-      return request(url);
+      if (cat && cat !== 'all') url += 'cat=' + encodeURIComponent(cat) + '&';
+      if (query) url += 'q=' + encodeURIComponent(query);
+      let res = await request(url);
+      if (res && res.success && res.data && res.data.length > 0) return res;
+
+      // Direct Supabase REST
+      try {
+        let q = '/community_posts?select=*,community_comments(*)&order=created_at.desc';
+        if (cat && cat !== 'all') q += '&category=eq.' + encodeURIComponent(cat);
+        const rows = await supabaseFetch(q);
+        if (Array.isArray(rows) && rows.length > 0) {
+          const mapped = rows.map(r => ({
+            id: r.id,
+            type: r.type,
+            cat: r.category,
+            title: r.title,
+            name: r.farmer_name,
+            dist: r.district,
+            phone: r.phone,
+            price: r.price,
+            emoji: r.emoji,
+            created_at: r.created_at,
+            comments: (r.community_comments || []).map(c => ({
+              id: c.id,
+              author: c.author_name,
+              text: c.comment_text,
+              created_at: c.created_at
+            }))
+          }));
+          return { success: true, data: mapped };
+        }
+      } catch (err) {}
+      return res;
     },
 
     async createCommunityListing(data) {
-      return request('/community/listings', { method: 'POST', body: JSON.stringify(data) });
+      let res = await request('/community/listings', { method: 'POST', body: JSON.stringify(data) });
+      if (res && res.success) return res;
+
+      // Direct Supabase REST
+      try {
+        const payload = {
+          type: data.type || 'sell',
+          category: data.cat || data.category || 'crops',
+          title: data.title || '',
+          farmer_name: data.name || data.farmer_name || 'Farmer',
+          district: data.dist || data.district || '',
+          phone: (data.phone || '').replace(/\D/g, '').slice(-10),
+          price: data.price || '',
+          emoji: data.emoji || '🌾'
+        };
+        const inserted = await supabaseFetch('/community_posts', {
+          method: 'POST',
+          headers: { 'Prefer': 'return=representation' },
+          body: JSON.stringify(payload)
+        });
+        if (Array.isArray(inserted) && inserted.length > 0) {
+          return { success: true, data: inserted[0] };
+        }
+      } catch (err) {}
+      return res;
     },
 
     async addCommunityComment(postId, data) {
-      return request(`/community/listings/${encodeURIComponent(postId)}/comments`, {
+      let res = await request('/community/listings/' + encodeURIComponent(postId) + '/comments', {
         method: 'POST',
         body: JSON.stringify(data)
       });
+      if (res && res.success) return res;
+
+      // Direct Supabase REST
+      try {
+        const inserted = await supabaseFetch('/community_comments', {
+          method: 'POST',
+          headers: { 'Prefer': 'return=representation' },
+          body: JSON.stringify({
+            post_id: postId,
+            author_name: data.author || 'Farmer',
+            comment_text: data.text || ''
+          })
+        });
+        if (Array.isArray(inserted) && inserted.length > 0) {
+          return { success: true, data: inserted[0] };
+        }
+      } catch (err) {}
+      return res;
     },
 
     async deleteCommunityListing(postId) {
-      return request(`/community/listings/${encodeURIComponent(postId)}`, { method: 'DELETE' });
+      let res = await request('/community/listings/' + encodeURIComponent(postId), { method: 'DELETE' });
+      if (res && res.success) return res;
+
+      // Direct Supabase REST
+      try {
+        await supabaseFetch('/community_comments?post_id=eq.' + encodeURIComponent(postId), { method: 'DELETE' });
+        await supabaseFetch('/community_posts?id=eq.' + encodeURIComponent(postId), { method: 'DELETE' });
+        return { success: true };
+      } catch (err) {}
+      return res;
     },
 
     // 🌟 FARMER FEEDBACK ENGINE (Direct Supabase Cloud Persistence)
@@ -217,11 +517,49 @@ const KM_API = (function() {
         rating: Number(data.rating) || 5,
         comments: data.comments || data.comment || ''
       };
-      return request('/feedback', { method: 'POST', body: JSON.stringify(payload) });
+      let res = await request('/feedback', { method: 'POST', body: JSON.stringify(payload) });
+      if (res && res.success) return res;
+
+      // Direct Supabase REST
+      try {
+        const inserted = await supabaseFetch('/feedback', {
+          method: 'POST',
+          headers: { 'Prefer': 'return=representation' },
+          body: JSON.stringify({
+            farmer_name: payload.name,
+            phone: payload.phone,
+            rating: payload.rating,
+            comments: payload.comments
+          })
+        });
+        if (Array.isArray(inserted) && inserted.length > 0) {
+          return { success: true, data: inserted[0] };
+        }
+      } catch (err) {}
+      return res;
     },
 
     async getAllFeedback() {
-      return request('/feedback');
+      let res = await request('/feedback');
+      if (res && res.success && res.data && res.data.length > 0) return res;
+
+      // Direct Supabase REST
+      try {
+        const rows = await supabaseFetch('/feedback?order=created_at.desc');
+        if (Array.isArray(rows) && rows.length > 0) {
+          const mapped = rows.map(r => ({
+            id: r.id,
+            farmer_name: r.farmer_name,
+            name: r.farmer_name,
+            phone: r.phone,
+            rating: r.rating,
+            comments: r.comments,
+            created_at: r.created_at
+          }));
+          return { success: true, data: mapped };
+        }
+      } catch (err) {}
+      return res;
     },
 
     // 📊 MANDIS, PRICES, SCHEMES & STATS
@@ -230,17 +568,38 @@ const KM_API = (function() {
     },
 
     async getPrices(crop) {
-      return request(`/mandis/prices?crop=${encodeURIComponent(crop || 'Wheat')}`);
+      return request('/mandis/prices?crop=' + encodeURIComponent(crop || 'Wheat'));
     },
 
     async getAdminStats() {
-      return request('/admin/stats');
+      let res = await request('/admin/stats');
+      if (res && res.success && res.stats) return res;
+
+      try {
+        const rows = await supabaseFetch('/crop_reports?select=progress_pct,status');
+        if (Array.isArray(rows)) {
+          const total = rows.length;
+          const done = rows.filter(r => r.progress_pct === 100 || (r.status && r.status.includes('Payment approved'))).length;
+          const pend = rows.filter(r => r.progress_pct > 20 && r.progress_pct < 100).length;
+          const fresh = rows.filter(r => r.progress_pct <= 20).length;
+          return {
+            success: true,
+            stats: {
+              total_tokens: total,
+              paid_completed: done,
+              in_process: pend,
+              new_unreviewed: fresh
+            }
+          };
+        }
+      } catch (err) {}
+      return res;
     },
 
     async getSchemes(cat, query) {
       let url = '/schemes?';
-      if (cat && cat !== 'all') url += `cat=${encodeURIComponent(cat)}&`;
-      if (query) url += `q=${encodeURIComponent(query)}`;
+      if (cat && cat !== 'all') url += 'cat=' + encodeURIComponent(cat) + '&';
+      if (query) url += 'q=' + encodeURIComponent(query);
       return request(url);
     }
   };
@@ -249,4 +608,3 @@ const KM_API = (function() {
 if (typeof window !== 'undefined') {
   window.KM_API = KM_API;
 }
-

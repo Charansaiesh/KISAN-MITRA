@@ -75,7 +75,6 @@ exports.createToken = async (req, res, next) => {
     }
 
     district = (district || mandi || 'Central District').trim();
-    const tokenNumber = `KM2025${String(tokenCounter++).padStart(3, '0')}`;
     const qtyStr = `${quantity} quintal`;
     const mandiStr = (mandi || (district.toLowerCase().includes('mandi') ? district : `${district} Mandi`)).trim();
     const cleanPhone = (phone || (req.user ? req.user.phone : '9876500000')).replace(/\D/g, '').slice(-10);
@@ -83,24 +82,44 @@ exports.createToken = async (req, res, next) => {
     // Token record created
 
     if (supabase) {
-      const { data: report, error } = await supabase
-        .from('crop_reports')
-        .insert([{
-          token: tokenNumber,
-          user_id: req.user ? req.user.id : null,
-          farmer_name: name,
-          phone: cleanPhone,
-          crop,
-          quantity_quintal: parseFloat(quantity),
-          mandi: mandiStr,
-          district,
-          status: 'Registration received',
-          progress_pct: 20
-        }])
-        .select()
-        .single();
+      let tokenNumber = '';
+      let report = null;
+      let lastErr = null;
 
-      if (error) throw error;
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const randSuffix = Math.floor(1000 + Math.random() * 9000);
+        tokenNumber = `KM2025${randSuffix}`;
+
+        const insertRes = await supabase
+          .from('crop_reports')
+          .insert([{
+            token: tokenNumber,
+            user_id: req.user ? req.user.id : null,
+            farmer_name: name,
+            phone: cleanPhone,
+            crop,
+            quantity_quintal: parseFloat(quantity),
+            mandi: mandiStr,
+            district,
+            status: 'Registration received',
+            progress_pct: 20
+          }])
+          .select()
+          .maybeSingle();
+
+        if (!insertRes.error && insertRes.data) {
+          report = insertRes.data;
+          lastErr = null;
+          break;
+        } else if (insertRes.error && (insertRes.error.code === '23505' || (insertRes.error.message && insertRes.error.message.includes('unique')))) {
+          continue;
+        } else {
+          lastErr = insertRes.error;
+          break;
+        }
+      }
+
+      if (lastErr || !report) throw (lastErr || new Error('Failed to create token in database'));
 
       // Seed step items
       const stepsToInsert = DEFAULT_STEPS.map((s, idx) => ({
@@ -351,6 +370,11 @@ exports.deleteToken = async (req, res, next) => {
     const token = req.params.token.toUpperCase().trim();
 
     if (supabase) {
+      const { data: rep } = await supabase.from('crop_reports').select('id').eq('token', token).maybeSingle();
+      if (rep) {
+        await supabase.from('token_steps').delete().eq('token_id', rep.id);
+        await supabase.from('notifications').delete().eq('token', token);
+      }
       const { error } = await supabase.from('crop_reports').delete().eq('token', token);
       if (error) throw error;
       return res.json({ success: true, message: `Token ${token} deleted successfully.` });

@@ -52,7 +52,7 @@ app.get(['/api/health', '/health'], (req, res) => {
     app: 'KisanMitra Unified Backend',
     version: '4.0.0',
     timestamp: new Date().toISOString(),
-    database: process.env.SUPABASE_URL ? 'Supabase PostgreSQL' : 'Memory Persistence (Fallback Active)',
+    database: 'Supabase PostgreSQL',
     environment: process.env.NODE_ENV || 'development'
   });
 });

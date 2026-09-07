@@ -1051,6 +1051,7 @@ async function register(e){
   if (!dist) dist = "Central APMC District";
 
   let token = "";
+  let tokenData = null;
   try {
     if (typeof KM_API !== "undefined" && KM_API.createToken) {
       const apiRes = await KM_API.createToken({
@@ -1061,8 +1062,9 @@ async function register(e){
         district: dist || mandiName || "Central District",
         mandi: mandiName || (dist ? (dist + " Mandi") : "Central APMC Mandi")
       });
-      if(apiRes && apiRes.token) {
-        token = apiRes.token;
+      if(apiRes && (apiRes.token || (apiRes.data && apiRes.data.token))) {
+        token = apiRes.token || apiRes.data.token;
+        tokenData = apiRes.data;
       }
     }
   } catch(err){
@@ -1070,9 +1072,7 @@ async function register(e){
   }
 
   if(!token) {
-    token = "KM2025" + String(counter).padStart(3,"0");
-    counter++;
-    localStorage.setItem("km_counter_v3", counter);
+    token = "KM2025" + Math.floor(1000 + Math.random() * 9000);
   }
 
   const DB = getDB();
@@ -1084,7 +1084,7 @@ async function register(e){
     qty: qty + " quintal",
     mandi: mandiName || (dist ? (dist + " Mandi") : "Central APMC Mandi"),
     district: dist,
-    steps: [["Registration received",1],["Identity verified",0],["Deposit at mandi",0],["Quality check",0],["Payment",0]]
+    steps: (tokenData && tokenData.steps) ? tokenData.steps : [["Registration received",1],["Identity verified",0],["Deposit at mandi",0],["Quality check",0],["Payment",0]]
   };
   localStorage.setItem(DB_KEY, JSON.stringify(DB));
   localStorage.setItem("km_new_token", token);
