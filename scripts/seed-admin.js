@@ -1,4 +1,4 @@
-﻿const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs');
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
@@ -11,10 +11,10 @@ async function seedAdmin() {
   console.log(`🔐 Secure Admin Provisioning: Creating ${role} (${name}, Phone: ${phone})...`);
 
   const password_hash = await bcrypt.hash(password, 10);
+  const supabase = require('../src/config/supabase');
 
-  if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  if (supabase) {
     try {
-      const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
       const { data, error } = await supabase.from('users').upsert([
         { name, phone, password_hash, role, district: 'Procurement HQ' }
       ], { onConflict: 'phone' }).select();
