@@ -33,6 +33,27 @@ app.use('/api/', apiLimiter);
 
 // Serve Static Frontend Portals
 app.use(express.static(__dirname));
+app.use('/js', express.static(path.join(__dirname, 'js')));
+
+const fs = require('fs');
+let cachedApiJs = '';
+try {
+  const apiPath = path.join(__dirname, 'js', 'api.js');
+  if (fs.existsSync(apiPath)) {
+    cachedApiJs = fs.readFileSync(apiPath, 'utf8');
+  }
+} catch (e) {
+  console.warn('api.js read warning:', e);
+}
+
+app.get(['/js/api.js', '/api.js'], (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+  if (cachedApiJs) {
+    return res.send(cachedApiJs);
+  }
+  const apiPath = path.join(__dirname, 'js', 'api.js');
+  res.sendFile(apiPath);
+});
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
