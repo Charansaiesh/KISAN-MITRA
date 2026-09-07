@@ -811,19 +811,14 @@ function changeLanguage(lang){
   }
 }
 
-/* ============ DATABASE (localStorage) ============ */
+/* ============ DATABASE (localStorage cache) ============ */
 const DB_KEY = "kisanmitra_db_v3";
 function getDB(){
-  let db = JSON.parse(localStorage.getItem(DB_KEY) || "null");
-  if(!db){
-    db = {
-      "KM2024001":{name:"Ram Yadav",crop:"Wheat",qty:"45 quintal",mandi:"Lucknow Mandi",steps:[["Registration received",1],["Identity verified",1],["Crop deposited at mandi",1],["Quality check done",1],["Payment approved ✅",1]]},
-      "KM2024002":{name:"Sumitra Devi",crop:"Mustard",qty:"30 quintal",mandi:"Jaipur Mandi",steps:[["Registration received",1],["Identity verified",1],["Crop deposited at mandi",1],["Quality check ⏳",1],["Payment",0]]},
-      "KM2024003":{name:"Mohan Patel",crop:"Paddy",qty:"60 quintal",mandi:"Patna Mandi",steps:[["Registration received",1],["Identity verified ⏳",1],["Deposit at mandi (Oct 10)",0],["Quality check",0],["Payment",0]]}
-    };
-    localStorage.setItem(DB_KEY, JSON.stringify(db));
+  try {
+    return JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+  } catch(e) {
+    return {};
   }
-  return db;
 }
 
 /* ============ SMS SIMULATION ============ */
@@ -894,7 +889,7 @@ async function trackStatus(isBackgroundSync = false){
 
   const stepsList = d.steps || [];
   const doneCount = stepsList.filter(function(s){ return s[1] === 1 || s[1] === true; }).length;
-  const pct = Math.round((doneCount / (stepsList.length || 5)) * 100);
+  const pct = (d.progress_pct != null) ? d.progress_pct : Math.round((doneCount / (stepsList.length || 5)) * 100);
   
   let html = '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">' +
     '<h3 style="color:var(--green)">✅ ' + d.name + ' — ' + d.crop + ' (' + d.qty + ')</h3>' +
@@ -1050,8 +1045,16 @@ async function register(e){
   if (!dist && mandiName) dist = mandiName.replace(/\s*mandi\b/i, '').trim();
   if (!dist) dist = "Central APMC District";
 
+  const submitBtn = e.target.querySelector("button[type='submit']");
+  const origBtnContent = submitBtn ? submitBtn.innerHTML : "";
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = "⏳ Issuing Token & Cloud Syncing...";
+  }
+
   let token = "";
   let tokenData = null;
+  let errMsg = "";
   try {
     if (typeof KM_API !== "undefined" && KM_API.createToken) {
       const apiRes = await KM_API.createToken({
@@ -1065,14 +1068,23 @@ async function register(e){
       if(apiRes && (apiRes.token || (apiRes.data && apiRes.data.token))) {
         token = apiRes.token || apiRes.data.token;
         tokenData = apiRes.data;
+      } else if (apiRes && apiRes.message) {
+        errMsg = apiRes.message;
       }
     }
   } catch(err){
-    console.warn("KM_API createToken error:", err);
+    console.error("KM_API createToken error:", err);
+    errMsg = err.message;
+  }
+
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = origBtnContent;
   }
 
   if(!token) {
-    token = "KM2025" + Math.floor(1000 + Math.random() * 9000);
+    alert("❌ Could not create token in cloud database: " + (errMsg || "Connection error. Please check your network and try again."));
+    return;
   }
 
   const DB = getDB();

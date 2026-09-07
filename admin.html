@@ -393,7 +393,7 @@ async function adminLogin(){
     if (typeof KM_API !== "undefined" && KM_API.officerLogin) {
       await KM_API.officerLogin(p).catch(console.warn);
     }
-    renderAdmin();
+    await renderAdmin();
     return;
   }
 
@@ -408,7 +408,7 @@ async function adminLogin(){
         document.getElementById("adminPanel").style.display = "block";
         document.getElementById("officerTag").textContent = "👮 Officer #1042 · Online";
         err.textContent = "";
-        renderAdmin();
+        await renderAdmin();
         return;
       }
     }
@@ -423,6 +423,7 @@ async function adminLogin(){
 
 let knownTokensMap = new Set();
 let isInitialAdminRender = true;
+let adminTokensCache = null;
 
 function showNewTokenAlert(token, d){
   if(!d) return;
@@ -457,19 +458,22 @@ function showNewTokenAlert(token, d){
 }
 
 async function renderAdmin(){
-  let db = getDB();
-  const q = (document.getElementById("adminSearch").value || "").toLowerCase();
   const tbody = document.getElementById("adminRows");
-  let rows = "", total = 0, done = 0, pend = 0, fresh = 0;
+  if (!tbody) return;
+
+  // Show loading indicator on initial load if cache is not yet ready
+  if (adminTokensCache === null) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">⏳ Loading live tokens from Supabase Cloud...</td></tr>';
+  }
 
   try {
     if (typeof KM_API !== "undefined" && KM_API.getAllTokens) {
       const apiRes = await KM_API.getAllTokens();
-      if (apiRes && apiRes.data && Object.keys(apiRes.data).length > 0) {
+      if (apiRes && apiRes.data) {
         const remoteData = apiRes.data;
 
         // Check for new tokens from remote phones/devices
-        if (!isInitialAdminRender) {
+        if (!isInitialAdminRender && adminTokensCache) {
           for (let tk in remoteData) {
             if (!knownTokensMap.has(tk) && isNew(tk)) {
               showNewTokenAlert(tk, remoteData[tk]);
@@ -478,17 +482,21 @@ async function renderAdmin(){
           }
         }
 
-        db = remoteData;
-        saveDB(db);
+        adminTokensCache = remoteData;
       }
     }
   } catch(e){
-    console.warn("renderAdmin API fetch fallback:", e);
+    console.warn("renderAdmin API fetch error:", e);
   }
+
+  const db = adminTokensCache || {};
 
   // Update known tokens set
   Object.keys(db).forEach(tk => knownTokensMap.add(tk));
   isInitialAdminRender = false;
+
+  const q = (document.getElementById("adminSearch") ? document.getElementById("adminSearch").value : "").toLowerCase();
+  let rows = "", total = 0, done = 0, pend = 0, fresh = 0;
 
   const tokens = Object.keys(db).sort().reverse();
   for (let i = 0; i < tokens.length; i++) {
@@ -500,24 +508,26 @@ async function renderAdmin(){
               (d.crop || "").toLowerCase().indexOf(q) !== -1 || (d.mandi || "").toLowerCase().indexOf(q) !== -1)) continue;
     total++;
     const dn = d.steps.filter(function(s){ return s[1] === 1 || s[1] === true; }).length;
-    const pct = Math.round(dn / d.steps.length * 100);
-    if (pct === 100) done++; else pend++;
-    const finished = dn >= d.steps.length;
+    const pct = (d.progress_pct != null) ? d.progress_pct : Math.round(dn / d.steps.length * 100);
+    if (pct >= 100) done++; else pend++;
+    const finished = pct >= 100 || dn >= d.steps.length;
     const freshFlag = isNew(token);
     if (freshFlag) fresh++;
+
+    const currentStepName = d.status || (d.steps[Math.min(dn, d.steps.length - 1)] ? d.steps[Math.min(dn, d.steps.length - 1)][0] : "In Progress");
 
     let row = "<tr>";
     row += '<td><b style="color:var(--green)">' + token + (freshFlag ? '<span class="new-badge">NEW</span>' : '') + '</b></td>';
     row += "<td>" + (d.name || "-") + "<br><small style='color:var(--muted)'>" + (d.phone || "") + "</small></td>";
     row += "<td>" + (d.crop || "-") + '<br><small style="color:var(--muted)">' + (d.qty || "-") + "</small></td>";
     row += "<td>" + (d.mandi || "-") + "</td>";
-    row += '<td><span style="color:' + (pct === 100 ? 'var(--green)' : 'var(--gold)') + ';font-weight:700">' + (d.steps[Math.min(dn, d.steps.length - 1)][0]) + '</span> <small style="color:var(--muted)">(' + pct + '%)</small><div class="mini-bar"><div class="mini-fill" style="width:' + pct + '%"></div></div></td>';
-    row += '<td><button class="adm-btn ' + (finished ? "done-btn" : "") + '" ' + (finished ? "disabled" : "") + ' onclick="advanceStep(&apos;' + token + '&apos;)">' + (finished ? "✔ Done" : "▶ Advance") + '</button>';
-    row += '<button class="adm-btn del" onclick="deleteToken(&apos;' + token + '&apos;)">🗑</button></td>';
+    row += '<td><span style="color:' + (pct >= 100 ? 'var(--green)' : 'var(--gold)') + ';font-weight:700">' + currentStepName + '</span> <small style="color:var(--muted)">(' + pct + '%)</small><div class="mini-bar"><div class="mini-fill" style="width:' + pct + '%"></div></div></td>';
+    row += '<td><button class="adm-btn ' + (finished ? "done-btn" : "") + '" ' + (finished ? "disabled" : "") + ' onclick="advanceStep(\'' + token + '\', this)">' + (finished ? "✔ Done" : "▶ Advance") + '</button>';
+    row += '<button class="adm-btn del" onclick="deleteToken(\'' + token + '\', this)">🗑</button></td>';
     row += "</tr>";
     rows += row;
   }
-  tbody.innerHTML = rows || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">No tokens found</td></tr>';
+  tbody.innerHTML = rows || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">No tokens found in cloud database</td></tr>';
 
   const queueSummaryEl = document.getElementById("queueSummary");
   if(queueSummaryEl) queueSummaryEl.textContent = pend + " farmers waiting in queue (" + total + " total bookings)";
@@ -531,26 +541,43 @@ async function renderAdmin(){
   if (elNew) elNew.textContent = fresh;
 }
 
-async function advanceStep(token){
+async function advanceStep(token, btn){
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "⏳ Updating...";
+  }
+  let res = null;
   try {
-    await KM_API.advanceStep(token);
+    res = await KM_API.advanceStep(token);
   } catch(e){
-    console.warn("Error advancing step:", e);
+    console.error("Error advancing step:", e);
+    res = { success: false, message: e.message };
+  }
+  if (!res || !res.success) {
+    alert("❌ Could not advance token: " + ((res && res.message) || "Database error. Please retry."));
   }
   markSeen(token);
   await renderAdmin();
 }
 
-async function deleteToken(token){
-  if(!confirm("Delete token " + token + "?")) return;
-  try {
-    await KM_API.deleteToken(token);
-  } catch(e){
-    console.warn("Error deleting token:", e);
+async function deleteToken(token, btn){
+  if(!confirm("Are you sure you want to permanently delete token " + token + " from Supabase?")) return;
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "⏳";
   }
-  const db = getDB();
-  delete db[token];
-  saveDB(db);
+  let res = null;
+  try {
+    res = await KM_API.deleteToken(token);
+  } catch(e){
+    console.error("Error deleting token:", e);
+    res = { success: false, message: e.message };
+  }
+  if (!res || !res.success) {
+    alert("❌ Could not delete token: " + ((res && res.message) || "Database error."));
+  } else {
+    if (adminTokensCache) delete adminTokensCache[token];
+  }
   await renderAdmin();
 }
 
@@ -650,25 +677,14 @@ async function loadAdminFeedback(){
   try {
     if (typeof KM_API !== "undefined" && KM_API.getAllFeedback) {
       const res = await KM_API.getAllFeedback();
-      if (res && res.feedback && Array.isArray(res.feedback) && res.feedback.length > 0) {
-        list = res.feedback;
+      const fbList = (res && (res.feedback || res.data)) || [];
+      if (Array.isArray(fbList) && fbList.length > 0) {
+        list = fbList;
       }
     }
   } catch(e){
     console.warn("Server feedback fetch fallback:", e);
   }
-
-  // Merge with locally submitted feedback
-  try {
-    const localFb = JSON.parse(localStorage.getItem("km_farmer_feedback") || "[]");
-    if(localFb.length){
-      // Prepend any new local feedback that isn't already in list
-      const existingIds = new Set(list.map(f => f.id));
-      localFb.forEach(f => {
-        if(!existingIds.has(f.id)) list.unshift(f);
-      });
-    }
-  } catch(e){}
 
   if(!list.length){
     list = DEFAULT_FEEDBACK;
@@ -714,19 +730,8 @@ async function loadAdminBroadcasts(){
       }
     }
   } catch(e){
-    console.warn("loadAdminBroadcasts fetch fallback:", e);
+    console.warn("loadAdminBroadcasts fetch error:", e);
   }
-
-  // Merge with locally stored broadcast alerts
-  try {
-    const localAlerts = JSON.parse(localStorage.getItem("km_broadcast_alerts") || "[]");
-    if(localAlerts.length){
-      const existingIds = new Set(list.map(n => String(n.id)));
-      localAlerts.forEach(a => {
-        if(!existingIds.has(String(a.id))) list.push(a);
-      });
-    }
-  } catch(e){}
 
   adminBroadcastsList = list;
 
@@ -763,61 +768,54 @@ async function broadcastAlert(e){
   const title = document.getElementById("bcTitle").value.trim();
   const msg = document.getElementById("bcMessage").value.trim();
   const successEl = document.getElementById("bcSuccess");
+  const submitBtn = document.getElementById("bcSubmitBtn");
   
   if(!title || !msg) return;
 
+  if(submitBtn){
+    submitBtn.disabled = true;
+    submitBtn.textContent = "⏳ Saving...";
+  }
+
   if(editId){
-    // Update existing announcement
+    let res = null;
     try {
       if(typeof KM_API !== "undefined" && KM_API.updateNotification){
-        await KM_API.updateNotification(editId, { title, message: msg });
+        res = await KM_API.updateNotification(editId, { title, message: msg });
       }
     } catch(err){
       console.warn("Update notification error:", err);
     }
 
-    // Update in local storage if present
-    try {
-      let local = JSON.parse(localStorage.getItem("km_broadcast_alerts") || "[]");
-      const idx = local.findIndex(a => String(a.id) === String(editId));
-      if(idx !== -1){
-        local[idx].title = title;
-        local[idx].message = msg;
-        localStorage.setItem("km_broadcast_alerts", JSON.stringify(local));
-      }
-    } catch(err){}
-
-    successEl.textContent = "✅ Announcement updated successfully!";
-    successEl.style.display = "block";
-    cancelBroadcastEdit();
+    if (res && (res.success || res.notification)) {
+      successEl.textContent = "✅ Announcement updated successfully in cloud!";
+      successEl.style.display = "block";
+      cancelBroadcastEdit();
+    } else {
+      alert("❌ Could not update announcement in cloud database.");
+    }
   } else {
-    // Create new announcement
-    let createdItem = null;
+    let res = null;
     try {
       if(typeof KM_API !== "undefined" && KM_API.createNotification){
-        const res = await KM_API.createNotification({ title, message: msg, phone: 'ALL_FARMERS' });
-        if(res && res.notification) createdItem = res.notification;
+        res = await KM_API.createNotification({ title, message: msg, phone: 'ALL_FARMERS' });
       }
     } catch(err){
       console.warn("Create notification error:", err);
     }
 
-    // Save to local storage for cross-tab instant sync
-    try {
-      let notifs = JSON.parse(localStorage.getItem("km_broadcast_alerts") || "[]");
-      notifs.unshift({
-        id: (createdItem && createdItem.id) || ("notif_" + Date.now()),
-        title,
-        message: msg,
-        sent_at: new Date().toISOString(),
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      });
-      localStorage.setItem("km_broadcast_alerts", JSON.stringify(notifs));
-    } catch(err){}
+    if (res && (res.success || res.notification)) {
+      successEl.textContent = "✅ Notification broadcast sent & synced to all farmers!";
+      successEl.style.display = "block";
+      e.target.reset();
+    } else {
+      alert("❌ Could not send notification to cloud database.");
+    }
+  }
 
-    successEl.textContent = "✅ Notification broadcast sent successfully!";
-    successEl.style.display = "block";
-    e.target.reset();
+  if(submitBtn){
+    submitBtn.disabled = false;
+    submitBtn.textContent = editId ? "💾 Update Announcement" : "🚀 Send Notification Broadcast";
   }
 
   setTimeout(() => { if(successEl) successEl.style.display = "none"; }, 3500);
@@ -856,12 +854,6 @@ async function deleteBroadcast(id){
   } catch(err){
     console.warn("deleteNotification error:", err);
   }
-
-  try {
-    let local = JSON.parse(localStorage.getItem("km_broadcast_alerts") || "[]");
-    local = local.filter(a => String(a.id) !== String(id));
-    localStorage.setItem("km_broadcast_alerts", JSON.stringify(local));
-  } catch(err){}
 
   if(document.getElementById("bcEditId").value === String(id)){
     cancelBroadcastEdit();
@@ -905,7 +897,7 @@ setInterval(function(){
   }
 }, 2500);
 
-window.addEventListener("load", function(){
+window.addEventListener("load", async function(){
   changeLanguage(currentLang);
   
   // Auto-login if officer session token exists
@@ -915,7 +907,7 @@ window.addEventListener("load", function(){
     document.getElementById("adminLogin").style.display = "none";
     document.getElementById("adminPanel").style.display = "block";
     document.getElementById("officerTag").textContent = "👮 Officer #1042 · Online";
-    renderAdmin();
+    await renderAdmin();
   }
 });
 </script>

@@ -275,6 +275,12 @@ exports.getAllTokens = async (req, res, next) => {
           .sort((a, b) => a.step_order - b.step_order)
           .map(s => [s.step_name, s.is_completed ? 1 : 0]);
 
+        const pct = r.progress_pct != null ? r.progress_pct : 20;
+        const fallbackSteps = DEFAULT_STEPS.map((s, idx) => [
+          s[0],
+          (pct >= (idx + 1) * 20) ? 1 : 0
+        ]);
+
         formatted[r.token] = {
           token: r.token,
           name: r.farmer_name,
@@ -283,7 +289,9 @@ exports.getAllTokens = async (req, res, next) => {
           qty: `${r.quantity_quintal} quintal`,
           mandi: r.mandi,
           district: r.district,
-          steps: steps.length ? steps : DEFAULT_STEPS
+          status: r.status,
+          progress_pct: pct,
+          steps: (steps && steps.length > 0) ? steps : fallbackSteps
         };
       });
 
@@ -302,13 +310,13 @@ exports.advanceStep = async (req, res, next) => {
     const token = req.params.token.toUpperCase().trim();
 
     if (supabase) {
-      const { data: report } = await supabase
+      const { data: report, error: repErr } = await supabase
         .from('crop_reports')
-        .select('id, token')
+        .select('id, token, progress_pct')
         .eq('token', token)
         .single();
 
-      if (!report) return res.status(404).json({ success: false, message: `Token ${token} not found.` });
+      if (repErr || !report) return res.status(404).json({ success: false, message: `Token ${token} not found.` });
 
       let { data: steps } = await supabase
         .from('token_steps')
@@ -317,11 +325,13 @@ exports.advanceStep = async (req, res, next) => {
         .order('step_order');
 
       if (!steps || steps.length === 0) {
+        const repPct = report.progress_pct != null ? report.progress_pct : 20;
         const stepsToInsert = DEFAULT_STEPS.map((s, idx) => ({
           token_id: report.id,
           step_name: s[0],
           step_order: idx + 1,
-          is_completed: (report.progress_pct >= ((idx + 1) * 20))
+          is_completed: (repPct >= ((idx + 1) * 20)),
+          completed_at: (repPct >= ((idx + 1) * 20)) ? new Date().toISOString() : null
         }));
         await supabase.from('token_steps').insert(stepsToInsert);
         const { data: refreshed } = await supabase
@@ -333,22 +343,37 @@ exports.advanceStep = async (req, res, next) => {
       }
 
       const nextStep = (steps || []).find(s => !s.is_completed);
+      let newPct = 100;
+      let newStatus = 'Payment approved ✅';
+
       if (nextStep) {
         await supabase
           .from('token_steps')
           .update({ is_completed: true, completed_at: new Date().toISOString() })
           .eq('id', nextStep.id);
 
-        const doneCount = steps.filter(s => s.is_completed).length + 1;
-        const pct = Math.round((doneCount / steps.length) * 100);
+        const doneCount = (steps.filter(s => s.is_completed).length) + 1;
+        newPct = Math.min(100, Math.round((doneCount / steps.length) * 100));
+        newStatus = nextStep.step_name;
 
         await supabase
           .from('crop_reports')
-          .update({ progress_pct: pct, status: nextStep.step_name })
+          .update({ progress_pct: newPct, status: newStatus, updated_at: new Date().toISOString() })
+          .eq('id', report.id);
+      } else {
+        await supabase
+          .from('crop_reports')
+          .update({ progress_pct: 100, status: newStatus, updated_at: new Date().toISOString() })
           .eq('id', report.id);
       }
 
-      return res.json({ success: true, message: `Token ${token} advanced to next step.` });
+      return res.json({
+        success: true,
+        message: `Token ${token} advanced successfully.`,
+        token,
+        status: newStatus,
+        progress_pct: newPct
+      });
     } else {
       const d = memoryTokens[token];
       if (!d) return res.status(404).json({ success: false, message: `Token ${token} not found.` });

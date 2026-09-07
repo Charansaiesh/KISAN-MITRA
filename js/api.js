@@ -35,26 +35,32 @@ const KM_API = (function() {
   /* ================= DIRECT SUPABASE REST CLIENT ================= */
   async function supabaseFetch(path, options = {}) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 9000);
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
     try {
       const cleanPath = path.startsWith('/') ? path : '/' + path;
       const url = SUPABASE_REST_URL + cleanPath;
       const headers = Object.assign({
         'apikey': SUPABASE_ANON_KEY,
         'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
       }, options.headers || {});
       const response = await fetch(url, Object.assign({}, options, {
         headers,
         signal: controller.signal
       }));
       clearTimeout(timeoutId);
-      if (!response.ok) return null;
+      if (!response.ok) {
+        const errBody = await response.text().catch(() => '');
+        console.warn('Supabase REST warning (' + response.status + '):', errBody);
+        return null;
+      }
       const ct = response.headers.get('content-type') || '';
       if (ct.includes('application/json')) return await response.json();
       return await response.text();
     } catch (err) {
       clearTimeout(timeoutId);
+      console.warn('Supabase fetch exception:', err);
       return null;
     }
   }
@@ -72,6 +78,7 @@ const KM_API = (function() {
       }
     }
     list.push('/api');
+    list.push('https://kisan-mitra-charansaiesh.vercel.app/api');
     return Array.from(new Set(list));
   }
 
@@ -79,7 +86,7 @@ const KM_API = (function() {
 
   async function tryFetch(baseUrl, endpoint, options, headers) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 9000);
+    const timeoutId = setTimeout(() => controller.abort(), 1500);
     try {
       const cleanEndpoint = endpoint.startsWith('/') ? endpoint : '/' + endpoint;
       const url = baseUrl + cleanEndpoint;
@@ -278,21 +285,26 @@ const KM_API = (function() {
               .sort((a, b) => (a.step_order || 0) - (b.step_order || 0))
               .map(s => [s.step_name, s.is_completed ? 1 : 0]);
 
+            const pct = r.progress_pct != null ? r.progress_pct : 20;
+            const fallbackSteps = [
+              ['Registration received', pct >= 20 ? 1 : 0],
+              ['Identity verified', pct >= 40 ? 1 : 0],
+              ['Deposit at mandi', pct >= 60 ? 1 : 0],
+              ['Quality check', pct >= 80 ? 1 : 0],
+              ['Payment', pct >= 100 ? 1 : 0]
+            ];
+
             formatted[r.token] = {
               token: r.token,
               name: r.farmer_name,
               phone: r.phone,
               crop: r.crop,
-              qty: r.quantity_quintal + ' quintal',
+              qty: (r.quantity_quintal || 10) + ' quintal',
               mandi: r.mandi,
               district: r.district,
-              steps: steps.length ? steps : [
-                ['Registration received', 1],
-                ['Identity verified', 0],
-                ['Deposit at mandi', 0],
-                ['Quality check', 0],
-                ['Payment', 0]
-              ]
+              status: r.status || (pct >= 100 ? 'Payment approved ✅' : 'Registration received'),
+              progress_pct: pct,
+              steps: steps.length ? steps : fallbackSteps
             };
           });
           return { success: true, data: formatted };
@@ -320,7 +332,15 @@ const KM_API = (function() {
             .sort((a, b) => (a.step_order || 0) - (b.step_order || 0))
             .map(s => [s.step_name, s.is_completed ? 1 : 0]);
           const doneCount = steps.filter(s => s[1] === 1).length;
-          const pct = Math.round((doneCount / (steps.length || 5)) * 100);
+          const pct = report.progress_pct != null ? report.progress_pct : Math.round((doneCount / (steps.length || 5)) * 100);
+
+          const fallbackSteps = [
+            ['Registration received', pct >= 20 ? 1 : 0],
+            ['Identity verified', pct >= 40 ? 1 : 0],
+            ['Deposit at mandi', pct >= 60 ? 1 : 0],
+            ['Quality check', pct >= 80 ? 1 : 0],
+            ['Payment', pct >= 100 ? 1 : 0]
+          ];
 
           return {
             success: true,
@@ -328,38 +348,51 @@ const KM_API = (function() {
             name: report.farmer_name,
             phone: report.phone,
             crop: report.crop,
-            qty: report.quantity_quintal + ' quintal',
+            qty: (report.quantity_quintal || 10) + ' quintal',
             mandi: report.mandi,
             district: report.district,
             status: report.status,
             progress_pct: pct,
             queue_position: pct < 100 ? 1 : 0,
-            steps: steps.length ? steps : [
-              ['Registration received', 1],
-              ['Identity verified', 0],
-              ['Deposit at mandi', 0],
-              ['Quality check', 0],
-              ['Payment', 0]
-            ]
+            steps: steps.length ? steps : fallbackSteps
           };
         }
-      } catch (err) {}
+      } catch (err) {
+        console.warn('Direct Supabase getToken error:', err);
+      }
 
-      return res;
+      return res || { success: false, message: 'Token not found' };
     },
 
     async advanceStep(tokenId) {
-      if (!tokenId) return;
+      if (!tokenId) return { success: false, message: 'Token ID required' };
       const tid = tokenId.toUpperCase().trim();
       let res = await request('/tokens/' + encodeURIComponent(tid) + '/advance', { method: 'PATCH' });
       if (res && res.success) return res;
 
       // Direct Supabase Cloud REST failover
       try {
-        const rows = await supabaseFetch('/crop_reports?token=eq.' + encodeURIComponent(tid) + '&select=id,progress_pct');
+        const rows = await supabaseFetch('/crop_reports?token=eq.' + encodeURIComponent(tid) + '&select=id,progress_pct,status');
         if (Array.isArray(rows) && rows.length > 0) {
           const report = rows[0];
-          const steps = await supabaseFetch('/token_steps?token_id=eq.' + report.id + '&order=step_order.asc');
+          let steps = await supabaseFetch('/token_steps?token_id=eq.' + report.id + '&order=step_order.asc');
+          if (!Array.isArray(steps) || steps.length === 0) {
+            const defaultStepNames = ['Registration received', 'Identity verified', 'Deposit at mandi', 'Quality check', 'Payment'];
+            const repPct = report.progress_pct || 20;
+            const stepsToInsert = defaultStepNames.map((name, idx) => ({
+              token_id: report.id,
+              step_name: name,
+              step_order: idx + 1,
+              is_completed: repPct >= ((idx + 1) * 20),
+              completed_at: repPct >= ((idx + 1) * 20) ? new Date().toISOString() : null
+            }));
+            steps = await supabaseFetch('/token_steps', {
+              method: 'POST',
+              headers: { 'Prefer': 'return=representation' },
+              body: JSON.stringify(stepsToInsert)
+            });
+          }
+
           if (Array.isArray(steps)) {
             const nextStep = steps.find(s => !s.is_completed);
             if (nextStep) {
@@ -367,22 +400,27 @@ const KM_API = (function() {
                 method: 'PATCH',
                 body: JSON.stringify({ is_completed: true, completed_at: new Date().toISOString() })
               });
-              const doneCount = steps.filter(s => s.is_completed).length + 1;
-              const pct = Math.round((doneCount / steps.length) * 100);
+              const doneCount = (steps.filter(s => s.is_completed).length) + 1;
+              const pct = Math.min(100, Math.round((doneCount / steps.length) * 100));
               await supabaseFetch('/crop_reports?id=eq.' + report.id, {
                 method: 'PATCH',
-                body: JSON.stringify({ progress_pct: pct, status: nextStep.step_name })
+                body: JSON.stringify({ progress_pct: pct, status: nextStep.step_name, updated_at: new Date().toISOString() })
               });
-              return { success: true };
+              return { success: true, message: `Token ${tid} advanced to ${nextStep.step_name}`, token: tid, progress_pct: pct, status: nextStep.step_name };
+            } else {
+              return { success: true, message: `Token ${tid} already completed`, token: tid, progress_pct: 100, status: 'Payment approved ✅' };
             }
           }
         }
-      } catch (err) {}
-      return res;
+        return { success: false, message: `Token ${tid} not found in database` };
+      } catch (err) {
+        console.error('Direct Supabase advanceStep error:', err);
+        return { success: false, message: err.message || 'Error updating token' };
+      }
     },
 
     async deleteToken(tokenId) {
-      if (!tokenId) return;
+      if (!tokenId) return { success: false, message: 'Token ID required' };
       const tid = tokenId.toUpperCase().trim();
       let res = await request('/tokens/' + encodeURIComponent(tid), { method: 'DELETE' });
       if (res && res.success) return res;
@@ -395,10 +433,13 @@ const KM_API = (function() {
           await supabaseFetch('/token_steps?token_id=eq.' + report.id, { method: 'DELETE' });
           await supabaseFetch('/notifications?token=eq.' + encodeURIComponent(tid), { method: 'DELETE' });
           await supabaseFetch('/crop_reports?id=eq.' + report.id, { method: 'DELETE' });
-          return { success: true };
+          return { success: true, message: `Token ${tid} deleted successfully.` };
         }
-      } catch (err) {}
-      return res;
+        return { success: false, message: `Token ${tid} not found in database` };
+      } catch (err) {
+        console.error('Direct Supabase deleteToken error:', err);
+        return { success: false, message: err.message || 'Error deleting token' };
+      }
     },
 
     async resetDemoData() {
@@ -424,7 +465,7 @@ const KM_API = (function() {
             type: r.type,
             cat: r.category,
             title: r.title,
-            name: r.farmer_name,
+            name: r.name || r.farmer_name || 'Farmer',
             dist: r.district,
             phone: r.phone,
             price: r.price,
@@ -432,15 +473,19 @@ const KM_API = (function() {
             created_at: r.created_at,
             comments: (r.community_comments || []).map(c => ({
               id: c.id,
-              author: c.author_name,
-              text: c.comment_text,
+              author: c.author_name || 'Farmer',
+              author_name: c.author_name || 'Farmer',
+              comment: c.comment || c.comment_text || '',
+              text: c.comment || c.comment_text || '',
               created_at: c.created_at
             }))
           }));
           return { success: true, data: mapped };
         }
-      } catch (err) {}
-      return res;
+      } catch (err) {
+        console.warn('Direct Supabase getCommunityListings error:', err);
+      }
+      return res || { success: false, data: [] };
     },
 
     async createCommunityListing(data) {
@@ -453,7 +498,7 @@ const KM_API = (function() {
           type: data.type || 'sell',
           category: data.cat || data.category || 'crops',
           title: data.title || '',
-          farmer_name: data.name || data.farmer_name || 'Farmer',
+          name: data.name || data.farmer_name || 'Farmer',
           district: data.dist || data.district || '',
           phone: (data.phone || '').replace(/\D/g, '').slice(-10),
           price: data.price || '',
@@ -467,7 +512,9 @@ const KM_API = (function() {
         if (Array.isArray(inserted) && inserted.length > 0) {
           return { success: true, data: inserted[0] };
         }
-      } catch (err) {}
+      } catch (err) {
+        console.error('Direct Supabase createCommunityListing error:', err);
+      }
       return res;
     },
 
@@ -541,12 +588,15 @@ const KM_API = (function() {
 
     async getAllFeedback() {
       let res = await request('/feedback');
-      if (res && res.success && res.data && res.data.length > 0) return res;
+      if (res && res.success && (res.feedback || res.data)) {
+        const list = res.feedback || res.data;
+        return { success: true, count: list.length, feedback: list, data: list };
+      }
 
       // Direct Supabase REST
       try {
         const rows = await supabaseFetch('/feedback?order=created_at.desc');
-        if (Array.isArray(rows) && rows.length > 0) {
+        if (Array.isArray(rows)) {
           const mapped = rows.map(r => ({
             id: r.id,
             farmer_name: r.farmer_name,
@@ -556,10 +606,10 @@ const KM_API = (function() {
             comments: r.comments,
             created_at: r.created_at
           }));
-          return { success: true, data: mapped };
+          return { success: true, count: mapped.length, feedback: mapped, data: mapped };
         }
       } catch (err) {}
-      return res;
+      return res || { success: false, feedback: [], data: [] };
     },
 
     // 📢 ANNOUNCEMENTS & NOTIFICATIONS ENGINE (Direct Supabase Cloud Persistence)
@@ -573,7 +623,7 @@ const KM_API = (function() {
       // Direct Supabase REST failover
       try {
         const rows = await supabaseFetch('/notifications?order=sent_at.desc&limit=50');
-        if (Array.isArray(rows) && rows.length > 0) {
+        if (Array.isArray(rows)) {
           return { success: true, notifications: rows };
         }
       } catch (err) {}
