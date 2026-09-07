@@ -885,9 +885,12 @@ async function trackStatus(isBackgroundSync = false){
   }
 
   if(!d){ 
-    if(!isBackgroundSync) r.innerHTML = '<p style="color:#ff7b7b;font-weight:700">❌ Token not found! Please check and try again.</p>'; 
+    if(!isBackgroundSync) r.innerHTML = '<p style="color:#ff7b7b;font-weight:700">❌ Token not found in Supabase cloud database! Please verify the token number.</p>'; 
     return; 
   }
+
+  window._cachedTokens = window._cachedTokens || {};
+  window._cachedTokens[t] = d;
 
   const stepsList = d.steps || [];
   const doneCount = stepsList.filter(function(s){ return s[1] === 1 || s[1] === true; }).length;
@@ -895,9 +898,22 @@ async function trackStatus(isBackgroundSync = false){
   
   let html = '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">' +
     '<h3 style="color:var(--green)">✅ ' + d.name + ' — ' + d.crop + ' (' + d.qty + ')</h3>' +
-    '<span style="font-size:0.75rem;color:var(--green);background:rgba(62,207,111,0.12);padding:4px 10px;border-radius:12px;font-weight:700">● Live Auto-Sync Active</span>' +
+    '<span style="font-size:0.75rem;color:var(--green);background:rgba(62,207,111,0.12);padding:4px 10px;border-radius:12px;font-weight:700">● Live Supabase Cloud Sync</span>' +
   '</div>';
   html += '<p style="color:var(--muted);margin-top:4px;font-size:.9rem">📍 ' + d.mandi + ' • Progress: <b style="color:var(--txt)">' + pct + '%</b></p>';
+
+  if (d.queue_position && pct < 100) {
+    html += '<div style="margin:10px 0;padding:10px 14px;background:rgba(238,187,34,0.12);border:1px solid #eebc22;border-radius:10px;display:flex;align-items:center;gap:10px">' +
+      '<span style="font-size:1.4rem">⏳</span>' +
+      '<div><b>Queue Position: #' + d.queue_position + '</b> <span style="font-size:.85rem;color:var(--muted)">(' + (d.queue_position === 1 ? 'Ready for verification at Mandi gate' : ((d.queue_position - 1) + ' farmer(s) ahead in line')) + ')</span></div>' +
+    '</div>';
+  } else if (pct === 100) {
+    html += '<div style="margin:10px 0;padding:10px 14px;background:rgba(62,207,111,0.12);border:1px solid var(--green);border-radius:10px;display:flex;align-items:center;gap:10px">' +
+      '<span style="font-size:1.4rem">✅</span>' +
+      '<div><b style="color:var(--green)">Procurement Complete!</b> <span style="font-size:.85rem;color:var(--muted)">Payment approved & disbursed to bank account via DBT.</span></div>' +
+    '</div>';
+  }
+
   html += '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div><ul class="steps">';
   stepsList.forEach(function(s){
     const isDone = (s[1] === 1 || s[1] === true);
@@ -973,15 +989,23 @@ function generateTokenSlipHTML(data) {
     '</body></html>';
 }
 
-function downloadTokenSlip(token) {
-  const DB = getDB();
-  const d = DB[token] || {
-    name: "Registered Farmer",
-    phone: "-",
-    crop: "Harvest",
-    qty: "As registered",
-    mandi: "Designated Mandi"
-  };
+async function downloadTokenSlip(token) {
+  let d = (window._cachedTokens && window._cachedTokens[token]) || getDB()[token];
+  if (!d && typeof KM_API !== 'undefined' && KM_API.getToken) {
+    try {
+      const res = await KM_API.getToken(token);
+      if (res && (res.token || res.name)) d = res;
+    } catch(e){}
+  }
+  if (!d) {
+    d = {
+      name: "Registered Farmer",
+      phone: "-",
+      crop: "Harvest",
+      qty: "As registered",
+      mandi: "Designated Mandi"
+    };
+  }
 
   const slipData = {
     token: token,
@@ -1053,6 +1077,7 @@ async function register(e){
 
   const DB = getDB();
   DB[token] = {
+    token: token,
     name: name,
     phone: phone,
     crop: crop,
@@ -1063,6 +1088,12 @@ async function register(e){
   };
   localStorage.setItem(DB_KEY, JSON.stringify(DB));
   localStorage.setItem("km_new_token", token);
+  window._cachedTokens = window._cachedTokens || {};
+  window._cachedTokens[token] = DB[token];
+
+  if (document.getElementById("tokenInput")) {
+    document.getElementById("tokenInput").value = token;
+  }
 
   // Store in my saved tokens list permanently
   try {
@@ -1423,22 +1454,19 @@ function loadWeather(m){
 const AGMARK_KEY = "579b464db66ec23bdd000001f37bbca8e0684df7653a8bd4fac86363";
 const AGMARK_URL = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070";
 
-function loadPrices(){
+async function loadPrices(){
   const crop = document.getElementById("priceCrop").value;
   const note = document.getElementById("priceNote");
   const wrap = document.getElementById("priceTableWrap");
-  note.textContent = "⏳ Fetching live " + crop + " prices from AGMARKNET...";
+  note.textContent = "⏳ Fetching live " + crop + " prices from AGMARKNET / Mandi Cloud...";
   wrap.querySelector("table").innerHTML =
     '<tr><th>Mandi</th><th>District / State</th><th>Min ₹</th><th>Max ₹</th><th>Modal ₹ (per quintal)</th></tr>';
 
-  fetch(AGMARK_URL + "?api-key=" + AGMARK_KEY + "&format=json&limit=40&filters[commodity]=" + encodeURIComponent(crop))
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-      const recs = data.records || [];
-      if(!recs.length){
-        note.textContent = "ℹ️ No records today for " + crop + " — try another crop (Wheat, Onion and Potato almost always have data).";
-        return;
-      }
+  try {
+    const r = await fetch(AGMARK_URL + "?api-key=" + AGMARK_KEY + "&format=json&limit=40&filters[commodity]=" + encodeURIComponent(crop));
+    const data = await r.json();
+    const recs = data.records || [];
+    if(recs.length){
       let rows = "";
       recs.forEach(function(r){
         rows += '<tr><td><b>' + (r.market || "-") + '</b></td><td>' + (r.district || "-") + ', ' + (r.state || "-") +
@@ -1448,10 +1476,30 @@ function loadPrices(){
       wrap.querySelector("table").innerHTML =
         '<tr><th>Mandi</th><th>District / State</th><th>Min ₹</th><th>Max ₹</th><th>Modal ₹ (per quintal)</th></tr>' + rows;
       note.textContent = "✅ " + recs.length + " live mandi prices for " + crop + " · Source: AGMARKNET, Govt. of India";
-    })
-    .catch(function(){
-      note.textContent = "📡 Could not fetch prices — check your internet connection and try Refresh.";
-    });
+      return;
+    }
+  } catch(err){}
+
+  // Fallback to Supabase cloud mandi prices database
+  try {
+    if (typeof KM_API !== "undefined" && KM_API.getPrices) {
+      const res = await KM_API.getPrices(crop);
+      if (res && res.records && res.records.length) {
+        let rows = "";
+        res.records.forEach(function(r){
+          rows += '<tr><td><b>' + (r.mandi || "-") + '</b></td><td>' + (r.district || "-") + ', ' + (r.state || "-") +
+            '</td><td>₹' + (r.min || "-") + '</td><td>₹' + (r.max || "-") +
+            '</td><td><b style="color:var(--green)">₹' + (r.modal || "-") + '</b></td></tr>';
+        });
+        wrap.querySelector("table").innerHTML =
+          '<tr><th>Mandi</th><th>District / State</th><th>Min ₹</th><th>Max ₹</th><th>Modal ₹ (per quintal)</th></tr>' + rows;
+        note.textContent = "✅ Live mandi market & MSP rates for " + crop + " · Cloud APMC Mandi DB (MSP: ₹" + (res.msp || "Guaranteed") + "/quintal)";
+        return;
+      }
+    }
+  } catch(e){}
+
+  note.textContent = "ℹ️ No records found today for " + crop + " — try another crop (Wheat, Onion, Potato).";
 }
 
 /* ============ AUTO-LOADS ON PAGE OPEN ============ */

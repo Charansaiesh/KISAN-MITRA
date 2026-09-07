@@ -35,7 +35,31 @@ exports.getListings = async (req, res, next) => {
       const { data, error } = await query;
       if (error) throw error;
 
-      let results = data.map(item => ({
+      let currentData = data || [];
+      if (currentData.length === 0 && (!cat || cat === 'all') && !q) {
+        try {
+          const postsToInsert = memoryCommunityListings.map(m => ({
+            type: m.type,
+            category: m.cat,
+            title: m.title,
+            name: m.name,
+            district: m.dist,
+            phone: m.phone,
+            price: m.price,
+            emoji: m.emoji || categoryEmojis[m.cat] || "🌾"
+          }));
+          await supabase.from('community_posts').insert(postsToInsert);
+          const { data: seeded } = await supabase
+            .from('community_posts')
+            .select(`*, community_comments(*)`)
+            .order('created_at', { ascending: false });
+          if (seeded && seeded.length) currentData = seeded;
+        } catch (seedErr) {
+          console.warn('Community auto-seed note:', seedErr.message);
+        }
+      }
+
+      let results = currentData.map(item => ({
         id: item.id,
         type: item.type,
         cat: item.category,

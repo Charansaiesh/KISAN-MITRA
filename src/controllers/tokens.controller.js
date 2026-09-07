@@ -184,6 +184,20 @@ exports.getToken = async (req, res, next) => {
       const doneCount = steps.filter(s => s[1] === 1).length;
       const pct = Math.round((doneCount / (steps.length || 5)) * 100);
 
+      let queue_position = 0;
+      if (pct < 100) {
+        try {
+          const { count } = await supabase
+            .from('crop_reports')
+            .select('id', { count: 'exact', head: true })
+            .lt('progress_pct', 100)
+            .lt('created_at', report.created_at);
+          queue_position = (count || 0) + 1;
+        } catch (qErr) {
+          queue_position = 1;
+        }
+      }
+
       return res.json({
         success: true,
         token: report.token,
@@ -195,6 +209,7 @@ exports.getToken = async (req, res, next) => {
         district: report.district,
         status: report.status,
         progress_pct: pct,
+        queue_position,
         steps: steps.length ? steps : DEFAULT_STEPS
       });
     } else {
@@ -276,11 +291,27 @@ exports.advanceStep = async (req, res, next) => {
 
       if (!report) return res.status(404).json({ success: false, message: `Token ${token} not found.` });
 
-      const { data: steps } = await supabase
+      let { data: steps } = await supabase
         .from('token_steps')
         .select('*')
         .eq('token_id', report.id)
         .order('step_order');
+
+      if (!steps || steps.length === 0) {
+        const stepsToInsert = DEFAULT_STEPS.map((s, idx) => ({
+          token_id: report.id,
+          step_name: s[0],
+          step_order: idx + 1,
+          is_completed: (report.progress_pct >= ((idx + 1) * 20))
+        }));
+        await supabase.from('token_steps').insert(stepsToInsert);
+        const { data: refreshed } = await supabase
+          .from('token_steps')
+          .select('*')
+          .eq('token_id', report.id)
+          .order('step_order');
+        steps = refreshed || [];
+      }
 
       const nextStep = (steps || []).find(s => !s.is_completed);
       if (nextStep) {

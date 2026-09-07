@@ -325,25 +325,30 @@ let activeCat = "all";
 let cachedListings = [];
 let currentActivePostId = null;
 
-function filterCat(c, btn){
+async function filterCat(c, btn){
   activeCat = c;
   document.querySelectorAll(".tab").forEach(function(b){ b.classList.remove("active"); });
   btn.classList.add("active");
+  await fetchListings();
   render();
 }
 
 async function fetchListings(){
   try {
     if (typeof KM_API !== "undefined" && KM_API.getCommunityListings) {
-      const res = await KM_API.getCommunityListings(activeCat);
-      if (res && res.data && res.data.length > 0) {
+      const q = document.getElementById("searchBox") ? document.getElementById("searchBox").value.trim() : "";
+      const res = await KM_API.getCommunityListings(activeCat, q);
+      if (res && res.data && Array.isArray(res.data)) {
         cachedListings = res.data;
-        localStorage.setItem(CKEY, JSON.stringify(cachedListings));
         return cachedListings;
       }
     }
-  } catch(e){}
-  cachedListings = getLocalListings();
+  } catch(e){
+    console.warn("fetchListings error:", e);
+  }
+  if (!cachedListings.length) {
+    cachedListings = getLocalListings();
+  }
   return cachedListings;
 }
 
@@ -403,27 +408,19 @@ async function postListing(e){
   const dist = document.getElementById("pDist").value.trim();
   const phone = document.getElementById("pPhone").value.trim();
   const price = document.getElementById("pPrice").value.trim();
-  const emojis = {crops:"🌾", equipment:"🚜", transport:"🚚"};
-
-  const newListing = {
-    id: "cm_" + Date.now(),
-    type, cat, title, name, dist, phone, price,
-    emoji: emojis[cat] || "🌾",
-    comments: []
-  };
 
   try {
     if (typeof KM_API !== "undefined" && KM_API.createCommunityListing) {
       const apiRes = await KM_API.createCommunityListing({ type, cat, title, name, dist, phone, price });
       if (apiRes && apiRes.data) {
-        newListing.id = apiRes.data.id;
+        cachedListings.unshift(apiRes.data);
       }
     }
-  } catch(err){}
+  } catch(err){
+    console.warn("postListing error:", err);
+  }
 
-  cachedListings.unshift(newListing);
-  localStorage.setItem(CKEY, JSON.stringify(cachedListings));
-
+  await fetchListings();
   (e.target.reset ? e.target.reset() : document.querySelector("form.post-grid").reset());
   const msg = document.getElementById("postMsg");
   msg.style.display = "block";
@@ -474,28 +471,20 @@ async function submitComment(e){
   const comment = document.getElementById("commText").value.trim();
   if(!comment) return;
 
-  const newCommentObj = {
-    id: "c_" + Date.now(),
-    author_name: author || "Kisan Mitra",
-    comment: comment,
-    created_at: new Date().toISOString()
-  };
-
   try {
     if (typeof KM_API !== "undefined" && KM_API.addCommunityComment) {
       await KM_API.addCommunityComment(currentActivePostId, { author_name: author, comment });
     }
-  } catch(err){}
-
-  const post = cachedListings.find(p => p.id === currentActivePostId);
-  if(post){
-    post.comments = post.comments || [];
-    post.comments.push(newCommentObj);
-    localStorage.setItem(CKEY, JSON.stringify(cachedListings));
-    renderCommentsList(post.comments);
-    render();
+  } catch(err){
+    console.warn("addCommunityComment error:", err);
   }
 
+  await fetchListings();
+  const post = cachedListings.find(p => p.id === currentActivePostId);
+  if(post){
+    renderCommentsList(post.comments || []);
+  }
+  render();
   document.getElementById("commText").value = "";
 }
 
@@ -507,10 +496,11 @@ async function deleteListing(postId){
     if (typeof KM_API !== "undefined" && KM_API.deleteCommunityListing) {
       await KM_API.deleteCommunityListing(postId);
     }
-  } catch(err){}
+  } catch(err){
+    console.warn("deleteCommunityListing error:", err);
+  }
 
-  cachedListings = cachedListings.filter(p => p.id !== postId);
-  localStorage.setItem(CKEY, JSON.stringify(cachedListings));
+  await fetchListings();
   render();
 }
 

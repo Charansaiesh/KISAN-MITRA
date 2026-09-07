@@ -506,27 +506,24 @@ async function renderAdmin(){
 async function advanceStep(token){
   try {
     await KM_API.advanceStep(token);
-  } catch(e){}
-  const db = getDB();
-  const d = db[token];
-  if(d){
-    const next = d.steps.find(function(s){ return !s[1]; });
-    if(next) next[1] = 1;
-    saveDB(db);
+  } catch(e){
+    console.warn("Error advancing step:", e);
   }
   markSeen(token);
-  renderAdmin();
+  await renderAdmin();
 }
 
 async function deleteToken(token){
   if(!confirm("Delete token " + token + "?")) return;
   try {
     await KM_API.deleteToken(token);
-  } catch(e){}
+  } catch(e){
+    console.warn("Error deleting token:", e);
+  }
   const db = getDB();
   delete db[token];
   saveDB(db);
-  renderAdmin();
+  await renderAdmin();
 }
 
 async function clearDemo(){
@@ -539,7 +536,7 @@ async function clearDemo(){
   localStorage.removeItem("km_today_count");
   localStorage.removeItem(SEEN_KEY);
   localStorage.removeItem("km_new_token");
-  renderAdmin();
+  await renderAdmin();
 }
 
 /* ============ DEFAULT FALLBACK DATA ============ */
