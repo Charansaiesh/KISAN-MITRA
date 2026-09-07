@@ -400,6 +400,23 @@ exports.resetDemoData = async (req, res, next) => {
     };
     tokenCounter = 1004;
 
+    if (supabase) {
+      try {
+        const { data: testRows } = await supabase
+          .from('crop_reports')
+          .select('id, token')
+          .not('token', 'in', '("KM2024001","KM2024002","KM2024003")');
+
+        if (testRows && testRows.length > 0) {
+          const ids = testRows.map(r => r.id);
+          await supabase.from('token_steps').delete().in('token_id', ids);
+          await supabase.from('crop_reports').delete().in('id', ids);
+        }
+      } catch(sErr) {
+        console.warn('Supabase resetDemoData warning:', sErr.message);
+      }
+    }
+
     return res.json({ success: true, message: 'Demo data reset successfully.', data: memoryTokens });
   } catch (err) {
     next(err);

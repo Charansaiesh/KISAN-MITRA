@@ -14,6 +14,7 @@ const mandisRoutes = require('./src/routes/mandis.routes');
 const communityRoutes = require('./src/routes/community.routes');
 const feedbackRoutes = require('./src/routes/feedback.routes');
 const schemesRoutes = require('./src/routes/schemes.routes');
+const notificationsRoutes = require('./src/routes/notifications.routes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -65,6 +66,7 @@ const mountRoutes = (prefix) => {
   app.use(`${prefix}/mandis`, mandisRoutes);
   app.use(`${prefix}/community`, communityRoutes);
   app.use(`${prefix}/feedback`, feedbackRoutes);
+  app.use(`${prefix}/notifications`, notificationsRoutes);
   app.use(`${prefix}/schemes`, schemesRoutes);
 };
 mountRoutes('/api');

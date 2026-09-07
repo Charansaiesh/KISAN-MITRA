@@ -211,15 +211,39 @@
 
     <!-- SECTION 4: BROADCAST ANNOUNCEMENT -->
     <div id="sectionBroadcast" style="display:none">
-      <div class="login-box" style="max-width:600px;text-align:left">
+      <div class="login-box" style="max-width:640px;text-align:left;margin:0 auto 28px">
         <h3 style="margin-bottom:6px">📢 Broadcast Official Mandi Announcement</h3>
-        <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Send instant alerts to all farmers on the portal and SMS gateway.</p>
+        <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Send instant alerts to all farmers on the portal, SMS gateway, and Supabase cloud.</p>
         <form onsubmit="broadcastAlert(event)">
+          <input type="hidden" id="bcEditId" value="">
           <input class="field" id="bcTitle" placeholder="Announcement Title (e.g. Wheat Gate #2 Timing Update)" required>
           <textarea class="field" id="bcMessage" rows="3" placeholder="Message content for farmers..." required></textarea>
-          <button type="submit" class="btn btn-primary" style="width:100%">🚀 Send Notification Broadcast</button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button type="submit" id="bcSubmitBtn" class="btn btn-primary" style="flex:1">🚀 Send Notification Broadcast</button>
+            <button type="button" id="bcCancelBtn" class="btn btn-ghost" style="display:none" onclick="cancelBroadcastEdit()">✕ Cancel Edit</button>
+          </div>
         </form>
         <div id="bcSuccess" style="color:var(--green);font-weight:700;font-size:.85rem;margin-top:10px;display:none">✅ Notification sent successfully!</div>
+      </div>
+
+      <div style="margin-top:28px">
+        <div style="margin-bottom:18px;display:flex;justify-content:space-between;align-items:center">
+          <h3>📢 Published Mandi Announcements</h3>
+          <button class="btn btn-ghost" onclick="loadAdminBroadcasts()" style="padding:6px 14px;font-size:.8rem">🔄 Refresh Announcements</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:25%">Title</th>
+                <th>Message</th>
+                <th style="width:20%">Date / Time</th>
+                <th style="width:18%">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="broadcastAdminRows"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -322,8 +346,10 @@ function switchAdminTab(tab, btn){
   document.getElementById("sectionFeedback").style.display = tab === 'feedback' ? 'block' : 'none';
   document.getElementById("sectionBroadcast").style.display = tab === 'broadcast' ? 'block' : 'none';
 
+  if (tab === 'tokens') renderAdmin();
   if (tab === 'community') loadCommunityPosts();
   if (tab === 'feedback') loadAdminFeedback();
+  if (tab === 'broadcast') loadAdminBroadcasts();
 }
 
 /* ============ SHARED DATABASE KEYS ============ */
@@ -342,6 +368,8 @@ function adminLogout(){
   document.getElementById("adminLogin").style.display = "block";
   document.getElementById("officerTag").textContent = "🔒 Not logged in";
   document.getElementById("adminPass").value = "";
+  localStorage.removeItem("km_jwt_token");
+  localStorage.removeItem("km_user");
   if(typeof KM_API !== "undefined" && KM_API.clearAuth) KM_API.clearAuth();
 }
 
@@ -363,7 +391,7 @@ async function adminLogin(){
     document.getElementById("officerTag").textContent = "👮 Officer #1042 · Online";
     err.textContent = "";
     if (typeof KM_API !== "undefined" && KM_API.officerLogin) {
-      KM_API.officerLogin(p).catch(console.warn);
+      await KM_API.officerLogin(p).catch(console.warn);
     }
     renderAdmin();
     return;
@@ -670,29 +698,182 @@ window.addEventListener("storage", function(e){
   }
 });
 
-/* ============ BROADCAST ALERT ============ */
-function broadcastAlert(e){
+/* ============ BROADCAST ANNOUNCEMENT CRUD ============ */
+let adminBroadcastsList = [];
+
+async function loadAdminBroadcasts(){
+  const tbody = document.getElementById("broadcastAdminRows");
+  if(!tbody) return;
+  
+  let list = [];
+  try {
+    if(typeof KM_API !== "undefined" && KM_API.getNotifications){
+      const res = await KM_API.getNotifications();
+      if(res && res.notifications && Array.isArray(res.notifications)){
+        list = res.notifications;
+      }
+    }
+  } catch(e){
+    console.warn("loadAdminBroadcasts fetch fallback:", e);
+  }
+
+  // Merge with locally stored broadcast alerts
+  try {
+    const localAlerts = JSON.parse(localStorage.getItem("km_broadcast_alerts") || "[]");
+    if(localAlerts.length){
+      const existingIds = new Set(list.map(n => String(n.id)));
+      localAlerts.forEach(a => {
+        if(!existingIds.has(String(a.id))) list.push(a);
+      });
+    }
+  } catch(e){}
+
+  adminBroadcastsList = list;
+
+  if(!list.length){
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--muted)">No announcements published yet. Use the form above to send an announcement.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map(item => {
+    const dateStr = item.sent_at || item.created_at || item.time || new Date().toISOString();
+    let displayTime = dateStr;
+    try {
+      displayTime = new Date(dateStr).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+      if(displayTime === 'Invalid Date') displayTime = dateStr;
+    } catch(e){}
+
+    return `
+      <tr>
+        <td><b>📢 ${item.title || 'Mandi Update'}</b></td>
+        <td>${item.message || '-'}</td>
+        <td><small style="color:var(--muted)">${displayTime}</small></td>
+        <td>
+          <button class="adm-btn" onclick="editBroadcast('${item.id}')">✏️ Edit</button>
+          <button class="adm-btn del" onclick="deleteBroadcast('${item.id}')">🗑 Delete</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function broadcastAlert(e){
   e.preventDefault();
+  const editId = (document.getElementById("bcEditId").value || "").trim();
   const title = document.getElementById("bcTitle").value.trim();
   const msg = document.getElementById("bcMessage").value.trim();
+  const successEl = document.getElementById("bcSuccess");
   
-  let notifs = JSON.parse(localStorage.getItem("km_broadcast_alerts") || "[]");
-  notifs.unshift({
-    id: "notif_" + Date.now(),
-    title,
-    message: msg,
-    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  });
-  localStorage.setItem("km_broadcast_alerts", JSON.stringify(notifs));
+  if(!title || !msg) return;
 
-  document.getElementById("bcSuccess").style.display = "block";
-  e.target.reset();
-  setTimeout(() => { document.getElementById("bcSuccess").style.display = "none"; }, 3500);
+  if(editId){
+    // Update existing announcement
+    try {
+      if(typeof KM_API !== "undefined" && KM_API.updateNotification){
+        await KM_API.updateNotification(editId, { title, message: msg });
+      }
+    } catch(err){
+      console.warn("Update notification error:", err);
+    }
+
+    // Update in local storage if present
+    try {
+      let local = JSON.parse(localStorage.getItem("km_broadcast_alerts") || "[]");
+      const idx = local.findIndex(a => String(a.id) === String(editId));
+      if(idx !== -1){
+        local[idx].title = title;
+        local[idx].message = msg;
+        localStorage.setItem("km_broadcast_alerts", JSON.stringify(local));
+      }
+    } catch(err){}
+
+    successEl.textContent = "✅ Announcement updated successfully!";
+    successEl.style.display = "block";
+    cancelBroadcastEdit();
+  } else {
+    // Create new announcement
+    let createdItem = null;
+    try {
+      if(typeof KM_API !== "undefined" && KM_API.createNotification){
+        const res = await KM_API.createNotification({ title, message: msg, phone: 'ALL_FARMERS' });
+        if(res && res.notification) createdItem = res.notification;
+      }
+    } catch(err){
+      console.warn("Create notification error:", err);
+    }
+
+    // Save to local storage for cross-tab instant sync
+    try {
+      let notifs = JSON.parse(localStorage.getItem("km_broadcast_alerts") || "[]");
+      notifs.unshift({
+        id: (createdItem && createdItem.id) || ("notif_" + Date.now()),
+        title,
+        message: msg,
+        sent_at: new Date().toISOString(),
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+      localStorage.setItem("km_broadcast_alerts", JSON.stringify(notifs));
+    } catch(err){}
+
+    successEl.textContent = "✅ Notification broadcast sent successfully!";
+    successEl.style.display = "block";
+    e.target.reset();
+  }
+
+  setTimeout(() => { if(successEl) successEl.style.display = "none"; }, 3500);
+  await loadAdminBroadcasts();
+}
+
+function editBroadcast(id){
+  const item = adminBroadcastsList.find(b => String(b.id) === String(id));
+  if(!item) return;
+
+  document.getElementById("bcEditId").value = item.id;
+  document.getElementById("bcTitle").value = item.title || "";
+  document.getElementById("bcMessage").value = item.message || "";
+  document.getElementById("bcSubmitBtn").innerHTML = "💾 Update Announcement";
+  document.getElementById("bcCancelBtn").style.display = "inline-flex";
+
+  document.getElementById("bcTitle").focus();
+  document.getElementById("bcTitle").scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function cancelBroadcastEdit(){
+  document.getElementById("bcEditId").value = "";
+  document.getElementById("bcTitle").value = "";
+  document.getElementById("bcMessage").value = "";
+  document.getElementById("bcSubmitBtn").innerHTML = "🚀 Send Notification Broadcast";
+  document.getElementById("bcCancelBtn").style.display = "none";
+}
+
+async function deleteBroadcast(id){
+  if(!confirm("Delete this announcement? It will be removed for all farmers.")) return;
+
+  try {
+    if(typeof KM_API !== "undefined" && KM_API.deleteNotification){
+      await KM_API.deleteNotification(id);
+    }
+  } catch(err){
+    console.warn("deleteNotification error:", err);
+  }
+
+  try {
+    let local = JSON.parse(localStorage.getItem("km_broadcast_alerts") || "[]");
+    local = local.filter(a => String(a.id) !== String(id));
+    localStorage.setItem("km_broadcast_alerts", JSON.stringify(local));
+  } catch(err){}
+
+  if(document.getElementById("bcEditId").value === String(id)){
+    cancelBroadcastEdit();
+  }
+
+  await loadAdminBroadcasts();
 }
 
 /* ============ LIVE SYNC ============ */
 window.addEventListener("storage", function(e){
   if(e.key === DB_KEY) renderAdmin();
+  if(e.key === "km_broadcast_alerts") loadAdminBroadcasts();
 
   if(e.key === "km_new_token" && e.newValue){
     const d = getDB()[e.newValue];
@@ -716,6 +897,8 @@ setInterval(function(){
       // background refresh community
     } else if(activeTab && activeTab.id === "tabFeedbackBtn") {
       // background refresh feedback
+    } else if(activeTab && activeTab.id === "tabBroadcastBtn") {
+      loadAdminBroadcasts();
     } else {
       renderAdmin();
     }
@@ -724,6 +907,16 @@ setInterval(function(){
 
 window.addEventListener("load", function(){
   changeLanguage(currentLang);
+  
+  // Auto-login if officer session token exists
+  const token = (typeof KM_API !== "undefined" && KM_API.getToken()) || localStorage.getItem("km_jwt_token");
+  const user = (typeof KM_API !== "undefined" && KM_API.getCurrentUser()) || JSON.parse(localStorage.getItem("km_user") || "null");
+  if (token && user && (user.role === 'officer' || user.role === 'admin')) {
+    document.getElementById("adminLogin").style.display = "none";
+    document.getElementById("adminPanel").style.display = "block";
+    document.getElementById("officerTag").textContent = "👮 Officer #1042 · Online";
+    renderAdmin();
+  }
 });
 </script>
 

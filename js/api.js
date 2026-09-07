@@ -485,8 +485,8 @@ const KM_API = (function() {
           headers: { 'Prefer': 'return=representation' },
           body: JSON.stringify({
             post_id: postId,
-            author_name: data.author || 'Farmer',
-            comment_text: data.text || ''
+            author_name: data.author || data.author_name || 'Farmer',
+            comment: data.text || data.comment || ''
           })
         });
         if (Array.isArray(inserted) && inserted.length > 0) {
@@ -558,6 +558,95 @@ const KM_API = (function() {
           }));
           return { success: true, data: mapped };
         }
+      } catch (err) {}
+      return res;
+    },
+
+    // 📢 ANNOUNCEMENTS & NOTIFICATIONS ENGINE (Direct Supabase Cloud Persistence)
+    async getNotifications() {
+      let res = await request('/notifications');
+      if (!res || !res.success) {
+        res = await request('/feedback/notifications');
+      }
+      if (res && res.success && res.notifications && res.notifications.length > 0) return res;
+
+      // Direct Supabase REST failover
+      try {
+        const rows = await supabaseFetch('/notifications?order=sent_at.desc&limit=50');
+        if (Array.isArray(rows) && rows.length > 0) {
+          return { success: true, notifications: rows };
+        }
+      } catch (err) {}
+      return res || { success: true, notifications: [] };
+    },
+
+    async createNotification(data) {
+      const payload = {
+        title: (data.title || '').trim(),
+        message: (data.message || data.msg || '').trim(),
+        phone: data.phone || 'ALL_FARMERS'
+      };
+      let res = await request('/notifications', { method: 'POST', body: JSON.stringify(payload) });
+      if (!res || !res.success) {
+        res = await request('/feedback/notifications', { method: 'POST', body: JSON.stringify(payload) });
+      }
+      if (res && res.success) return res;
+
+      // Direct Supabase REST failover
+      try {
+        const inserted = await supabaseFetch('/notifications', {
+          method: 'POST',
+          headers: { 'Prefer': 'return=representation' },
+          body: JSON.stringify({
+            title: payload.title,
+            message: payload.message,
+            phone: payload.phone,
+            is_read: false
+          })
+        });
+        if (Array.isArray(inserted) && inserted.length > 0) {
+          return { success: true, notification: inserted[0] };
+        }
+      } catch (err) {}
+      return res;
+    },
+
+    async updateNotification(id, data) {
+      const payload = {
+        title: data.title ? data.title.trim() : undefined,
+        message: data.message ? data.message.trim() : undefined
+      };
+      let res = await request('/notifications/' + encodeURIComponent(id), { method: 'PATCH', body: JSON.stringify(payload) });
+      if (!res || !res.success) {
+        res = await request('/feedback/notifications/' + encodeURIComponent(id), { method: 'PATCH', body: JSON.stringify(payload) });
+      }
+      if (res && res.success) return res;
+
+      // Direct Supabase REST failover
+      try {
+        const updated = await supabaseFetch('/notifications?id=eq.' + encodeURIComponent(id), {
+          method: 'PATCH',
+          headers: { 'Prefer': 'return=representation' },
+          body: JSON.stringify(payload)
+        });
+        if (Array.isArray(updated) && updated.length > 0) {
+          return { success: true, notification: updated[0] };
+        }
+      } catch (err) {}
+      return res;
+    },
+
+    async deleteNotification(id) {
+      let res = await request('/notifications/' + encodeURIComponent(id), { method: 'DELETE' });
+      if (!res || !res.success) {
+        res = await request('/feedback/notifications/' + encodeURIComponent(id), { method: 'DELETE' });
+      }
+      if (res && res.success) return res;
+
+      // Direct Supabase REST failover
+      try {
+        await supabaseFetch('/notifications?id=eq.' + encodeURIComponent(id), { method: 'DELETE' });
+        return { success: true };
       } catch (err) {}
       return res;
     },

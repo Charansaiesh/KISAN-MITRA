@@ -243,6 +243,36 @@ async function runAllTests() {
       '17. DELETE /api/community/listings/:id (Community post deleted successfully)'
     );
 
+    // 18. Announcements / Notifications Full CRUD Lifecycle (Officer)
+    const createNotifRes = await request('/notifications', 'POST', {
+      title: 'Emergency Flood Alert',
+      message: 'Gate #3 closed temporarily due to heavy rain. Please proceed to Gate #1.',
+      phone: 'ALL_FARMERS'
+    }, officerToken);
+    assert(
+      createNotifRes.status === 201 && createNotifRes.data.success === true && createNotifRes.data.notification,
+      '18. POST /api/notifications (Officer broadcasted mandi announcement)'
+    );
+
+    const createdNotifId = createNotifRes.data.notification.id;
+
+    // 19. Announcement Update
+    const updateNotifRes = await request(`/notifications/${createdNotifId}`, 'PATCH', {
+      title: 'Gate #3 Reopened',
+      message: 'Drainage cleared. Gate #3 is now open for wheat un-loading.'
+    }, officerToken);
+    assert(
+      updateNotifRes.status === 200 && updateNotifRes.data.success === true,
+      '19. PATCH /api/notifications/:id (Officer updated announcement in real-time)'
+    );
+
+    // 20. Announcement Deletion
+    const delNotifRes = await request(`/notifications/${createdNotifId}`, 'DELETE', null, officerToken);
+    assert(
+      delNotifRes.status === 200 && delNotifRes.data.success === true,
+      '20. DELETE /api/notifications/:id (Officer deleted announcement from cloud database)'
+    );
+
   } catch (err) {
     console.error('⚠️ Unexpected test exception:', err);
     failed++;

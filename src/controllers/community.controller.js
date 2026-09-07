@@ -232,8 +232,9 @@ exports.addComment = async (req, res, next) => {
 exports.deleteListing = async (req, res, next) => {
   try {
     const { postId } = req.params;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(postId);
 
-    if (supabase) {
+    if (supabase && isUuid) {
       const { error } = await supabase
         .from('community_posts')
         .delete()
@@ -243,10 +244,9 @@ exports.deleteListing = async (req, res, next) => {
       return res.json({ success: true, message: 'Listing deleted successfully.' });
     } else {
       const idx = memoryCommunityListings.findIndex(p => p.id === postId);
-      if (idx === -1) {
-        return res.status(404).json({ success: false, message: 'Listing not found.' });
+      if (idx !== -1) {
+        memoryCommunityListings.splice(idx, 1);
       }
-      memoryCommunityListings.splice(idx, 1);
       return res.json({ success: true, message: 'Listing deleted successfully.' });
     }
   } catch (err) {
