@@ -72,13 +72,15 @@ const KM_API = (function() {
       const { protocol, hostname, port, origin } = window.location;
       if (protocol.startsWith('http')) {
         list.push(origin + '/api');
+        list.push(origin);
         if (port && port !== '5000') {
           list.push(protocol + '//' + hostname + ':5000/api');
         }
       }
     }
     list.push('/api');
-    list.push('https://kisan-mitra-charansaiesh.vercel.app/api');
+    list.push('http://localhost:5000/api');
+    list.push('http://127.0.0.1:5000/api');
     return Array.from(new Set(list));
   }
 
