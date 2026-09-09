@@ -2737,23 +2737,41 @@ function handleCropImageSelect(file) {
     return;
   }
 
-  if (file.size > 10 * 1024 * 1024) {
-    showCropError("Image size is too large (max 10MB). Please select a compressed photo.");
-    return;
-  }
-
+  // Auto-compress and scale to max 1024px to ensure fast, reliable upload on mobile & Vercel
   const reader = new FileReader();
   reader.onload = function(e) {
-    currentCropImageBase64 = e.target.result;
-    const preview = document.getElementById("cqPreviewImg");
-    const previewWrap = document.getElementById("cqPreviewWrap");
-    const prompt = document.getElementById("cqUploadPrompt");
-    const analyzeBtn = document.getElementById("cqAnalyzeBtn");
+    const img = new Image();
+    img.onload = function() {
+      const maxDim = 1024;
+      let w = img.width;
+      let h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) {
+          h = Math.round((h * maxDim) / w);
+          w = maxDim;
+        } else {
+          w = Math.round((w * maxDim) / h);
+          h = maxDim;
+        }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+      currentCropImageBase64 = canvas.toDataURL("image/jpeg", 0.85);
 
-    if (preview) preview.src = currentCropImageBase64;
-    if (previewWrap) previewWrap.style.display = "block";
-    if (prompt) prompt.style.display = "none";
-    if (analyzeBtn) analyzeBtn.disabled = false;
+      const preview = document.getElementById("cqPreviewImg");
+      const previewWrap = document.getElementById("cqPreviewWrap");
+      const prompt = document.getElementById("cqUploadPrompt");
+      const analyzeBtn = document.getElementById("cqAnalyzeBtn");
+
+      if (preview) preview.src = currentCropImageBase64;
+      if (previewWrap) previewWrap.style.display = "block";
+      if (prompt) prompt.style.display = "none";
+      if (analyzeBtn) analyzeBtn.disabled = false;
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }

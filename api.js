@@ -748,7 +748,7 @@ const KM_API = (function() {
       return request('/crop-quality/analyze', {
         method: 'POST',
         body: JSON.stringify(payload),
-        timeout: 20000
+        timeout: 35000
       });
     },
 
