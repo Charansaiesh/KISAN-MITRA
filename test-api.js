@@ -440,6 +440,36 @@ async function runAllTests() {
       '32. POST /api/chat (Rejects empty message with clear validation error)'
     );
 
+    // 33. Smart Mandi Arbitrage Calculator Options
+    const arbOptions = await request('/mandis/arbitrage-options', 'GET');
+    assert(
+      arbOptions.status === 200 &&
+      arbOptions.data.success === true &&
+      Array.isArray(arbOptions.data.crops) &&
+      arbOptions.data.vehicles.mini_truck,
+      '33. GET /api/mandis/arbitrage-options (Crop list & vehicle freight matrix loaded)'
+    );
+
+    // 34. Smart Mandi Arbitrage & Net Profit Calculation Verification
+    const arbCalc = await request('/mandis/arbitrage-calculator', 'POST', {
+      crop: 'Wheat',
+      quantity_qtl: 30,
+      origin_lat: 28.4595,
+      origin_lon: 77.0266,
+      origin_district: 'Gurgaon',
+      vehicle_type: 'mini_truck'
+    });
+    assert(
+      arbCalc.status === 200 &&
+      arbCalc.data.success === true &&
+      arbCalc.data.summary.optimal_mandi &&
+      typeof arbCalc.data.summary.optimal_mandi.net_profit === 'number' &&
+      Array.isArray(arbCalc.data.comparison) &&
+      arbCalc.data.comparison.length > 0,
+      '34. POST /api/mandis/arbitrage-calculator (Optimizes highest net in-pocket profit across APMCs)',
+      `Optimal: ${arbCalc.data.summary.optimal_mandi.mandi_name} (Net Profit: ₹${arbCalc.data.summary.optimal_mandi.net_profit})`
+    );
+
   } catch (err) {
     console.error('⚠️ Unexpected test exception:', err);
     failed++;

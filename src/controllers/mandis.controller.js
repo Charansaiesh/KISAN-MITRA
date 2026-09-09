@@ -151,3 +151,32 @@ exports.getPrices = async (req, res, next) => {
     next(err);
   }
 };
+
+const { MandiArbitrageService } = require('../services/MandiArbitrageService');
+
+// CALCULATE SMART MANDI ARBITRAGE & NET PROFIT
+exports.calculateMandiArbitrage = async (req, res, next) => {
+  try {
+    const { crop, quantity_qtl, origin_lat, origin_lon, origin_district, vehicle_type } = req.body;
+    const result = MandiArbitrageService.calculateArbitrage({
+      crop,
+      quantity_qtl,
+      origin_lat,
+      origin_lon,
+      origin_district,
+      vehicle_type
+    });
+    return res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getArbitrageOptions = async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    crops: MandiArbitrageService.getSupportedCrops(),
+    vehicles: MandiArbitrageService.getVehicleTypes()
+  });
+};
+

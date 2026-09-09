@@ -259,6 +259,19 @@
   #cqHistoryModal{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);z-index:900;display:none;align-items:center;justify-content:center;padding:20px}
   .cq-hist-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);max-width:760px;width:100%;max-height:85vh;overflow-y:auto;padding:28px;box-shadow:var(--shadow)}
 
+  /* 🚜 Smart Mandi Arbitrage Calculator Styles */
+  .arb-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 28px; max-width: 1200px; margin: 0 auto; align-items: start; }
+  .arb-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); position: relative; }
+  .arb-vehicle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+  .arb-vehicle-card { background: var(--surface2); border: 1.5px solid var(--line); border-radius: 14px; padding: 12px; cursor: pointer; transition: 0.25s; display: flex; align-items: center; gap: 10px; }
+  .arb-vehicle-card:hover, .arb-vehicle-card.active { border-color: var(--green); background: rgba(62,207,111,0.08); transform: translateY(-2px); }
+  .arb-vehicle-card.active { border-width: 2px; }
+  .arb-verdict-box { background: linear-gradient(135deg, rgba(62,207,111,0.18), rgba(255,196,77,0.12)); border: 1.5px solid var(--green); border-radius: 18px; padding: 20px; margin-bottom: 20px; position: relative; }
+  .arb-mandi-item { background: var(--surface2); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 12px; transition: 0.25s; display: flex; flex-direction: column; gap: 10px; }
+  .arb-mandi-item:hover { border-color: var(--green); transform: translateY(-2px); }
+  .arb-mandi-item.best { border: 2px solid var(--green); background: rgba(62,207,111,0.06); }
+
+
   /* 🤖 Kisan AI Chatbot Floating Widget */
   .kisan-chat-fab {
     position: fixed;
@@ -487,6 +500,7 @@
     <li><a href="#guide" data-i18n="nav_guide">📖 How It Works</a></li>
     <li><a href="#track" data-i18n="nav_track">🔍 Track</a></li>
     <li><a href="#prices" data-i18n="nav_prices">📈 Live Prices</a></li>
+    <li><a href="#arbitrage-calculator" style="color:var(--gold);font-weight:700">🚜 Profit Calculator</a></li>
     <li><a href="#crop-quality" style="color:var(--green);font-weight:700">🔬 AI Crop Quality</a></li>
     <li><a href="#schemes">🏛️ Schemes</a></li>
     <li><a href="#mandis" data-i18n="nav_mandis">📍 Mandi Map</a></li>
@@ -615,6 +629,140 @@
     <table id="priceTable"><tr><th>Mandi</th><th>District / State</th><th>Min ₹</th><th>Max ₹</th><th>Modal ₹ (per quintal)</th></tr></table>
   </div>
   <p class="mandi-note" id="priceNote">⏳ Loading live prices…</p>
+</section>
+
+<!-- ================= 🚜 SMART MANDI ARBITRAGE & NET-PROFIT CALCULATOR ================= -->
+<section id="arbitrage-calculator" style="background:var(--bg);border-bottom:1px solid var(--line);padding:90px 6%">
+  <div class="sec-head reveal">
+    <div class="sec-tag">PROFIT MAXIMIZER &amp; ROUTE ARBITRAGE</div>
+    <h2 class="sec-title">Smart Mandi Arbitrage &amp; Net-Profit Calculator 🚜💰</h2>
+    <p class="sec-sub">Calculate your true in-pocket earnings across nearby APMC mandis after deducting vehicle fuel, transport freight, and mandi handling charges.</p>
+  </div>
+
+  <div class="arb-grid reveal">
+    <!-- LEFT: Trip & Cargo Inputs -->
+    <div class="arb-card">
+      <h3 style="font-size:1.2rem;margin-bottom:18px;display:flex;align-items:center;gap:8px">
+        <span>⚙️</span> Your Harvest &amp; Transport Setup
+      </h3>
+
+      <!-- 1. Crop Selection -->
+      <div style="margin-bottom:16px">
+        <label style="font-size:0.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px">Select Harvested Crop:</label>
+        <select class="field" id="arbCropSelect" style="margin-bottom:0" onchange="runMandiArbitrage()">
+          <option value="Tomato">🍅 Tomato</option>
+          <option value="Wheat" selected>🌾 Wheat</option>
+          <option value="Onion">🧅 Onion</option>
+          <option value="Potato">🥔 Potato</option>
+          <option value="Chilli">🌶️ Chilli</option>
+          <option value="Rice">🌾 Rice / Paddy</option>
+          <option value="Cotton">🧵 Cotton</option>
+          <option value="Mustard">🌱 Mustard</option>
+          <option value="Soybean">🫘 Soybean</option>
+          <option value="Banana">🍌 Banana</option>
+        </select>
+      </div>
+
+      <!-- 2. Quantity Input -->
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <label style="font-size:0.82rem;font-weight:700;color:var(--muted)">Harvest Quantity (Quintals):</label>
+          <span id="arbQtyBadge" style="color:var(--green);font-weight:800;font-size:0.85rem">25 Quintals (2.5 Tons)</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="number" class="field" id="arbQtyInput" value="25" min="1" max="500" style="margin-bottom:0" oninput="updateArbitrageQty(this.value)">
+          <button type="button" class="btn btn-ghost" style="padding:10px 14px;margin-left:0;font-size:0.8rem" onclick="addArbitrageQty(5)">+5q</button>
+          <button type="button" class="btn btn-ghost" style="padding:10px 14px;margin-left:0;font-size:0.8rem" onclick="addArbitrageQty(20)">+20q</button>
+        </div>
+      </div>
+
+      <!-- 3. Origin Hub -->
+      <div style="margin-bottom:16px">
+        <label style="font-size:0.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px">Your Farm Origin Location / District:</label>
+        <select class="field" id="arbOriginSelect" style="margin-bottom:0" onchange="runMandiArbitrage()">
+          <option value="28.4595,77.0266,Gurgaon">📍 Gurgaon / NCR Region (Haryana/Delhi)</option>
+          <option value="29.6857,76.9905,Karnal">📍 Karnal / Kurukshetra Belt (Haryana)</option>
+          <option value="30.9010,75.8573,Ludhiana">📍 Ludhiana / Central Punjab</option>
+          <option value="26.8467,80.9462,Lucknow">📍 Lucknow / Awadh Region (Uttar Pradesh)</option>
+          <option value="26.4499,80.3319,Kanpur">📍 Kanpur / Ganga Basin (Uttar Pradesh)</option>
+          <option value="27.1767,78.0081,Agra">📍 Agra / Mathura Belt (Uttar Pradesh)</option>
+          <option value="26.9124,75.7873,Jaipur">📍 Jaipur / Shekhawati (Rajasthan)</option>
+          <option value="25.2138,75.8648,Kota">📍 Kota / Hadoti Zone (Rajasthan)</option>
+          <option value="22.7196,75.8577,Indore">📍 Indore / Malwa Belt (Madhya Pradesh)</option>
+          <option value="23.2599,77.4126,Bhopal">📍 Bhopal / Central MP</option>
+          <option value="20.1472,74.2268,Nashik">📍 Nashik / Lasalgaon Onion Belt (Maharashtra)</option>
+          <option value="18.5204,73.8567,Pune">📍 Pune / Western Maharashtra</option>
+          <option value="16.3067,80.4365,Guntur">📍 Guntur / Amaravati Region (Andhra Pradesh)</option>
+          <option value="17.9689,79.5941,Warangal">📍 Warangal / Kakatiya Hub (Telangana)</option>
+          <option value="13.1367,78.1291,Kolar">📍 Kolar / Chikkaballapur (Karnataka)</option>
+          <option value="12.9716,77.5946,Bengaluru">📍 Bengaluru Rural / Ramanagara (Karnataka)</option>
+        </select>
+      </div>
+
+      <!-- 4. Transport Vehicle Selector -->
+      <div style="margin-bottom:18px">
+        <label style="font-size:0.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px">Transport Vehicle (Freight Rate):</label>
+        <div class="arb-vehicle-grid" id="arbVehicleGroup">
+          <div class="arb-vehicle-card" data-vehicle="tractor" onclick="selectArbitrageVehicle('tractor', this)">
+            <span style="font-size:1.6rem">🚜</span>
+            <div>
+              <b style="font-size:0.85rem;color:var(--txt);display:block">Tractor Trolley</b>
+              <small style="color:var(--muted);font-size:0.72rem">₹26/km • Up to 45q</small>
+            </div>
+          </div>
+          <div class="arb-vehicle-card active" data-vehicle="mini_truck" onclick="selectArbitrageVehicle('mini_truck', this)">
+            <span style="font-size:1.6rem">🚚</span>
+            <div>
+              <b style="font-size:0.85rem;color:var(--txt);display:block">Pickup / Mini Truck</b>
+              <small style="color:var(--muted);font-size:0.72rem">₹18/km • Up to 25q</small>
+            </div>
+          </div>
+          <div class="arb-vehicle-card" data-vehicle="heavy_truck" onclick="selectArbitrageVehicle('heavy_truck', this)">
+            <span style="font-size:1.6rem">🚛</span>
+            <div>
+              <b style="font-size:0.85rem;color:var(--txt);display:block">Heavy Truck</b>
+              <small style="color:var(--muted);font-size:0.72rem">₹36/km • Up to 120q</small>
+            </div>
+          </div>
+          <div class="arb-vehicle-card" data-vehicle="auto" onclick="selectArbitrageVehicle('auto', this)">
+            <span style="font-size:1.6rem">🛺</span>
+            <div>
+              <b style="font-size:0.85rem;color:var(--txt);display:block">Auto Carrier</b>
+              <small style="color:var(--muted);font-size:0.72rem">₹12/km • Up to 12q</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="runMandiArbitrage()">
+        ⚡ Calculate Optimal Mandi
+      </button>
+    </div>
+
+    <!-- RIGHT: Recommendations & Realization Analysis -->
+    <div class="arb-card" id="arbResultsCard">
+      <div id="arbResultsContent">
+        <!-- AI Verdict Banner -->
+        <div class="arb-verdict-box" id="arbVerdictBox">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span style="font-size:1.8rem" id="arbVerdictEmoji">🚀</span>
+            <h4 style="font-size:1.15rem;color:var(--green);font-weight:800;margin:0" id="arbVerdictTitle">
+              Calculating maximum profit mandi...
+            </h4>
+          </div>
+          <p style="color:var(--txt);font-size:0.85rem;line-height:1.55;margin:0" id="arbVerdictDesc">
+            Comparing live APMC auction rates, round-trip diesel freight, and weighing fees.
+          </p>
+        </div>
+
+        <!-- Mandi Comparison Feed -->
+        <h4 style="font-size:0.95rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:12px">
+          Candidate Mandis Realization Breakdown
+        </h4>
+        <div id="arbMandiList" style="display:flex;flex-direction:column;gap:12px"></div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <!-- ================= 🔬 AI CROP QUALITY & MARKET VALUE ESTIMATOR ================= -->
@@ -3081,12 +3229,133 @@ function toggleKisanChatVoice() {
   }
 }
 
+// 🚜 SMART MANDI ARBITRAGE CALCULATOR LOGIC
+let selectedArbitrageVehicle = "mini_truck";
+
+function selectArbitrageVehicle(type, el) {
+  selectedArbitrageVehicle = type;
+  document.querySelectorAll("#arbVehicleGroup .arb-vehicle-card").forEach(c => c.classList.remove("active"));
+  if (el) el.classList.add("active");
+  runMandiArbitrage();
+}
+
+function updateArbitrageQty(val) {
+  const q = Math.max(1, Number(val) || 1);
+  const tons = (q * 0.1).toFixed(1);
+  const badge = document.getElementById("arbQtyBadge");
+  if (badge) badge.textContent = `${q} Quintals (${tons} Tons)`;
+  runMandiArbitrage();
+}
+
+function addArbitrageQty(delta) {
+  const input = document.getElementById("arbQtyInput");
+  if (input) {
+    const current = Number(input.value) || 20;
+    input.value = Math.max(1, current + delta);
+    updateArbitrageQty(input.value);
+  }
+}
+
+async function runMandiArbitrage() {
+  const crop = document.getElementById("arbCropSelect") ? document.getElementById("arbCropSelect").value : "Wheat";
+  const qty = document.getElementById("arbQtyInput") ? Number(document.getElementById("arbQtyInput").value) || 25 : 25;
+  const originVal = document.getElementById("arbOriginSelect") ? document.getElementById("arbOriginSelect").value : "28.4595,77.0266,Gurgaon";
+  const parts = originVal.split(",");
+  const latNum = Number(parts[0]);
+  const lonNum = Number(parts[1]);
+  const district = parts[2] || "NCR";
+
+  const listEl = document.getElementById("arbMandiList");
+  const verdictBox = document.getElementById("arbVerdictBox");
+  const verdictEmoji = document.getElementById("arbVerdictEmoji");
+  const verdictTitle = document.getElementById("arbVerdictTitle");
+  const verdictDesc = document.getElementById("arbVerdictDesc");
+
+  try {
+    const res = await KM_API.calculateMandiArbitrage({
+      crop,
+      quantity_qtl: qty,
+      origin_lat: latNum,
+      origin_lon: lonNum,
+      origin_district: district,
+      vehicle_type: selectedArbitrageVehicle
+    });
+
+    if (res && res.success) {
+      const summary = res.summary;
+      if (verdictEmoji) verdictEmoji.textContent = summary.has_arbitrage ? "🚀" : "✅";
+      if (verdictTitle) verdictTitle.textContent = summary.verdict_title;
+      if (verdictDesc) verdictDesc.textContent = summary.verdict_description;
+      if (verdictBox) {
+        verdictBox.style.background = summary.has_arbitrage
+          ? "linear-gradient(135deg, rgba(62,207,111,0.22), rgba(255,196,77,0.18))"
+          : "linear-gradient(135deg, rgba(62,207,111,0.12), rgba(30,41,59,0.5))";
+      }
+
+      if (listEl && res.comparison) {
+        listEl.innerHTML = res.comparison.map((m) => {
+          const isOptimal = m.mandi_id === summary.optimal_mandi.mandi_id;
+          const isNearest = m.mandi_id === summary.nearest_mandi.mandi_id;
+
+          let badgeHtml = "";
+          if (isOptimal && summary.has_arbitrage) {
+            badgeHtml = `<span class="cq-badge" style="background:rgba(62,207,111,0.2);color:var(--green);border:1px solid var(--green)">🥇 HIGHEST NET PROFIT (+₹${summary.arbitrage_gain.toLocaleString('en-IN')})</span>`;
+          } else if (isOptimal) {
+            badgeHtml = `<span class="cq-badge" style="background:rgba(62,207,111,0.2);color:var(--green);border:1px solid var(--green)">⭐ BEST CHOICE</span>`;
+          } else if (isNearest) {
+            badgeHtml = `<span class="cq-badge cq-badge-ref">📍 NEAREST MANDI</span>`;
+          }
+
+          return `
+            <div class="arb-mandi-item ${isOptimal ? 'best' : ''}">
+              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+                <div>
+                  <b style="font-size:1.05rem;color:var(--txt)">${m.mandi_name}</b>
+                  <small style="color:var(--muted);display:block">${m.district}, ${m.state} • 🚗 ${m.distance_km} km (~${m.travel_time_hours} hrs)</small>
+                </div>
+                ${badgeHtml}
+              </div>
+
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;background:var(--surface);border-radius:10px;padding:10px 12px;font-size:0.8rem">
+                <div>
+                  <span style="color:var(--muted);display:block">Auction Price:</span>
+                  <b style="color:var(--gold);font-size:0.95rem">₹${m.modal_price_qtl.toLocaleString('en-IN')}/q</b>
+                </div>
+                <div>
+                  <span style="color:var(--muted);display:block">Gross Sale:</span>
+                  <b style="color:var(--txt)">₹${m.gross_revenue.toLocaleString('en-IN')}</b>
+                </div>
+                <div>
+                  <span style="color:var(--muted);display:block">Fuel & Freight:</span>
+                  <span style="color:#fca5a5">-₹${m.transport_cost.toLocaleString('en-IN')}</span>
+                </div>
+                <div>
+                  <span style="color:var(--green);font-weight:700;display:block">Net In-Pocket:</span>
+                  <b style="color:var(--green);font-size:1.05rem">₹${m.net_profit.toLocaleString('en-IN')}</b>
+                </div>
+              </div>
+
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;margin-top:2px">
+                <a href="${m.maps_url}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:700">🗺️ Directions on Google Maps ↗</a>
+                <a href="#register" style="color:var(--gold);text-decoration:none;font-weight:700">🎟️ Book Token For This Mandi →</a>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+    }
+  } catch (err) {
+    if (listEl) listEl.innerHTML = `<p style="color:#fca5a5;padding:12px">Could not compute arbitrage: ${err.message}</p>`;
+  }
+}
+
 // Attach init hooks
 window.addEventListener("DOMContentLoaded", function(){
   updateAuthUI();
   renderSchemes();
   setRating(5);
   loadFarmerNotifications();
+  runMandiArbitrage();
 });
 
 </script>

@@ -786,6 +786,18 @@ const KM_API = (function() {
 
     async getChatSuggestions() {
       return request('/chat/suggestions');
+    },
+
+    // 🚜 SMART MANDI ARBITRAGE & NET PROFIT CALCULATOR
+    async calculateMandiArbitrage(payload) {
+      return request('/mandis/arbitrage-calculator', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+    },
+
+    async getArbitrageOptions() {
+      return request('/mandis/arbitrage-options');
     }
   };
 })();
