@@ -108,11 +108,39 @@ CREATE TABLE IF NOT EXISTS feedback (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 9. AI CROP QUALITY ASSESSMENTS & MARKET VALUE ESTIMATIONS
+CREATE TABLE IF NOT EXISTS crop_quality_assessments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    crop_type VARCHAR(50) NOT NULL,
+    crop_confidence NUMERIC(5, 2) NOT NULL,
+    quality_score INTEGER NOT NULL,
+    quality_category VARCHAR(30) NOT NULL,
+    visible_defects JSONB,
+    maturity_assessment VARCHAR(150),
+    recommendation TEXT,
+    market_source VARCHAR(30) NOT NULL DEFAULT 'REFERENCE_DEMO',
+    market_name VARCHAR(100),
+    reference_price NUMERIC(10, 2),
+    estimated_realization_min NUMERIC(5, 2),
+    estimated_realization_max NUMERIC(5, 2),
+    estimated_price_min NUMERIC(10, 2),
+    estimated_price_max NUMERIC(10, 2),
+    image_url TEXT,
+    model_name VARCHAR(100) DEFAULT 'CropQuality-VisionEngine',
+    model_version VARCHAR(30) DEFAULT '1.0.0',
+    analysis_status VARCHAR(30) DEFAULT 'completed',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- INDEXES
 CREATE INDEX IF NOT EXISTS idx_crop_reports_token ON crop_reports(token);
 CREATE INDEX IF NOT EXISTS idx_crop_reports_phone ON crop_reports(phone);
 CREATE INDEX IF NOT EXISTS idx_mandi_prices_crop ON mandi_prices(crop);
 CREATE INDEX IF NOT EXISTS idx_community_posts_created ON community_posts(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_crop_quality_user_id ON crop_quality_assessments(user_id);
+CREATE INDEX IF NOT EXISTS idx_crop_quality_crop_type ON crop_quality_assessments(crop_type);
+CREATE INDEX IF NOT EXISTS idx_crop_quality_created ON crop_quality_assessments(created_at DESC);
 
 -- SEED INITIAL DEMO DATA
 INSERT INTO crop_reports (token, farmer_name, phone, crop, quantity_quintal, mandi, district, status, progress_pct)
@@ -131,4 +159,6 @@ ALTER TABLE community_posts DISABLE ROW LEVEL SECURITY;
 ALTER TABLE community_comments DISABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications DISABLE ROW LEVEL SECURITY;
 ALTER TABLE feedback DISABLE ROW LEVEL SECURITY;
+ALTER TABLE crop_quality_assessments DISABLE ROW LEVEL SECURITY;
+
 

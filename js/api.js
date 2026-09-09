@@ -86,7 +86,8 @@ const KM_API = (function() {
 
   async function tryFetch(baseUrl, endpoint, options, headers) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1500);
+    const timeoutMs = (options && options.timeout) ? options.timeout : 6000;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     try {
       const cleanEndpoint = endpoint.startsWith('/') ? endpoint : '/' + endpoint;
       const url = baseUrl + cleanEndpoint;
@@ -740,6 +741,39 @@ const KM_API = (function() {
       if (cat && cat !== 'all') url += 'cat=' + encodeURIComponent(cat) + '&';
       if (query) url += 'q=' + encodeURIComponent(query);
       return request(url);
+    },
+
+    // 🔬 AI CROP QUALITY & MARKET VALUE ESTIMATION
+    async analyzeCropQuality(payload) {
+      return request('/crop-quality/analyze', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        timeout: 20000
+      });
+    },
+
+    async getCropQualityHistory() {
+      let res = await request('/crop-quality/history');
+      if (res && res.success) return res;
+
+      const user = getUser();
+      if (user && user.id) {
+        try {
+          const rows = await supabaseFetch('/crop_quality_assessments?user_id=eq.' + encodeURIComponent(user.id) + '&order=created_at.desc');
+          if (Array.isArray(rows)) {
+            return { success: true, count: rows.length, records: rows, source: 'supabase' };
+          }
+        } catch (err) {}
+      }
+      return res;
+    },
+
+    async getCropQualityAnalytics() {
+      return request('/crop-quality/analytics');
+    },
+
+    async getCropQualityModelStatus() {
+      return request('/crop-quality/model-status');
     }
   };
 })();

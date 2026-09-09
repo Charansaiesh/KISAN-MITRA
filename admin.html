@@ -130,6 +130,7 @@
       <button class="atab" id="tabCommBtn" onclick="switchAdminTab('community', this)">💬 Community Moderation</button>
       <button class="atab" id="tabFeedbackBtn" onclick="switchAdminTab('feedback', this)">🌟 Farmer Feedback</button>
       <button class="atab" id="tabBroadcastBtn" onclick="switchAdminTab('broadcast', this)">📢 Send Announcement</button>
+      <button class="atab" id="tabQualityBtn" onclick="switchAdminTab('quality', this)">🔬 AI Quality Analytics</button>
     </div>
 
     <!-- SECTION 1: TOKENS & QUEUE -->
@@ -248,6 +249,37 @@
       </div>
     </div>
 
+    <!-- SECTION 5: AI CROP QUALITY ANALYTICS -->
+    <div id="sectionQuality" style="display:none">
+      <div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:24px">
+        <div class="astat"><b id="stCqTotal">0</b><span>Total AI Quality Analyses 🔬</span></div>
+        <div class="astat"><b id="stCqAvgScore" style="color:var(--green)">0/100</b><span>Avg Quality Score 📊</span></div>
+        <div class="astat"><b id="stCqSuccess" style="color:var(--gold)">100%</b><span>Analysis Success Rate ⚡</span></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+        <!-- Crop Distribution -->
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px">
+          <h3 style="font-size:1.1rem;margin-bottom:14px;color:var(--txt)">🌾 Commodity Analysis Distribution</h3>
+          <div id="cqCropDistRows" style="display:flex;flex-direction:column;gap:10px">
+            <p style="color:var(--muted);font-size:0.85rem">Loading commodity breakdown...</p>
+          </div>
+        </div>
+
+        <!-- Quality Category Distribution -->
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px">
+          <h3 style="font-size:1.1rem;margin-bottom:14px;color:var(--txt)">🏷️ Visual Quality Category Breakdown</h3>
+          <div id="cqCatDistRows" style="display:flex;flex-direction:column;gap:10px">
+            <p style="color:var(--muted);font-size:0.85rem">Loading category breakdown...</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:14px 18px;font-size:0.84rem;color:var(--muted)">
+        🛡️ <b>Privacy Protection:</b> In compliance with agricultural data security standards, this analytics view shows only aggregated commodity metrics. Individual farmer identities, phone numbers, and private image uploads remain confidential.
+      </div>
+    </div>
+
     <!-- BOTTOM ACTIONS -->
     <div class="actions-row">
       <button class="btn btn-ghost" onclick="adminLogout()" data-i18n="btn_logout">🚪 Logout</button>
@@ -346,11 +378,72 @@ function switchAdminTab(tab, btn){
   document.getElementById("sectionCommunity").style.display = tab === 'community' ? 'block' : 'none';
   document.getElementById("sectionFeedback").style.display = tab === 'feedback' ? 'block' : 'none';
   document.getElementById("sectionBroadcast").style.display = tab === 'broadcast' ? 'block' : 'none';
+  document.getElementById("sectionQuality").style.display = tab === 'quality' ? 'block' : 'none';
 
   if (tab === 'tokens') renderAdmin();
   if (tab === 'community') loadCommunityPosts();
   if (tab === 'feedback') loadAdminFeedback();
   if (tab === 'broadcast') loadAdminBroadcasts();
+  if (tab === 'quality') loadCropQualityAnalytics();
+}
+
+async function loadCropQualityAnalytics() {
+  const totalEl = document.getElementById("stCqTotal");
+  const avgScoreEl = document.getElementById("stCqAvgScore");
+  const successEl = document.getElementById("stCqSuccess");
+  const cropDistEl = document.getElementById("cqCropDistRows");
+  const catDistEl = document.getElementById("cqCatDistRows");
+
+  try {
+    const res = await KM_API.getCropQualityAnalytics();
+    if (res && res.success) {
+      if (totalEl) totalEl.textContent = res.total_analyses;
+      if (avgScoreEl) avgScoreEl.textContent = `${res.average_quality_score}/100`;
+      if (successEl) successEl.textContent = `${res.success_rate_pct}%`;
+
+      // Render Crop distribution
+      if (cropDistEl && res.crop_distribution) {
+        const cropIcons = { Tomato: '🍅', Chilli: '🌶️', Onion: '🧅', Potato: '🥔', Banana: '🍌', Rice: '🌾' };
+        cropDistEl.innerHTML = Object.entries(res.crop_distribution).map(([crop, count]) => {
+          const pct = res.total_analyses > 0 ? Math.round((count / res.total_analyses) * 100) : 0;
+          return `
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px">
+                <span>${cropIcons[crop] || '🌾'} <b>${crop}</b></span>
+                <span style="color:var(--muted)">${count} lots (${pct}%)</span>
+              </div>
+              <div class="mini-bar"><div class="mini-fill" style="width:${pct}%"></div></div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Render Category distribution
+      if (catDistEl && res.category_distribution) {
+        const catColors = {
+          EXCELLENT: '#4ade80',
+          GOOD: '#86efac',
+          FAIR: 'var(--gold)',
+          'BELOW AVERAGE': '#fb923c',
+          POOR: '#fca5a5'
+        };
+        catDistEl.innerHTML = Object.entries(res.category_distribution).map(([cat, count]) => {
+          const pct = res.total_analyses > 0 ? Math.round((count / res.total_analyses) * 100) : 0;
+          return `
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px">
+                <span style="font-weight:700;color:${catColors[cat] || 'var(--txt)'}">${cat}</span>
+                <span style="color:var(--muted)">${count} (${pct}%)</span>
+              </div>
+              <div class="mini-bar"><div class="mini-fill" style="width:${pct}%;background:${catColors[cat] || 'var(--grad)'}"></div></div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+  } catch (err) {
+    console.warn("loadCropQualityAnalytics error:", err);
+  }
 }
 
 /* ============ SHARED DATABASE KEYS ============ */

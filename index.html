@@ -226,6 +226,41 @@
   .scard h3{font-size:1.15rem;color:var(--txt);margin-bottom:8px}
   .scard .benefit{color:var(--green);font-weight:700;font-size:.95rem;margin-bottom:8px}
   .scard .elig{color:var(--muted);font-size:.85rem;line-height:1.5}
+
+  /* 🔬 AI Crop Quality Section Styles */
+  .cq-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:28px;max-width:1150px;margin:0 auto;align-items:start}
+  .cq-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);position:relative}
+  .cq-upload-area{border:2px dashed var(--line);border-radius:18px;padding:32px 20px;text-align:center;background:rgba(255,255,255,0.015);cursor:pointer;transition:.25s;position:relative}
+  .cq-upload-area:hover,.cq-upload-area.dragover{border-color:var(--green);background:rgba(62,207,111,0.04)}
+  .cq-preview-wrap{position:relative;width:100%;max-height:280px;border-radius:14px;overflow:hidden;margin-top:16px;display:none;background:#000}
+  .cq-preview-img{width:100%;max-height:280px;object-fit:contain;display:block}
+  .cq-crop-pills{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+  .cq-pill{background:var(--surface2);border:1px solid var(--line);color:var(--muted);padding:8px 14px;border-radius:20px;font-size:0.82rem;font-weight:700;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:6px}
+  .cq-pill:hover,.cq-pill.active{background:rgba(62,207,111,0.15);border-color:var(--green);color:var(--green)}
+  .cq-step-loading{display:none;margin-top:18px;background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .cq-step-item{display:flex;align-items:center;gap:10px;font-size:0.84rem;color:var(--muted);padding:6px 0}
+  .cq-step-item.active{color:var(--gold);font-weight:700}
+  .cq-step-item.done{color:var(--green);font-weight:700}
+  .cq-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:0.75rem;font-weight:800;letter-spacing:0.5px}
+  .cq-badge-live{background:rgba(62,207,111,0.18);color:var(--green);border:1px solid rgba(62,207,111,0.35)}
+  .cq-badge-ref{background:rgba(255,196,77,0.18);color:var(--gold);border:1px solid rgba(255,196,77,0.35)}
+  .cq-cat-excellent{background:rgba(62,207,111,0.22);color:#4ade80;border:1.5px solid #22c55e}
+  .cq-cat-good{background:rgba(34,197,94,0.18);color:#86efac;border:1.5px solid #16a34a}
+  .cq-cat-fair{background:rgba(255,196,77,0.2);color:var(--gold);border:1.5px solid #f59e0b}
+  .cq-cat-below-average{background:rgba(249,115,22,0.2);color:#fb923c;border:1.5px solid #ea580c}
+  .cq-cat-poor{background:rgba(239,68,68,0.2);color:#fca5a5;border:1.5px solid #dc2626}
+  .cq-obs-list{list-style:none;padding:0;margin:12px 0;display:flex;flex-direction:column;gap:8px}
+  .cq-obs-list li{background:var(--surface2);border-left:3px solid var(--green);border-radius:8px;padding:8px 12px;font-size:0.84rem;color:var(--txt)}
+  .cq-recs-box{background:rgba(62,207,111,0.06);border:1px solid rgba(62,207,111,0.2);border-radius:12px;padding:12px 14px;margin-top:14px}
+  .cq-recs-box h5{color:var(--green);font-size:0.85rem;margin-bottom:6px;font-weight:700}
+  .cq-disclaimer{background:rgba(255,255,255,0.02);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:0.72rem;color:var(--muted);line-height:1.45;margin-top:14px}
+  
+  /* History Modal / Drawer */
+  #cqHistoryModal{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);z-index:900;display:none;align-items:center;justify-content:center;padding:20px}
+  .cq-hist-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);max-width:760px;width:100%;max-height:85vh;overflow-y:auto;padding:28px;box-shadow:var(--shadow)}
+  @media(max-width:850px){
+    .cq-grid{grid-template-columns:1fr}
+  }
 </style>
 </head>
 <body>
@@ -280,6 +315,7 @@
     <li><a href="#guide" data-i18n="nav_guide">📖 How It Works</a></li>
     <li><a href="#track" data-i18n="nav_track">🔍 Track</a></li>
     <li><a href="#prices" data-i18n="nav_prices">📈 Live Prices</a></li>
+    <li><a href="#crop-quality" style="color:var(--green);font-weight:700">🔬 AI Crop Quality</a></li>
     <li><a href="#schemes">🏛️ Schemes</a></li>
     <li><a href="#mandis" data-i18n="nav_mandis">📍 Mandi Map</a></li>
     <li><a href="community.html" target="_blank" style="color:var(--gold)" data-i18n="nav_community">🤝 Community ↗</a></li>
@@ -408,6 +444,197 @@
   </div>
   <p class="mandi-note" id="priceNote">⏳ Loading live prices…</p>
 </section>
+
+<!-- ================= 🔬 AI CROP QUALITY & MARKET VALUE ESTIMATOR ================= -->
+<section id="crop-quality" style="background:var(--surface);border-block:1px solid var(--line)">
+  <div class="sec-head reveal">
+    <div class="sec-tag">AI COMPUTER VISION &amp; MARKET ESTIMATION</div>
+    <h2 class="sec-title">AI Crop Quality &amp; Indicative Market Value Estimator 🔬</h2>
+    <p class="sec-sub">Analyze your harvested crop and get an AI-assisted quality and market-value estimate before visiting the APMC mandi.</p>
+    <div style="display:inline-flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px">
+      <span class="badge" style="background:var(--surface2);border:1px solid var(--line);color:var(--txt)">Supported Produce:</span>
+      <span class="badge" style="background:rgba(62,207,111,0.1);color:var(--green)">🍅 Tomato</span>
+      <span class="badge" style="background:rgba(62,207,111,0.1);color:var(--green)">🌶️ Chilli</span>
+      <span class="badge" style="background:rgba(62,207,111,0.1);color:var(--green)">🧅 Onion</span>
+      <span class="badge" style="background:rgba(62,207,111,0.1);color:var(--green)">🥔 Potato</span>
+      <span class="badge" style="background:rgba(62,207,111,0.1);color:var(--green)">🍌 Banana</span>
+      <span class="badge" style="background:rgba(62,207,111,0.1);color:var(--green)">🌾 Rice</span>
+    </div>
+  </div>
+
+  <div class="cq-grid reveal">
+    <!-- LEFT: Upload & Controls -->
+    <div class="cq-card">
+      <h3 style="font-size:1.15rem;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+        <span>📸 Harvested Produce Image</span>
+        <button onclick="openCropQualityHistory()" class="btn btn-ghost" style="padding:6px 14px;font-size:0.78rem;margin:0">📜 My Analyses</button>
+      </h3>
+
+      <!-- Dual Upload / Camera Area -->
+      <div class="cq-upload-area" id="cqDropZone" onclick="triggerFileInput('cqUploadInput')">
+        <div id="cqUploadPrompt">
+          <div style="font-size:2.8rem;margin-bottom:8px">📸</div>
+          <b style="font-size:1rem;color:var(--txt);display:block;margin-bottom:4px">Upload or Take Photo of Produce</b>
+          <p style="color:var(--muted);font-size:0.82rem;margin-bottom:16px">Capture harvested crop under clear lighting. JPG, PNG, or WebP up to 10MB.</p>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap" onclick="event.stopPropagation()">
+            <button type="button" class="btn btn-primary" style="padding:10px 18px;font-size:0.84rem" onclick="triggerFileInput('cqCameraInput')">
+              📷 Take Photo
+            </button>
+            <button type="button" class="btn btn-ghost" style="padding:10px 18px;font-size:0.84rem;margin-left:0" onclick="triggerFileInput('cqUploadInput')">
+              📁 Upload File
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hidden file inputs -->
+      <input type="file" id="cqCameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleCropImageSelect(this.files[0])">
+      <input type="file" id="cqUploadInput" accept="image/*" style="display:none" onchange="handleCropImageSelect(this.files[0])">
+
+      <!-- Image Preview -->
+      <div class="cq-preview-wrap" id="cqPreviewWrap">
+        <img id="cqPreviewImg" class="cq-preview-img" alt="Crop Preview">
+        <div style="position:absolute;top:8px;right:8px;display:flex;gap:6px">
+          <button onclick="clearCropImage()" style="background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:20px;padding:4px 10px;font-size:0.75rem;cursor:pointer">✕ Retake</button>
+        </div>
+      </div>
+
+      <!-- Crop Selection -->
+      <div style="margin-top:18px">
+        <label style="font-size:0.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px">Select Produce Type (or leave on Auto-Detect):</label>
+        <div class="cq-crop-pills" id="cqPillGroup">
+          <button type="button" class="cq-pill active" data-crop="" onclick="selectCropPill('', this)">✨ Auto-Detect</button>
+          <button type="button" class="cq-pill" data-crop="Tomato" onclick="selectCropPill('Tomato', this)">🍅 Tomato</button>
+          <button type="button" class="cq-pill" data-crop="Chilli" onclick="selectCropPill('Chilli', this)">🌶️ Chilli</button>
+          <button type="button" class="cq-pill" data-crop="Onion" onclick="selectCropPill('Onion', this)">🧅 Onion</button>
+          <button type="button" class="cq-pill" data-crop="Potato" onclick="selectCropPill('Potato', this)">🥔 Potato</button>
+          <button type="button" class="cq-pill" data-crop="Banana" onclick="selectCropPill('Banana', this)">🍌 Banana</button>
+          <button type="button" class="cq-pill" data-crop="Rice" onclick="selectCropPill('Rice', this)">🌾 Rice</button>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <button id="cqAnalyzeBtn" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px" onclick="startCropQualityAnalysis()" disabled>
+        ⚡ Analyze Crop Quality
+      </button>
+
+      <!-- Step-by-Step Interactive Loading State -->
+      <div class="cq-step-loading" id="cqLoadingBox">
+        <div class="cq-step-item" id="cqStep1"><span>⏳</span> Analyzing image resolution &amp; clarity...</div>
+        <div class="cq-step-item" id="cqStep2"><span>⏳</span> Identifying crop produce type...</div>
+        <div class="cq-step-item" id="cqStep3"><span>⏳</span> Assessing visible defects &amp; maturity...</div>
+        <div class="cq-step-item" id="cqStep4"><span>⏳</span> Checking market data &amp; reference rates...</div>
+        <div class="cq-step-item" id="cqStep5"><span>⏳</span> Preparing indicative realization estimate...</div>
+      </div>
+
+      <!-- Error / Notice box -->
+      <div id="cqErrorBox" style="display:none;margin-top:14px;background:rgba(239,68,68,0.12);border:1px solid #ef4444;color:#fca5a5;padding:12px;border-radius:12px;font-size:0.85rem"></div>
+    </div>
+
+    <!-- RIGHT: Result Card -->
+    <div class="cq-card" id="cqResultCard">
+      <!-- Empty State Before Analysis -->
+      <div id="cqEmptyState" style="text-align:center;padding:48px 20px">
+        <div style="font-size:3.5rem;margin-bottom:12px">🔬</div>
+        <h4 style="font-size:1.15rem;margin-bottom:8px">No Produce Analyzed Yet</h4>
+        <p style="color:var(--muted);font-size:0.88rem;max-width:380px;margin:0 auto;line-height:1.6">
+          Take a photo or upload an image of your harvested tomato, chilli, onion, potato, banana, or rice. The computer vision engine evaluates visible surface quality and checks available mandi benchmarks.
+        </p>
+      </div>
+
+      <!-- Live Populated Result -->
+      <div id="cqResultContent" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px">
+          <div>
+            <span style="color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;font-weight:700">AI Quality Result</span>
+            <h3 id="cqResCrop" style="font-size:1.6rem;font-weight:800;color:var(--txt);margin-top:2px">Tomato</h3>
+          </div>
+          <div style="text-align:right">
+            <span id="cqResConfBadge" class="cq-badge" style="background:rgba(62,207,111,0.15);color:var(--green)">94% Confidence</span>
+            <small id="cqResConfTier" style="display:block;color:var(--muted);font-size:0.72rem;margin-top:4px">HIGH CONFIDENCE</small>
+          </div>
+        </div>
+
+        <!-- Score & Category Grid -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+          <div style="background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center">
+            <span style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;font-weight:700">Visible Quality Score</span>
+            <div id="cqResScore" style="font-size:2.4rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin:4px 0">86/100</div>
+            <small style="color:var(--muted);font-size:0.74rem">Physical visual metrics only</small>
+          </div>
+
+          <div style="background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center">
+            <span style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:8px">Quality Category</span>
+            <span id="cqResCatBadge" class="cq-badge cq-cat-good" style="font-size:1rem;padding:8px 18px">GOOD</span>
+            <small id="cqResMaturity" style="color:var(--muted);font-size:0.74rem;margin-top:8px">Fully Ripe</small>
+          </div>
+        </div>
+
+        <!-- Visible Observations -->
+        <div style="margin-bottom:16px">
+          <h5 style="font-size:0.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px">Visible Observations (CV Analysis)</h5>
+          <ul class="cq-obs-list" id="cqResObsList"></ul>
+        </div>
+
+        <!-- Market Reference & Indicative Realization -->
+        <div style="background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:0.8rem;font-weight:700;color:var(--muted)">Market Benchmark:</span>
+            <span id="cqResMarketBadge" class="cq-badge cq-badge-ref">REFERENCE MARKET PRICE</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+            <span style="font-size:0.9rem;color:var(--txt)" id="cqResMarketName">APMC Mandi</span>
+            <b id="cqResModalPrice" style="font-size:1.2rem;color:var(--gold)">₹2,200 / quintal</b>
+          </div>
+
+          <hr style="border:none;border-top:1px solid var(--line);margin:12px 0">
+
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <div>
+              <span style="font-size:0.82rem;font-weight:700;color:var(--green)">Indicative Realization:</span>
+              <small id="cqResRealizationPct" style="display:block;color:var(--muted);font-size:0.74rem">85% – 94% realization</small>
+            </div>
+            <b id="cqResIndicativePrice" style="font-size:1.35rem;color:var(--green);font-weight:800">₹1,870 – ₹2,070 / quintal</b>
+          </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="cq-recs-box" id="cqResRecsBox">
+          <h5>💡 Actionable Advisory</h5>
+          <ul id="cqResRecsList" style="margin:0;padding-left:18px;font-size:0.82rem;color:var(--txt);line-height:1.5"></ul>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="cq-disclaimer">
+          <b>⚠️ AI Disclaimer:</b> This is an AI-assisted Crop Quality &amp; Indicative Market Value Estimation based on visible characteristics and available market data. Final price depends on actual physical inspection, buyer, market conditions, moisture content, and applicable APMC/mandi grade standards.
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px">
+          <button class="btn btn-primary" style="padding:10px 22px;font-size:0.85rem" onclick="resetCropQualityUI()">
+            🔄 Analyze Another Produce
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HISTORY MODAL -->
+<div id="cqHistoryModal" onclick="if(event.target===this) closeCropQualityHistory()">
+  <div class="cq-hist-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:18px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:1.5rem">📜</span>
+        <h3 style="font-size:1.25rem">My Crop Analyses</h3>
+      </div>
+      <button onclick="closeCropQualityHistory()" style="background:none;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer">&times;</button>
+    </div>
+    <div id="cqHistoryList">
+      <p style="color:var(--muted);text-align:center;padding:24px">Loading analysis history...</p>
+    </div>
+  </div>
+</div>
 
 <section id="schemes" style="background:var(--surface2);border-block:1px solid var(--line)">
   <div class="sec-head reveal">
@@ -2131,6 +2358,377 @@ document.addEventListener("click", function(e){
   }
 });
 
+/* ============ 🔬 AI CROP QUALITY CONTROLLER & ENGINE ============ */
+let selectedCropType = "";
+let currentCropImageBase64 = null;
+let latestAnalysisResult = null;
+
+function triggerFileInput(id) {
+  const el = document.getElementById(id);
+  if (el) el.click();
+}
+
+function selectCropPill(crop, btn) {
+  selectedCropType = crop;
+  const pills = document.querySelectorAll("#cqPillGroup .cq-pill");
+  pills.forEach(p => p.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+}
+
+function handleCropImageSelect(file) {
+  const errBox = document.getElementById("cqErrorBox");
+  if (errBox) errBox.style.display = "none";
+
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    showCropError("Please select a valid image file (JPG, PNG, or WebP).");
+    return;
+  }
+
+  if (file.size > 10 * 1024 * 1024) {
+    showCropError("Image size is too large (max 10MB). Please select a compressed photo.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    currentCropImageBase64 = e.target.result;
+    const preview = document.getElementById("cqPreviewImg");
+    const previewWrap = document.getElementById("cqPreviewWrap");
+    const prompt = document.getElementById("cqUploadPrompt");
+    const analyzeBtn = document.getElementById("cqAnalyzeBtn");
+
+    if (preview) preview.src = currentCropImageBase64;
+    if (previewWrap) previewWrap.style.display = "block";
+    if (prompt) prompt.style.display = "none";
+    if (analyzeBtn) analyzeBtn.disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearCropImage() {
+  currentCropImageBase64 = null;
+  const preview = document.getElementById("cqPreviewImg");
+  const previewWrap = document.getElementById("cqPreviewWrap");
+  const prompt = document.getElementById("cqUploadPrompt");
+  const analyzeBtn = document.getElementById("cqAnalyzeBtn");
+  const camInput = document.getElementById("cqCameraInput");
+  const uploadInput = document.getElementById("cqUploadInput");
+
+  if (preview) preview.src = "";
+  if (previewWrap) previewWrap.style.display = "none";
+  if (prompt) prompt.style.display = "block";
+  if (analyzeBtn) analyzeBtn.disabled = true;
+  if (camInput) camInput.value = "";
+  if (uploadInput) uploadInput.value = "";
+}
+
+function showCropError(msg) {
+  const errBox = document.getElementById("cqErrorBox");
+  if (errBox) {
+    errBox.innerHTML = `⚠️ ${msg}`;
+    errBox.style.display = "block";
+  }
+}
+
+async function startCropQualityAnalysis() {
+  if (!currentCropImageBase64) {
+    showCropError("Please upload or capture a photo of the produce first.");
+    return;
+  }
+
+  const analyzeBtn = document.getElementById("cqAnalyzeBtn");
+  const loadingBox = document.getElementById("cqLoadingBox");
+  const errBox = document.getElementById("cqErrorBox");
+  const emptyState = document.getElementById("cqEmptyState");
+  const resultContent = document.getElementById("cqResultContent");
+
+  if (errBox) errBox.style.display = "none";
+  if (analyzeBtn) analyzeBtn.disabled = true;
+  if (loadingBox) loadingBox.style.display = "block";
+
+  // Progressive step animation
+  const steps = [
+    { id: "cqStep1", text: "Analyzing image resolution & clarity..." },
+    { id: "cqStep2", text: "Identifying crop produce type..." },
+    { id: "cqStep3", text: "Assessing visible defects & maturity..." },
+    { id: "cqStep4", text: "Checking market data & reference rates..." },
+    { id: "cqStep5", text: "Preparing indicative realization estimate..." }
+  ];
+
+  let stepIdx = 0;
+  const stepInterval = setInterval(() => {
+    if (stepIdx < steps.length) {
+      const el = document.getElementById(steps[stepIdx].id);
+      if (el) {
+        el.className = "cq-step-item active";
+        el.innerHTML = `<span>⚡</span> ${steps[stepIdx].text}`;
+      }
+      if (stepIdx > 0) {
+        const prevEl = document.getElementById(steps[stepIdx - 1].id);
+        if (prevEl) {
+          prevEl.className = "cq-step-item done";
+          prevEl.innerHTML = `<span>✅</span> ${steps[stepIdx - 1].text}`;
+        }
+      }
+      stepIdx++;
+    }
+  }, 450);
+
+  try {
+    const res = await KM_API.analyzeCropQuality({
+      image: currentCropImageBase64,
+      crop: selectedCropType || undefined
+    });
+
+    clearInterval(stepInterval);
+    steps.forEach(s => {
+      const el = document.getElementById(s.id);
+      if (el) {
+        el.className = "cq-step-item done";
+        el.innerHTML = `<span>✅</span> ${s.text}`;
+      }
+    });
+
+    if (!res || !res.success) {
+      if (loadingBox) loadingBox.style.display = "none";
+      if (analyzeBtn) analyzeBtn.disabled = false;
+      showCropError(res ? (res.message || "Quality assessment could not be completed.") : "Network error. Please try again.");
+      return;
+    }
+
+    latestAnalysisResult = res;
+
+    // Populate Results Card
+    if (loadingBox) loadingBox.style.display = "none";
+    if (emptyState) emptyState.style.display = "none";
+    if (resultContent) resultContent.style.display = "block";
+    if (analyzeBtn) analyzeBtn.disabled = false;
+
+    // Crop & Confidence
+    const cropEl = document.getElementById("cqResCrop");
+    const confBadge = document.getElementById("cqResConfBadge");
+    const confTier = document.getElementById("cqResConfTier");
+    if (cropEl) cropEl.textContent = res.crop;
+    if (confBadge) {
+      confBadge.textContent = `${res.detection_confidence}% Confidence`;
+      confBadge.style.background = (res.detection_confidence >= 70) ? "rgba(62,207,111,0.18)" : "rgba(255,196,77,0.18)";
+      confBadge.style.color = (res.detection_confidence >= 70) ? "var(--green)" : "var(--gold)";
+    }
+    if (confTier) confTier.textContent = `${res.confidence_tier || 'HIGH'} CONFIDENCE`;
+
+    // Score & Category
+    const scoreEl = document.getElementById("cqResScore");
+    const catBadge = document.getElementById("cqResCatBadge");
+    const matEl = document.getElementById("cqResMaturity");
+
+    if (scoreEl) scoreEl.textContent = `${res.quality_score}/100`;
+    if (matEl) matEl.textContent = res.maturity_assessment || "Visible Assessment Completed";
+
+    if (catBadge) {
+      catBadge.textContent = res.quality_category;
+      const catClassMap = {
+        "Grade A": "cq-cat-excellent",
+        "Grade B": "cq-cat-good",
+        "Grade C": "cq-cat-fair",
+        "Fully Spoiled": "cq-cat-poor",
+        "FULLY SPOILED": "cq-cat-poor",
+        "Spoiled": "cq-cat-poor",
+        "EXCELLENT": "cq-cat-excellent",
+        "GOOD": "cq-cat-good",
+        "FAIR": "cq-cat-fair",
+        "BELOW AVERAGE": "cq-cat-below-average",
+        "POOR": "cq-cat-poor"
+      };
+      catBadge.className = `cq-badge ${catClassMap[res.quality_category] || 'cq-cat-fair'}`;
+    }
+
+    // Observations List
+    const obsList = document.getElementById("cqResObsList");
+    if (obsList) {
+      if (res.visible_observations && res.visible_observations.length > 0) {
+        obsList.innerHTML = res.visible_observations.map(obs => `<li>• ${obs}</li>`).join("");
+      } else {
+        obsList.innerHTML = `<li>• General surface inspection completed.</li>`;
+      }
+    }
+
+    // Market Reference & Realization
+    const mktBadge = document.getElementById("cqResMarketBadge");
+    const mktName = document.getElementById("cqResMarketName");
+    const mktPrice = document.getElementById("cqResModalPrice");
+    const realPct = document.getElementById("cqResRealizationPct");
+    const indPrice = document.getElementById("cqResIndicativePrice");
+
+    if (res.market_data && res.market_data.available) {
+      const isLive = res.market_data.source === 'LIVE';
+      if (mktBadge) {
+        mktBadge.textContent = isLive ? "LIVE MANDI PRICE" : "REFERENCE MARKET PRICE";
+        mktBadge.className = isLive ? "cq-badge cq-badge-live" : "cq-badge cq-badge-ref";
+      }
+      if (mktName) mktName.textContent = `${res.market_data.mandi_name || 'APMC Mandi'} (${res.market_data.state || 'India'})`;
+      if (mktPrice) mktPrice.textContent = `₹${Number(res.market_data.modal_price).toLocaleString('en-IN')} / quintal`;
+    } else {
+      if (mktBadge) mktBadge.textContent = "MARKET BENCHMARK";
+      if (mktName) mktName.textContent = "Data currently unavailable";
+      if (mktPrice) mktPrice.textContent = "N/A";
+    }
+
+    if (res.price_estimation && res.price_estimation.calculated) {
+      if (realPct) realPct.textContent = `${res.price_estimation.realization_min_pct}% – ${res.price_estimation.realization_max_pct}% realization (${res.price_estimation.realization_label || ''})`;
+      if (indPrice) indPrice.textContent = res.price_estimation.formatted_range;
+    } else {
+      if (realPct) realPct.textContent = "Realization estimation pending";
+      if (indPrice) indPrice.textContent = "Unavailable";
+    }
+
+    // Recommendations
+    const recsBox = document.getElementById("cqResRecsBox");
+    const recsList = document.getElementById("cqResRecsList");
+    if (recsList && res.recommendations && res.recommendations.length > 0) {
+      recsList.innerHTML = res.recommendations.map(r => `<li>${r}</li>`).join("");
+      if (recsBox) recsBox.style.display = "block";
+    } else if (recsBox) {
+      recsBox.style.display = "none";
+    }
+
+  } catch (err) {
+    clearInterval(stepInterval);
+    if (loadingBox) loadingBox.style.display = "none";
+    if (analyzeBtn) analyzeBtn.disabled = false;
+    showCropError("Analysis encountered an error: " + err.message);
+  }
+}
+
+async function saveCurrentCropAnalysis() {
+  const user = KM_API.getUser();
+  if (!user || !user.id) {
+    alert("Please sign in or register your farmer account to save and sync analyses across your devices.");
+    openAuthModal();
+    return;
+  }
+
+  if (!latestAnalysisResult) {
+    alert("Please analyze a crop first before saving.");
+    return;
+  }
+
+  const saveBtn = document.getElementById("cqSaveBtn");
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = "⏳ Saving...";
+  }
+
+  try {
+    const res = await KM_API.analyzeCropQuality({
+      image: currentCropImageBase64,
+      crop: latestAnalysisResult.crop,
+      save_to_history: true
+    });
+
+    if (saveBtn) {
+      saveBtn.innerHTML = "✅ Saved to Account";
+      setTimeout(() => {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = "💾 Save to My Account";
+      }, 2500);
+    }
+  } catch (err) {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = "💾 Save to My Account";
+    }
+    alert("Save note: " + err.message);
+  }
+}
+
+function resetCropQualityUI() {
+  clearCropImage();
+  const emptyState = document.getElementById("cqEmptyState");
+  const resultContent = document.getElementById("cqResultContent");
+  const loadingBox = document.getElementById("cqLoadingBox");
+  const errBox = document.getElementById("cqErrorBox");
+
+  if (emptyState) emptyState.style.display = "block";
+  if (resultContent) resultContent.style.display = "none";
+  if (loadingBox) loadingBox.style.display = "none";
+  if (errBox) errBox.style.display = "none";
+  latestAnalysisResult = null;
+}
+
+async function openCropQualityHistory() {
+  const modal = document.getElementById("cqHistoryModal");
+  const listEl = document.getElementById("cqHistoryList");
+  if (modal) modal.style.display = "flex";
+
+  const user = KM_API.getUser();
+  if (!user || !user.id) {
+    if (listEl) {
+      listEl.innerHTML = `
+        <div style="text-align:center;padding:36px 20px">
+          <div style="font-size:2.8rem;margin-bottom:10px">🔒</div>
+          <h4 style="margin-bottom:8px">Farmer Account Required</h4>
+          <p style="color:var(--muted);font-size:0.86rem;max-width:380px;margin:0 auto 18px">Sign in to your farmer account to view your past AI crop quality analyses across any phone or laptop.</p>
+          <button class="btn btn-primary" onclick="closeCropQualityHistory();openAuthModal()">Sign In / Register</button>
+        </div>
+      `;
+    }
+    return;
+  }
+
+  if (listEl) listEl.innerHTML = '<p style="color:var(--muted);text-align:center;padding:24px">Fetching your cloud analysis history...</p>';
+
+  try {
+    const res = await KM_API.getCropQualityHistory();
+    if (!res || !res.records || res.records.length === 0) {
+      if (listEl) {
+        listEl.innerHTML = `
+          <div style="text-align:center;padding:40px 20px;color:var(--muted)">
+            <span style="font-size:2.4rem;display:block;margin-bottom:8px">🌾</span>
+            <b>No saved analyses found.</b>
+            <p style="font-size:0.84rem;margin-top:6px">Your completed crop quality assessments will appear here automatically.</p>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    if (listEl) {
+      listEl.innerHTML = res.records.map(r => {
+        const dateStr = new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const estMin = r.estimated_price_min ? `₹${Number(r.estimated_price_min).toLocaleString('en-IN')}` : 'N/A';
+        const estMax = r.estimated_price_max ? `₹${Number(r.estimated_price_max).toLocaleString('en-IN')}` : 'N/A';
+        const refPrice = r.reference_price ? `₹${Number(r.reference_price).toLocaleString('en-IN')}/q` : 'N/A';
+
+        return `
+          <div style="background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <div>
+                <b style="font-size:1.1rem;color:var(--txt)">${r.crop_type}</b>
+                <span style="font-size:0.75rem;color:var(--muted);margin-left:8px">${dateStr}</span>
+              </div>
+              <span class="cq-badge cq-cat-good" style="font-size:0.78rem">${r.quality_category} (${r.quality_score}/100)</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:0.84rem;color:var(--muted);margin-bottom:6px">
+              <span>Mandi Benchmark: <b style="color:var(--gold)">${refPrice}</b></span>
+              <span>Indicative Realization: <b style="color:var(--green)">${estMin} – ${estMax}</b></span>
+            </div>
+            ${r.recommendation ? `<p style="font-size:0.78rem;color:var(--muted);margin:6px 0 0;border-top:1px dashed var(--line);padding-top:6px">💡 ${r.recommendation}</p>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+  } catch (e) {
+    if (listEl) listEl.innerHTML = `<p style="color:#ff7b7b;text-align:center;padding:24px">Error loading history: ${e.message}</p>`;
+  }
+}
+
+function closeCropQualityHistory() {
+  const modal = document.getElementById("cqHistoryModal");
+  if (modal) modal.style.display = "none";
+}
+
 // Attach init hooks
 window.addEventListener("DOMContentLoaded", function(){
   updateAuthUI();
@@ -2138,6 +2736,7 @@ window.addEventListener("DOMContentLoaded", function(){
   setRating(5);
   loadFarmerNotifications();
 });
+
 </script>
 
 

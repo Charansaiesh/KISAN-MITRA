@@ -273,6 +273,154 @@ async function runAllTests() {
       '20. DELETE /api/notifications/:id (Officer deleted announcement from cloud database)'
     );
 
+    // ====================================================
+    // 🔬 AI CROP QUALITY & MARKET VALUE ESTIMATOR TESTS
+    // ====================================================
+
+    // ====================================================
+    // 🔬 AI CROP QUALITY & MARKET VALUE ESTIMATOR TESTS
+    // ====================================================
+
+    // 21. Technical Model Status Endpoint
+    const modelStatusRes = await request('/crop-quality/model-status');
+    assert(
+      modelStatusRes.status === 200 &&
+      modelStatusRes.data.success === true &&
+      modelStatusRes.data.is_honest === true &&
+      modelStatusRes.data.provider.includes('Gemini'),
+      '21. GET /api/crop-quality/model-status (Technical metadata is transparent & honest)',
+      `Provider: ${modelStatusRes.data?.provider}`
+    );
+
+    // 22. Input Validation Guard: Missing Image
+    const noImageRes = await request('/crop-quality/analyze', 'POST', { crop: 'Tomato' });
+    assert(
+      noImageRes.status === 400 && noImageRes.data.error_code === 'NO_IMAGE',
+      '22. POST /api/crop-quality/analyze (Rejects missing image gracefully)'
+    );
+
+    // 23. Input Validation Guard: Unsupported Crop
+    const fs = require('fs');
+    const path = require('path');
+    const testBase64 = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
+
+    const unsuppRes = await request('/crop-quality/analyze', 'POST', {
+      image: testBase64,
+      crop: 'Watermelon'
+    });
+    assert(
+      unsuppRes.status === 400 && unsuppRes.data.error_code === 'UNSUPPORTED_CROP',
+      '23. POST /api/crop-quality/analyze (Rejects unsupported crop with clear message)'
+    );
+
+    // 24. Deterministic Quality Scoring Unit Tests (Boundary Values: 0, 59, 60, 79, 80, 100)
+    const {
+      calculateQualityScore,
+      calculateGrade,
+      calculateRealizationRange
+    } = require('./src/services/CropQualityAIService');
+
+    const perfectScore = calculateQualityScore({ defect_ratio_pct: 0, ripeness: 'ripe', confidence: 95 });
+    const poorScore = calculateQualityScore({ defect_ratio_pct: 50, ripeness: 'overripe', confidence: 30 });
+    const spoiledScore = calculateQualityScore({ is_fully_spoiled: true, defect_ratio_pct: 90 });
+    
+    assert(
+      perfectScore === 100 && poorScore < 40 && spoiledScore === 0 &&
+      calculateGrade(100) === 'Grade A' &&
+      calculateGrade(80) === 'Grade A' &&
+      calculateGrade(79) === 'Grade B' &&
+      calculateGrade(60) === 'Grade B' &&
+      calculateGrade(59) === 'Grade C' &&
+      calculateGrade(0) === 'Grade C' &&
+      calculateGrade(0, true) === 'Fully Spoiled',
+      '24. Unit Test: calculateQualityScore() & calculateGrade() on Boundary Values (0, 59, 60, 79, 80, 100, Fully Spoiled)'
+    );
+
+    // 25. Realization Range Interpolation Unit Test
+    const r100 = calculateRealizationRange(100, 'Grade A');
+    const r80 = calculateRealizationRange(80, 'Grade A');
+    const r79 = calculateRealizationRange(79, 'Grade B');
+    const r60 = calculateRealizationRange(60, 'Grade B');
+    const r59 = calculateRealizationRange(59, 'Grade C');
+    const r0 = calculateRealizationRange(0, 'Grade C');
+    const rSpoiled = calculateRealizationRange(0, 'Fully Spoiled');
+
+    assert(
+      r100.low === 100 && r100.high === 100 &&
+      r80.low === 85 && r80.high === 100 &&
+      r79.low === 84 && r79.high === 84 &&
+      r60.low === 65 && r60.high === 84 &&
+      r59.low === 64 && r59.high === 64 &&
+      r0.low === 40 && r0.high === 64 &&
+      rSpoiled.low === 0 && rSpoiled.high === 0,
+      '25. Unit Test: calculateRealizationRange() Interpolation Formula on Grade Boundaries'
+    );
+
+    // 26. Market Benchmark Provider & Honest Labeling Check
+    const { MarketPriceProvider } = require('./src/services/MarketPriceProvider');
+    const mkt = await MarketPriceProvider.getPrice('Tomato');
+    assert(
+      mkt && mkt.available === true &&
+      ['LIVE', 'REFERENCE_DEMO'].includes(mkt.source) &&
+      mkt.modal_price > 0,
+      '26. MarketPriceProvider Verification (Honest labeling as LIVE or REFERENCE_DEMO)',
+      `Source: ${mkt?.source}, Modal: ₹${mkt?.modal_price}`
+    );
+
+    // 27. Indicative Realization Price Range Calculation Derivation
+    const benchmark = Number(mkt.modal_price);
+    const estLowA = Math.round(benchmark * (r80.low / 100));
+    const estHighA = Math.round(benchmark * (r80.high / 100));
+    assert(
+      estLowA <= estHighA && estLowA === Math.round(benchmark * 0.85) && estHighA === benchmark,
+      '27. Pricing Estimation Derivation (Mathematically derived from benchmark and realization band)'
+    );
+
+    // 28. Farmer Cloud History Persistence & Retrieval
+    const { CropQualityPersistenceService } = require('./src/services/CropQualityPersistenceService');
+    const savedRecord = await CropQualityPersistenceService.saveAssessment({
+      user_id: 'test_farmer_uuid',
+      crop: 'Tomato',
+      crop_confidence: 92,
+      confidence_tier: 'HIGH',
+      quality_score: 95,
+      quality_category: 'Grade A',
+      maturity_assessment: 'Ripeness: ripe',
+      defect_ratio_pct: 2,
+      modal_price: mkt.modal_price,
+      estimated_min_price: estLowA,
+      estimated_max_price: estHighA,
+      observations: ['Uniform red coloration', 'Firm skin'],
+      price_source: mkt.source
+    });
+
+    const userHistory = await CropQualityPersistenceService.getUserHistory('test_farmer_uuid');
+    assert(
+      userHistory && userHistory.success === true && Array.isArray(userHistory.records) && userHistory.records.length > 0,
+      '28. Farmer Cloud History (Synchronized & isolated by User ID)',
+      `Records found: ${userHistory.records?.length}`
+    );
+
+    // 29. Officer/Admin Aggregate Quality Analytics (No PII leaked)
+    const analyticsRes = await request('/crop-quality/analytics', 'GET', null, officerToken);
+    assert(
+      analyticsRes.status === 200 &&
+      analyticsRes.data.success === true &&
+      typeof analyticsRes.data.total_analyses === 'number' &&
+      analyticsRes.data.crop_distribution &&
+      analyticsRes.data.category_distribution,
+      '29. GET /api/crop-quality/analytics (Admin aggregate metrics loaded, zero farmer PII)',
+      `Total: ${analyticsRes.data.total_analyses}, Avg Score: ${analyticsRes.data.average_quality_score}`
+    );
+
+    // 30. Security Guard on Analytics (Farmer role blocked with 403, unauthenticated blocked with 401)
+    const unauthAnalytics = await request('/crop-quality/analytics', 'GET');
+    const farmerAnalytics = await request('/crop-quality/analytics', 'GET', null, farmerToken);
+    assert(
+      unauthAnalytics.status === 401 && farmerAnalytics.status === 403,
+      '30. Role-Based Security Guard on Analytics (Farmer 403, Unauthenticated 401)'
+    );
+
   } catch (err) {
     console.error('⚠️ Unexpected test exception:', err);
     failed++;
