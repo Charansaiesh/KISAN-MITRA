@@ -774,6 +774,19 @@ const KM_API = (function() {
 
     async getCropQualityModelStatus() {
       return request('/crop-quality/model-status');
+    },
+
+    // 🤖 AI AGRI ASSISTANT CHAT
+    async sendChatMessage(payload) {
+      return request('/chat', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        timeout: 25000
+      });
+    },
+
+    async getChatSuggestions() {
+      return request('/chat/suggestions');
     }
   };
 })();

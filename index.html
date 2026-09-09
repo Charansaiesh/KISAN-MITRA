@@ -10,8 +10,8 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-<script src="js/api.js"></script>
-<script>if(typeof KM_API==='undefined'){document.write('<script src="api.js"><\/script>');}</script>
+<script src="js/api.js?v=3.0"></script>
+<script>if(typeof KM_API==='undefined'||!KM_API.sendChatMessage){document.write('<script src="api.js?v=3.0"><\/script>');}</script>
 <style>
   :root{
     --bg:#0b0f0d; --surface:#131a16; --surface2:#1a241e; --line:#26332b;

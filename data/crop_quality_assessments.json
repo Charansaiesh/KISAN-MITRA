@@ -1,5 +1,27 @@
 [
   {
+    "id": "cqa_1788953154822_cbh66",
+    "user_id": "test_farmer_uuid",
+    "crop_confidence": 92,
+    "quality_score": 95,
+    "quality_category": "Grade A",
+    "visible_defects": {},
+    "maturity_assessment": "Ripeness: ripe",
+    "recommendation": "",
+    "market_source": "REFERENCE_DEMO",
+    "market_name": "",
+    "reference_price": null,
+    "estimated_realization_min": null,
+    "estimated_realization_max": null,
+    "estimated_price_min": null,
+    "estimated_price_max": null,
+    "image_url": null,
+    "model_name": "CropQuality-VisionEngine",
+    "model_version": "1.0.0",
+    "analysis_status": "completed",
+    "created_at": "2026-09-09T11:25:54.822Z"
+  },
+  {
     "id": "cqa_1788953010130_x4pbb",
     "user_id": "test_farmer_uuid",
     "crop_confidence": 92,
