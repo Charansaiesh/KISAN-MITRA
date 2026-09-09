@@ -470,6 +470,25 @@ async function runAllTests() {
       `Optimal: ${arbCalc.data.summary.optimal_mandi.mandi_name} (Net Profit: ₹${arbCalc.data.summary.optimal_mandi.net_profit})`
     );
 
+    // 35. Live GPS Coordinates & Distance-First Sorting Verification
+    const arbGpsCalc = await request('/mandis/arbitrage-calculator', 'POST', {
+      crop: 'Tomato',
+      quantity_qtl: 25,
+      origin_lat: 17.3850, // Hyderabad GPS
+      origin_lon: 78.4867,
+      origin_district: 'Auto GPS',
+      vehicle_type: 'mini_truck',
+      sort_by: 'distance'
+    });
+    assert(
+      arbGpsCalc.status === 200 &&
+      arbGpsCalc.data.success === true &&
+      arbGpsCalc.data.summary.nearest_mandi &&
+      arbGpsCalc.data.comparison[0].distance_km <= arbGpsCalc.data.comparison[1].distance_km,
+      '35. POST /api/mandis/arbitrage-calculator (Live GPS nearest mandi auto-detection & distance sort)',
+      `Nearest to GPS: ${arbGpsCalc.data.summary.nearest_mandi.mandi_name} (${arbGpsCalc.data.summary.nearest_mandi.distance_km} km)`
+    );
+
   } catch (err) {
     console.error('⚠️ Unexpected test exception:', err);
     failed++;

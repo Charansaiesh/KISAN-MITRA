@@ -676,10 +676,15 @@
         </div>
       </div>
 
-      <!-- 3. Origin Hub -->
+      <!-- 3. Origin Hub with GPS Auto-Detection -->
       <div style="margin-bottom:16px">
-        <label style="font-size:0.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px">Your Farm Origin Location / District:</label>
-        <select class="field" id="arbOriginSelect" style="margin-bottom:0" onchange="runMandiArbitrage()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px">
+          <label style="font-size:0.82rem;font-weight:700;color:var(--muted);margin-bottom:0">Your Farm Origin Location / District:</label>
+          <button type="button" class="btn btn-ghost" id="arbGpsBtn" style="padding:4px 10px;font-size:0.75rem;display:inline-flex;align-items:center;gap:6px;color:var(--green);border:1px solid var(--green);border-radius:20px" onclick="detectGpsLocation()">
+            <span id="arbGpsIcon">🎯</span> <span id="arbGpsText">Auto-Detect GPS</span>
+          </button>
+        </div>
+        <select class="field" id="arbOriginSelect" style="margin-bottom:0" onchange="onOriginSelectChange()">
           <option value="28.4595,77.0266,Gurgaon">📍 Gurgaon / NCR Region (Haryana/Delhi)</option>
           <option value="29.6857,76.9905,Karnal">📍 Karnal / Kurukshetra Belt (Haryana)</option>
           <option value="30.9010,75.8573,Ludhiana">📍 Ludhiana / Central Punjab</option>
@@ -692,11 +697,26 @@
           <option value="23.2599,77.4126,Bhopal">📍 Bhopal / Central MP</option>
           <option value="20.1472,74.2268,Nashik">📍 Nashik / Lasalgaon Onion Belt (Maharashtra)</option>
           <option value="18.5204,73.8567,Pune">📍 Pune / Western Maharashtra</option>
+          <option value="19.0760,72.9995,Mumbai">📍 Mumbai / Konkan Region (Maharashtra)</option>
+          <option value="23.0125,72.5815,Ahmedabad">📍 Ahmedabad / Central Gujarat</option>
+          <option value="21.1702,72.8311,Surat">📍 Surat / South Gujarat</option>
+          <option value="17.4630,78.4827,Hyderabad">📍 Hyderabad / Telangana Central</option>
+          <option value="17.9689,79.5941,Warangal">📍 Warangal / Northern Telangana</option>
           <option value="16.3067,80.4365,Guntur">📍 Guntur / Amaravati Region (Andhra Pradesh)</option>
-          <option value="17.9689,79.5941,Warangal">📍 Warangal / Kakatiya Hub (Telangana)</option>
-          <option value="13.1367,78.1291,Kolar">📍 Kolar / Chikkaballapur (Karnataka)</option>
+          <option value="16.5062,80.6480,Vijayawada">📍 Vijayawada / Krishna Delta (Andhra Pradesh)</option>
+          <option value="17.6868,83.2185,Visakhapatnam">📍 Visakhapatnam / North Coastal AP</option>
           <option value="12.9716,77.5946,Bengaluru">📍 Bengaluru Rural / Ramanagara (Karnataka)</option>
+          <option value="13.1367,78.1291,Kolar">📍 Kolar / Chikkaballapur (Karnataka)</option>
+          <option value="12.2858,76.6635,Mysuru">📍 Mysuru / Old Mysore Region (Karnataka)</option>
+          <option value="13.0694,80.1948,Chennai">📍 Chennai / Northern Tamil Nadu</option>
+          <option value="11.0168,76.9558,Coimbatore">📍 Coimbatore / Western Tamil Nadu</option>
+          <option value="25.5941,85.1376,Patna">📍 Patna / Central Bihar</option>
+          <option value="22.5855,88.3582,Kolkata">📍 Kolkata / Gangetic Bengal</option>
         </select>
+        <div id="arbGpsStatus" style="display:none;margin-top:8px;font-size:0.75rem;padding:7px 12px;background:rgba(62,207,111,0.12);border:1px solid var(--green);border-radius:8px;color:var(--green);align-items:center;justify-content:space-between">
+          <span id="arbGpsStatusText">📍 Live GPS Active</span>
+          <a href="javascript:void(0)" onclick="clearGpsLocation()" style="color:#fca5a5;text-decoration:underline;font-weight:700;margin-left:8px">Reset GPS</a>
+        </div>
       </div>
 
       <!-- 4. Transport Vehicle Selector -->
@@ -755,10 +775,21 @@
           </p>
         </div>
 
-        <!-- Mandi Comparison Feed -->
-        <h4 style="font-size:0.95rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:12px">
-          Candidate Mandis Realization Breakdown
-        </h4>
+        <!-- Mandi Comparison Header & Filter Tabs -->
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:10px">
+          <h4 style="font-size:0.95rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin:0">
+            Candidate Mandis Breakdown
+          </h4>
+          <div style="display:inline-flex;gap:6px;background:var(--surface2);padding:4px;border-radius:10px;border:1px solid var(--line)">
+            <button type="button" class="btn btn-ghost active" id="arbSortProfitBtn" style="padding:5px 10px;font-size:0.75rem;border-radius:8px;margin:0;font-weight:700" onclick="setArbitrageSort('profit')">
+              🏆 Max Profit
+            </button>
+            <button type="button" class="btn btn-ghost" id="arbSortDistanceBtn" style="padding:5px 10px;font-size:0.75rem;border-radius:8px;margin:0;font-weight:700" onclick="setArbitrageSort('distance')">
+              📍 Nearest (GPS)
+            </button>
+          </div>
+        </div>
+
         <div id="arbMandiList" style="display:flex;flex-direction:column;gap:12px"></div>
       </div>
     </div>
@@ -3231,11 +3262,29 @@ function toggleKisanChatVoice() {
 
 // 🚜 SMART MANDI ARBITRAGE CALCULATOR LOGIC
 let selectedArbitrageVehicle = "mini_truck";
+let currentArbitrageSort = "profit";
+let isGpsActive = false;
 
 function selectArbitrageVehicle(type, el) {
   selectedArbitrageVehicle = type;
   document.querySelectorAll("#arbVehicleGroup .arb-vehicle-card").forEach(c => c.classList.remove("active"));
   if (el) el.classList.add("active");
+  runMandiArbitrage();
+}
+
+function setArbitrageSort(sortMode) {
+  currentArbitrageSort = sortMode;
+  const pBtn = document.getElementById("arbSortProfitBtn");
+  const dBtn = document.getElementById("arbSortDistanceBtn");
+  if (pBtn && dBtn) {
+    if (sortMode === "profit") {
+      pBtn.classList.add("active");
+      dBtn.classList.remove("active");
+    } else {
+      dBtn.classList.add("active");
+      pBtn.classList.remove("active");
+    }
+  }
   runMandiArbitrage();
 }
 
@@ -3254,6 +3303,120 @@ function addArbitrageQty(delta) {
     input.value = Math.max(1, current + delta);
     updateArbitrageQty(input.value);
   }
+}
+
+function onOriginSelectChange() {
+  const select = document.getElementById("arbOriginSelect");
+  if (select && !select.value.includes("Live GPS")) {
+    const statusBox = document.getElementById("arbGpsStatus");
+    const gpsBtnText = document.getElementById("arbGpsText");
+    const gpsBtnIcon = document.getElementById("arbGpsIcon");
+    if (statusBox) statusBox.style.display = "none";
+    if (gpsBtnText) gpsBtnText.textContent = "Auto-Detect GPS";
+    if (gpsBtnIcon) gpsBtnIcon.textContent = "🎯";
+    isGpsActive = false;
+  }
+  runMandiArbitrage();
+}
+
+function clearGpsLocation() {
+  const select = document.getElementById("arbOriginSelect");
+  const gpsOpt = document.getElementById("arbGpsCustomOption");
+  if (gpsOpt) gpsOpt.remove();
+  if (select) select.selectedIndex = 0;
+  
+  const statusBox = document.getElementById("arbGpsStatus");
+  const gpsBtnText = document.getElementById("arbGpsText");
+  const gpsBtnIcon = document.getElementById("arbGpsIcon");
+  if (statusBox) statusBox.style.display = "none";
+  if (gpsBtnText) gpsBtnText.textContent = "Auto-Detect GPS";
+  if (gpsBtnIcon) gpsBtnIcon.textContent = "🎯";
+  isGpsActive = false;
+
+  runMandiArbitrage();
+}
+
+async function detectGpsLocation() {
+  const gpsBtnText = document.getElementById("arbGpsText");
+  const gpsBtnIcon = document.getElementById("arbGpsIcon");
+  const statusBox = document.getElementById("arbGpsStatus");
+  const statusText = document.getElementById("arbGpsStatusText");
+
+  if (!navigator.geolocation) {
+    alert("Geolocation is not supported by your browser. Please select your region manually.");
+    return;
+  }
+
+  if (gpsBtnText) gpsBtnText.textContent = "Locating...";
+  if (gpsBtnIcon) gpsBtnIcon.textContent = "📡";
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      const accuracy = Math.round(position.coords.accuracy || 20);
+
+      let locationLabel = `GPS (${lat.toFixed(3)}°, ${lon.toFixed(3)}°)`;
+
+      // Attempt reverse geocoding via OpenStreetMap Nominatim with fast fallback
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        const geoRes = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`,
+          { signal: controller.signal }
+        );
+        clearTimeout(timeoutId);
+        if (geoRes.ok) {
+          const data = await geoRes.json();
+          const addr = data.address || {};
+          const city = addr.city || addr.town || addr.county || addr.state_district || addr.state;
+          if (city) {
+            locationLabel = `${city} (${lat.toFixed(2)}°, ${lon.toFixed(2)}°)`;
+          }
+        }
+      } catch (e) {
+        console.log("Reverse geocode fallback to coords:", e);
+      }
+
+      // Add or update custom GPS option in select
+      const select = document.getElementById("arbOriginSelect");
+      if (select) {
+        let gpsOpt = document.getElementById("arbGpsCustomOption");
+        if (!gpsOpt) {
+          gpsOpt = document.createElement("option");
+          gpsOpt.id = "arbGpsCustomOption";
+          select.insertBefore(gpsOpt, select.firstChild);
+        }
+        gpsOpt.value = `${lat},${lon},${locationLabel}`;
+        gpsOpt.textContent = `🎯 Live GPS: ${locationLabel}`;
+        select.value = gpsOpt.value;
+      }
+
+      if (statusBox && statusText) {
+        statusText.innerHTML = `<b>🟢 Live GPS Active:</b> ${locationLabel} <span style="opacity:0.8">(±${accuracy}m)</span>`;
+        statusBox.style.display = "flex";
+      }
+
+      if (gpsBtnText) gpsBtnText.textContent = "GPS Locked";
+      if (gpsBtnIcon) gpsBtnIcon.textContent = "✅";
+      isGpsActive = true;
+
+      // Automatically run arbitrage calculation with live GPS!
+      runMandiArbitrage();
+    },
+    (error) => {
+      if (gpsBtnText) gpsBtnText.textContent = "Auto-Detect GPS";
+      if (gpsBtnIcon) gpsBtnIcon.textContent = "🎯";
+      console.warn("GPS Error:", error);
+      let msg = "Could not access GPS location. Please check browser permissions or choose your district from the dropdown.";
+      if (error.code === 1) {
+        msg = "Location permission was denied. Please allow location in your browser or select your district manually.";
+      }
+      alert(msg);
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+  );
 }
 
 async function runMandiArbitrage() {
@@ -3278,14 +3441,18 @@ async function runMandiArbitrage() {
       origin_lat: latNum,
       origin_lon: lonNum,
       origin_district: district,
-      vehicle_type: selectedArbitrageVehicle
+      vehicle_type: selectedArbitrageVehicle,
+      sort_by: currentArbitrageSort
     });
 
     if (res && res.success) {
       const summary = res.summary;
       if (verdictEmoji) verdictEmoji.textContent = summary.has_arbitrage ? "🚀" : "✅";
       if (verdictTitle) verdictTitle.textContent = summary.verdict_title;
-      if (verdictDesc) verdictDesc.textContent = summary.verdict_description;
+      if (verdictDesc) {
+        let gpsNote = isGpsActive ? `<span style="color:var(--green);font-weight:700">🎯 Grounded with Live GPS Coordinates (${latNum.toFixed(2)}°, ${lonNum.toFixed(2)}°).</span> ` : "";
+        verdictDesc.innerHTML = gpsNote + summary.verdict_description;
+      }
       if (verdictBox) {
         verdictBox.style.background = summary.has_arbitrage
           ? "linear-gradient(135deg, rgba(62,207,111,0.22), rgba(255,196,77,0.18))"
@@ -3293,7 +3460,7 @@ async function runMandiArbitrage() {
       }
 
       if (listEl && res.comparison) {
-        listEl.innerHTML = res.comparison.map((m) => {
+        listEl.innerHTML = res.comparison.map((m, idx) => {
           const isOptimal = m.mandi_id === summary.optimal_mandi.mandi_id;
           const isNearest = m.mandi_id === summary.nearest_mandi.mandi_id;
 
@@ -3303,15 +3470,22 @@ async function runMandiArbitrage() {
           } else if (isOptimal) {
             badgeHtml = `<span class="cq-badge" style="background:rgba(62,207,111,0.2);color:var(--green);border:1px solid var(--green)">⭐ BEST CHOICE</span>`;
           } else if (isNearest) {
-            badgeHtml = `<span class="cq-badge cq-badge-ref">📍 NEAREST MANDI</span>`;
+            badgeHtml = `<span class="cq-badge cq-badge-ref">📍 NEAREST MANDI (${m.distance_km} km)</span>`;
           }
+
+          const rankBadge = currentArbitrageSort === "distance"
+            ? `<span style="font-size:0.75rem;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:var(--muted);font-weight:700">#${idx+1} Closest</span>`
+            : "";
 
           return `
             <div class="arb-mandi-item ${isOptimal ? 'best' : ''}">
               <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
-                <div>
-                  <b style="font-size:1.05rem;color:var(--txt)">${m.mandi_name}</b>
-                  <small style="color:var(--muted);display:block">${m.district}, ${m.state} • 🚗 ${m.distance_km} km (~${m.travel_time_hours} hrs)</small>
+                <div style="display:flex;align-items:center;gap:8px">
+                  ${rankBadge}
+                  <div>
+                    <b style="font-size:1.05rem;color:var(--txt)">${m.mandi_name}</b>
+                    <small style="color:var(--muted);display:block">${m.district}, ${m.state} • 🚗 ${m.distance_km} km (~${m.travel_time_hours} hrs driving)</small>
+                  </div>
                 </div>
                 ${badgeHtml}
               </div>
@@ -3335,8 +3509,8 @@ async function runMandiArbitrage() {
                 </div>
               </div>
 
-              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;margin-top:2px">
-                <a href="${m.maps_url}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:700">🗺️ Directions on Google Maps ↗</a>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;margin-top:2px;flex-wrap:wrap;gap:6px">
+                <a href="${m.maps_url}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:700">🗺️ Live GPS Navigation on Maps ↗</a>
                 <a href="#register" style="color:var(--gold);text-decoration:none;font-weight:700">🎟️ Book Token For This Mandi →</a>
               </div>
             </div>
