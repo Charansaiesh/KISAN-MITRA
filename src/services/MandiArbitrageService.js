@@ -263,7 +263,8 @@ class MandiArbitrageService {
     origin_lat = 28.4595, // Default Gurgaon/NCR
     origin_lon = 77.0266,
     origin_district = "Gurgaon",
-    vehicle_type = "mini_truck"
+    vehicle_type = "mini_truck",
+    sort_by = "profit"
   }) {
     const qty = Math.max(1, Number(quantity_qtl) || 20);
     const vehicle = VEHICLE_SPECS[vehicle_type] || VEHICLE_SPECS.mini_truck;

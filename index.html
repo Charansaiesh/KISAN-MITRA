@@ -10,8 +10,8 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-<script src="js/api.js?v=3.0"></script>
-<script>if(typeof KM_API==='undefined'||!KM_API.sendChatMessage){document.write('<script src="api.js?v=3.0"><\/script>');}</script>
+<script src="js/api.js?v=4.0"></script>
+<script>if(typeof KM_API==='undefined'||!KM_API.calculateMandiArbitrage){document.write('<script src="api.js?v=4.0"><\/script>');}</script>
 <style>
   :root{
     --bg:#0b0f0d; --surface:#131a16; --surface2:#1a241e; --line:#26332b;
@@ -3265,6 +3265,151 @@ let selectedArbitrageVehicle = "mini_truck";
 let currentArbitrageSort = "profit";
 let isGpsActive = false;
 
+const ARB_CLIENT_VEHICLES = {
+  tractor: { name: "Tractor Trolley", emoji: "🚜", rate: 26, speed: 30 },
+  mini_truck: { name: "Pickup / Mini Truck", emoji: "🚚", rate: 18, speed: 45 },
+  heavy_truck: { name: "Heavy Truck", emoji: "🚛", rate: 36, speed: 40 },
+  auto: { name: "Auto Carrier", emoji: "🛺", rate: 12, speed: 35 }
+};
+
+const ARB_CLIENT_MANDIS = [
+  { id: "delhi_azadpur", name: "Azadpur APMC Mandi", district: "North Delhi", state: "Delhi", lat: 28.7078, lon: 77.1772 },
+  { id: "delhi_gazipur", name: "Gazipur Flower & Veg Mandi", district: "East Delhi", state: "Delhi", lat: 28.6256, lon: 77.3292 },
+  { id: "haryana_karnal", name: "Karnal Grain Market", district: "Karnal", state: "Haryana", lat: 29.6857, lon: 76.9905 },
+  { id: "haryana_hisar", name: "Hisar Cotton Market", district: "Hisar", state: "Haryana", lat: 29.1492, lon: 75.7217 },
+  { id: "haryana_gurgaon", name: "Gurugram Khandsa Mandi", district: "Gurugram", state: "Haryana", lat: 28.4350, lon: 77.0125 },
+  { id: "punjab_ludhiana", name: "Ludhiana APMC Mandi", district: "Ludhiana", state: "Punjab", lat: 30.9010, lon: 75.8573 },
+  { id: "punjab_amritsar", name: "Amritsar Bhagtanwala Mandi", district: "Amritsar", state: "Punjab", lat: 31.6340, lon: 74.8723 },
+  { id: "up_lucknow", name: "Lucknow Naveen Galla Mandi", district: "Lucknow", state: "Uttar Pradesh", lat: 26.8467, lon: 80.9462 },
+  { id: "up_kanpur", name: "Kanpur Collectorganj Mandi", district: "Kanpur", state: "Uttar Pradesh", lat: 26.4499, lon: 80.3319 },
+  { id: "up_agra", name: "Agra Khandari Mandi", district: "Agra", state: "Uttar Pradesh", lat: 27.1767, lon: 78.0081 },
+  { id: "up_varanasi", name: "Varanasi Chandpur Mandi", district: "Varanasi", state: "Uttar Pradesh", lat: 25.3176, lon: 82.9739 },
+  { id: "up_meerut", name: "Meerut Delhigate Mandi", district: "Meerut", state: "Uttar Pradesh", lat: 28.9845, lon: 77.7064 },
+  { id: "mah_vashi", name: "Mumbai APMC Vashi", district: "Navi Mumbai", state: "Maharashtra", lat: 19.0760, lon: 72.9995 },
+  { id: "mah_lasalgaon", name: "Lasalgaon APMC Mandi", district: "Nashik", state: "Maharashtra", lat: 20.1472, lon: 74.2268 },
+  { id: "mah_pune", name: "Pune Gultekdi Market Yard", district: "Pune", state: "Maharashtra", lat: 18.5204, lon: 73.8567 },
+  { id: "mah_jalgaon", name: "Jalgaon Banana Mandi", district: "Jalgaon", state: "Maharashtra", lat: 21.0077, lon: 75.5626 },
+  { id: "mah_nagpur", name: "Nagpur Kalamna Market", district: "Nagpur", state: "Maharashtra", lat: 21.1458, lon: 79.0882 },
+  { id: "raj_jaipur", name: "Jaipur Muhana Mandi", district: "Jaipur", state: "Rajasthan", lat: 26.9124, lon: 75.7873 },
+  { id: "raj_kota", name: "Kota Bhamashah Mandi", district: "Kota", state: "Rajasthan", lat: 25.2138, lon: 75.8648 },
+  { id: "mp_indore", name: "Indore Choithram Mandi", district: "Indore", state: "Madhya Pradesh", lat: 22.7196, lon: 75.8577 },
+  { id: "mp_bhopal", name: "Bhopal Karond Mandi", district: "Bhopal", state: "Madhya Pradesh", lat: 23.2599, lon: 77.4126 },
+  { id: "mp_ujjain", name: "Ujjain Chimanganj Mandi", district: "Ujjain", state: "Madhya Pradesh", lat: 23.1765, lon: 75.7885 },
+  { id: "guj_ahmedabad", name: "Ahmedabad Jamalpur APMC", district: "Ahmedabad", state: "Gujarat", lat: 23.0125, lon: 72.5815 },
+  { id: "guj_surat", name: "Surat Sardar Market Yard", district: "Surat", state: "Gujarat", lat: 21.1702, lon: 72.8311 },
+  { id: "guj_rajkot", name: "Rajkot Bedi Yard APMC", district: "Rajkot", state: "Gujarat", lat: 22.3039, lon: 70.8022 },
+  { id: "tg_hyderabad", name: "Hyderabad Bowenpally Mandi", district: "Hyderabad", state: "Telangana", lat: 17.4630, lon: 78.4827 },
+  { id: "tg_gudimalkapur", name: "Hyderabad Gudimalkapur Mandi", district: "Hyderabad", state: "Telangana", lat: 17.3820, lon: 78.4350 },
+  { id: "tg_warangal", name: "Warangal Enumamula Mandi", district: "Warangal", state: "Telangana", lat: 17.9689, lon: 79.5941 },
+  { id: "tg_khammam", name: "Khammam Chilli Yard", district: "Khammam", state: "Telangana", lat: 17.2473, lon: 80.1514 },
+  { id: "ap_guntur", name: "Guntur Mirchi Yard", district: "Guntur", state: "Andhra Pradesh", lat: 16.3067, lon: 80.4365 },
+  { id: "ap_vijayawada", name: "Vijayawada Gollapudi Market", district: "Krishna", state: "Andhra Pradesh", lat: 16.5062, lon: 80.6480 },
+  { id: "ap_vizag", name: "Visakhapatnam Gajuwaka Mandi", district: "Visakhapatnam", state: "Andhra Pradesh", lat: 17.6868, lon: 83.2185 },
+  { id: "kar_bengaluru", name: "Bengaluru Yeshwanthpur Mandi", district: "Bengaluru", state: "Karnataka", lat: 12.9716, lon: 77.5946 },
+  { id: "kar_kolar", name: "Kolar APMC Market", district: "Kolar", state: "Karnataka", lat: 13.1367, lon: 78.1291 },
+  { id: "kar_mysuru", name: "Mysuru Bandipalya APMC Yard", district: "Mysuru", state: "Karnataka", lat: 12.2858, lon: 76.6635 },
+  { id: "kar_hubli", name: "Hubballi APMC Amargol", district: "Dharwad", state: "Karnataka", lat: 15.3647, lon: 75.1240 },
+  { id: "kar_davangere", name: "Davangere APMC Yard", district: "Davangere", state: "Karnataka", lat: 14.4644, lon: 75.9218 },
+  { id: "tn_chennai", name: "Chennai Koyambedu Wholesale", district: "Chennai", state: "Tamil Nadu", lat: 13.0694, lon: 80.1948 },
+  { id: "tn_erode", name: "Erode Turmeric Market", district: "Erode", state: "Tamil Nadu", lat: 11.3410, lon: 77.7172 },
+  { id: "tn_coimbatore", name: "Coimbatore MGR Market", district: "Coimbatore", state: "Tamil Nadu", lat: 11.0168, lon: 76.9558 },
+  { id: "tn_madurai", name: "Madurai Mattuthavani Mandi", district: "Madurai", state: "Tamil Nadu", lat: 9.9482, lon: 78.1568 },
+  { id: "ker_ernakulam", name: "Ernakulam Market", district: "Ernakulam", state: "Kerala", lat: 9.9816, lon: 76.2799 },
+  { id: "bih_patna", name: "Patna Bazar Samiti Mandi", district: "Patna", state: "Bihar", lat: 25.5941, lon: 85.1376 },
+  { id: "wb_kolkata", name: "Kolkata Posta & Koley Market", district: "Kolkata", state: "West Bengal", lat: 22.5855, lon: 88.3582 },
+  { id: "jh_ranchi", name: "Ranchi Pandra Samiti Mandi", district: "Ranchi", state: "Jharkhand", lat: 23.3700, lon: 85.3000 },
+  { id: "od_bhubaneswar", name: "Bhubaneswar Aiginia Mandi", district: "Khordha", state: "Odisha", lat: 20.2588, lon: 85.7830 }
+];
+
+const ARB_CLIENT_PRICES = {
+  Wheat: { base: 2450, vars: { delhi_azadpur: 2560, delhi_gazipur: 2540, haryana_gurgaon: 2520, haryana_karnal: 2510, punjab_ludhiana: 2490, up_lucknow: 2460, up_kanpur: 2440, mp_indore: 2480, raj_jaipur: 2520, guj_ahmedabad: 2500, wb_kolkata: 2580, bih_patna: 2420 } },
+  Tomato: { base: 2200, vars: { delhi_azadpur: 2750, delhi_gazipur: 2710, haryana_gurgaon: 2680, kar_kolar: 2150, kar_bengaluru: 2450, kar_mysuru: 2400, tg_hyderabad: 2380, tg_gudimalkapur: 2390, mah_pune: 2500, mah_vashi: 2650, up_lucknow: 2280, mp_indore: 2320, tn_chennai: 2580, tn_coimbatore: 2350, ap_vijayawada: 2310, wb_kolkata: 2620 } },
+  Onion: { base: 1950, vars: { mah_lasalgaon: 1920, mah_vashi: 2250, delhi_azadpur: 2420, delhi_gazipur: 2390, mah_pune: 2180, raj_jaipur: 2250, tg_hyderabad: 2300, kar_bengaluru: 2340, tn_chennai: 2400, wb_kolkata: 2480, mp_indore: 2050 } },
+  Potato: { base: 1500, vars: { up_agra: 1480, delhi_azadpur: 1820, up_kanpur: 1540, up_lucknow: 1580, raj_jaipur: 1690, mp_indore: 1620, wb_kolkata: 1750 } },
+  Chilli: { base: 14200, vars: { ap_guntur: 14800, tg_warangal: 14350, tg_khammam: 14900, tg_hyderabad: 14950, delhi_azadpur: 16200, mah_nagpur: 14600, kar_bengaluru: 15100 } },
+  Rice: { base: 2350, vars: { haryana_karnal: 2540, ap_vijayawada: 2380, up_varanasi: 2340, tg_warangal: 2390, punjab_ludhiana: 2480, wb_kolkata: 2490 } },
+  Cotton: { base: 7250, vars: { tg_warangal: 7420, haryana_hisar: 7380, raj_kota: 7310, mah_nagpur: 7480, guj_rajkot: 7520 } },
+  Soybean: { base: 4950, vars: { mp_indore: 5120, mp_ujjain: 5080, raj_kota: 5020, mp_bhopal: 4980, mah_nagpur: 5040 } },
+  Mustard: { base: 6050, vars: { raj_jaipur: 6280, raj_kota: 6120, haryana_hisar: 6180, delhi_azadpur: 6350, mp_indore: 6100 } },
+  Banana: { base: 1750, vars: { mah_jalgaon: 1720, delhi_azadpur: 2350, mah_pune: 2050, tg_hyderabad: 2150, tn_chennai: 2200 } }
+};
+
+function calculateClientDistanceKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c * 1.25);
+}
+
+function calculateArbitrageClient(crop, qty, lat, lon, vType, sortBy) {
+  const vehicle = ARB_CLIENT_VEHICLES[vType] || ARB_CLIENT_VEHICLES.mini_truck;
+  const cropData = ARB_CLIENT_PRICES[crop] || ARB_CLIENT_PRICES.Wheat;
+
+  const evals = ARB_CLIENT_MANDIS.map(m => {
+    const dist = calculateClientDistanceKm(lat, lon, m.lat, m.lon);
+    const price = (cropData.vars && cropData.vars[m.id]) || cropData.base;
+    const gross = Math.round(price * qty);
+    const transport = Math.round(dist * 2 * vehicle.rate);
+    const handling = Math.round(qty * 15);
+    const netProfit = gross - transport - handling;
+    const timeHrs = (dist / vehicle.speed).toFixed(1);
+    const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${lat},${lon}&destination=${m.lat},${m.lon}&travelmode=driving`;
+
+    return {
+      mandi_id: m.id,
+      mandi_name: m.name,
+      district: m.district,
+      state: m.state,
+      distance_km: dist,
+      travel_time_hours: Number(timeHrs),
+      modal_price_qtl: price,
+      gross_revenue: gross,
+      transport_cost: transport,
+      handling_cost: handling,
+      net_profit: netProfit,
+      maps_url: mapsUrl
+    };
+  });
+
+  let candidates = evals.filter(m => m.distance_km <= 350);
+  if (candidates.length === 0) {
+    candidates = [...evals].sort((a, b) => a.distance_km - b.distance_km).slice(0, 6);
+  }
+
+  const sortedDist = [...candidates].sort((a, b) => a.distance_km - b.distance_km);
+  const nearest = sortedDist[0];
+  const sortedProfit = [...candidates].sort((a, b) => b.net_profit - a.net_profit);
+  const optimal = sortedProfit[0];
+
+  const gain = Math.max(0, optimal.net_profit - nearest.net_profit);
+  const hasArb = optimal.mandi_id !== nearest.mandi_id && gain > 500;
+
+  let vTitle = hasArb
+    ? `🚀 Earn +₹${gain.toLocaleString("en-IN")} Extra Net Profit at ${optimal.mandi_name}!`
+    : `✅ Sell at Nearest Mandi: ${nearest.mandi_name}`;
+
+  let vDesc = hasArb
+    ? `Even after spending ₹${optimal.transport_cost.toLocaleString("en-IN")} on ${vehicle.name} transport (${optimal.distance_km} km), higher auction prices at ${optimal.mandi_name} (₹${optimal.modal_price_qtl}/q vs ₹${nearest.modal_price_qtl}/q) give you higher take-home profit.`
+    : `Transporting to distant mandis is not cost-effective for ${qty} quintals after fuel expenses. Your local ${nearest.mandi_name} (${nearest.distance_km} km) gives you the highest net in-pocket return of ₹${nearest.net_profit.toLocaleString("en-IN")}.`;
+
+  const list = (sortBy === "distance" ? sortedDist : sortedProfit).slice(0, 6);
+
+  return {
+    success: true,
+    summary: {
+      nearest_mandi: nearest,
+      optimal_mandi: optimal,
+      arbitrage_gain: gain,
+      has_arbitrage: hasArb,
+      verdict_title: vTitle,
+      verdict_description: vDesc
+    },
+    comparison: list
+  };
+}
+
 function selectArbitrageVehicle(type, el) {
   selectedArbitrageVehicle = type;
   document.querySelectorAll("#arbVehicleGroup .arb-vehicle-card").forEach(c => c.classList.remove("active"));
@@ -3358,7 +3503,6 @@ async function detectGpsLocation() {
 
       let locationLabel = `GPS (${lat.toFixed(3)}°, ${lon.toFixed(3)}°)`;
 
-      // Attempt reverse geocoding via OpenStreetMap Nominatim with fast fallback
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 2500);
@@ -3379,7 +3523,6 @@ async function detectGpsLocation() {
         console.log("Reverse geocode fallback to coords:", e);
       }
 
-      // Add or update custom GPS option in select
       const select = document.getElementById("arbOriginSelect");
       if (select) {
         let gpsOpt = document.getElementById("arbGpsCustomOption");
@@ -3402,7 +3545,6 @@ async function detectGpsLocation() {
       if (gpsBtnIcon) gpsBtnIcon.textContent = "✅";
       isGpsActive = true;
 
-      // Automatically run arbitrage calculation with live GPS!
       runMandiArbitrage();
     },
     (error) => {
@@ -3419,107 +3561,118 @@ async function detectGpsLocation() {
   );
 }
 
-async function runMandiArbitrage() {
-  const crop = document.getElementById("arbCropSelect") ? document.getElementById("arbCropSelect").value : "Wheat";
-  const qty = document.getElementById("arbQtyInput") ? Number(document.getElementById("arbQtyInput").value) || 25 : 25;
-  const originVal = document.getElementById("arbOriginSelect") ? document.getElementById("arbOriginSelect").value : "28.4595,77.0266,Gurgaon";
-  const parts = originVal.split(",");
-  const latNum = Number(parts[0]);
-  const lonNum = Number(parts[1]);
-  const district = parts[2] || "NCR";
-
+function renderArbitrageResults(res, latNum, lonNum) {
+  if (!res || !res.success) return;
+  const summary = res.summary;
   const listEl = document.getElementById("arbMandiList");
   const verdictBox = document.getElementById("arbVerdictBox");
   const verdictEmoji = document.getElementById("arbVerdictEmoji");
   const verdictTitle = document.getElementById("arbVerdictTitle");
   const verdictDesc = document.getElementById("arbVerdictDesc");
 
-  try {
-    const res = await KM_API.calculateMandiArbitrage({
-      crop,
-      quantity_qtl: qty,
-      origin_lat: latNum,
-      origin_lon: lonNum,
-      origin_district: district,
-      vehicle_type: selectedArbitrageVehicle,
-      sort_by: currentArbitrageSort
-    });
+  if (verdictEmoji) verdictEmoji.textContent = summary.has_arbitrage ? "🚀" : "✅";
+  if (verdictTitle) verdictTitle.textContent = summary.verdict_title;
+  if (verdictDesc) {
+    let gpsNote = isGpsActive ? `<span style="color:var(--green);font-weight:700">🎯 Grounded with Live GPS Coordinates (${latNum.toFixed(2)}°, ${lonNum.toFixed(2)}°).</span> ` : "";
+    verdictDesc.innerHTML = gpsNote + summary.verdict_description;
+  }
+  if (verdictBox) {
+    verdictBox.style.background = summary.has_arbitrage
+      ? "linear-gradient(135deg, rgba(62,207,111,0.22), rgba(255,196,77,0.18))"
+      : "linear-gradient(135deg, rgba(62,207,111,0.12), rgba(30,41,59,0.5))";
+  }
 
-    if (res && res.success) {
-      const summary = res.summary;
-      if (verdictEmoji) verdictEmoji.textContent = summary.has_arbitrage ? "🚀" : "✅";
-      if (verdictTitle) verdictTitle.textContent = summary.verdict_title;
-      if (verdictDesc) {
-        let gpsNote = isGpsActive ? `<span style="color:var(--green);font-weight:700">🎯 Grounded with Live GPS Coordinates (${latNum.toFixed(2)}°, ${lonNum.toFixed(2)}°).</span> ` : "";
-        verdictDesc.innerHTML = gpsNote + summary.verdict_description;
+  if (listEl && res.comparison) {
+    listEl.innerHTML = res.comparison.map((m, idx) => {
+      const isOptimal = m.mandi_id === summary.optimal_mandi.mandi_id;
+      const isNearest = m.mandi_id === summary.nearest_mandi.mandi_id;
+
+      let badgeHtml = "";
+      if (isOptimal && summary.has_arbitrage) {
+        badgeHtml = `<span class="cq-badge" style="background:rgba(62,207,111,0.2);color:var(--green);border:1px solid var(--green)">🥇 HIGHEST NET PROFIT (+₹${summary.arbitrage_gain.toLocaleString('en-IN')})</span>`;
+      } else if (isOptimal) {
+        badgeHtml = `<span class="cq-badge" style="background:rgba(62,207,111,0.2);color:var(--green);border:1px solid var(--green)">⭐ BEST CHOICE</span>`;
+      } else if (isNearest) {
+        badgeHtml = `<span class="cq-badge cq-badge-ref">📍 NEAREST MANDI (${m.distance_km} km)</span>`;
       }
-      if (verdictBox) {
-        verdictBox.style.background = summary.has_arbitrage
-          ? "linear-gradient(135deg, rgba(62,207,111,0.22), rgba(255,196,77,0.18))"
-          : "linear-gradient(135deg, rgba(62,207,111,0.12), rgba(30,41,59,0.5))";
-      }
 
-      if (listEl && res.comparison) {
-        listEl.innerHTML = res.comparison.map((m, idx) => {
-          const isOptimal = m.mandi_id === summary.optimal_mandi.mandi_id;
-          const isNearest = m.mandi_id === summary.nearest_mandi.mandi_id;
+      const rankBadge = currentArbitrageSort === "distance"
+        ? `<span style="font-size:0.75rem;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:var(--muted);font-weight:700">#${idx+1} Closest</span>`
+        : "";
 
-          let badgeHtml = "";
-          if (isOptimal && summary.has_arbitrage) {
-            badgeHtml = `<span class="cq-badge" style="background:rgba(62,207,111,0.2);color:var(--green);border:1px solid var(--green)">🥇 HIGHEST NET PROFIT (+₹${summary.arbitrage_gain.toLocaleString('en-IN')})</span>`;
-          } else if (isOptimal) {
-            badgeHtml = `<span class="cq-badge" style="background:rgba(62,207,111,0.2);color:var(--green);border:1px solid var(--green)">⭐ BEST CHOICE</span>`;
-          } else if (isNearest) {
-            badgeHtml = `<span class="cq-badge cq-badge-ref">📍 NEAREST MANDI (${m.distance_km} km)</span>`;
-          }
-
-          const rankBadge = currentArbitrageSort === "distance"
-            ? `<span style="font-size:0.75rem;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:var(--muted);font-weight:700">#${idx+1} Closest</span>`
-            : "";
-
-          return `
-            <div class="arb-mandi-item ${isOptimal ? 'best' : ''}">
-              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
-                <div style="display:flex;align-items:center;gap:8px">
-                  ${rankBadge}
-                  <div>
-                    <b style="font-size:1.05rem;color:var(--txt)">${m.mandi_name}</b>
-                    <small style="color:var(--muted);display:block">${m.district}, ${m.state} • 🚗 ${m.distance_km} km (~${m.travel_time_hours} hrs driving)</small>
-                  </div>
-                </div>
-                ${badgeHtml}
-              </div>
-
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;background:var(--surface);border-radius:10px;padding:10px 12px;font-size:0.8rem">
-                <div>
-                  <span style="color:var(--muted);display:block">Auction Price:</span>
-                  <b style="color:var(--gold);font-size:0.95rem">₹${m.modal_price_qtl.toLocaleString('en-IN')}/q</b>
-                </div>
-                <div>
-                  <span style="color:var(--muted);display:block">Gross Sale:</span>
-                  <b style="color:var(--txt)">₹${m.gross_revenue.toLocaleString('en-IN')}</b>
-                </div>
-                <div>
-                  <span style="color:var(--muted);display:block">Fuel & Freight:</span>
-                  <span style="color:#fca5a5">-₹${m.transport_cost.toLocaleString('en-IN')}</span>
-                </div>
-                <div>
-                  <span style="color:var(--green);font-weight:700;display:block">Net In-Pocket:</span>
-                  <b style="color:var(--green);font-size:1.05rem">₹${m.net_profit.toLocaleString('en-IN')}</b>
-                </div>
-              </div>
-
-              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;margin-top:2px;flex-wrap:wrap;gap:6px">
-                <a href="${m.maps_url}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:700">🗺️ Live GPS Navigation on Maps ↗</a>
-                <a href="#register" style="color:var(--gold);text-decoration:none;font-weight:700">🎟️ Book Token For This Mandi →</a>
+      return `
+        <div class="arb-mandi-item ${isOptimal ? 'best' : ''}">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+            <div style="display:flex;align-items:center;gap:8px">
+              ${rankBadge}
+              <div>
+                <b style="font-size:1.05rem;color:var(--txt)">${m.mandi_name}</b>
+                <small style="color:var(--muted);display:block">${m.district}, ${m.state} • 🚗 ${m.distance_km} km (~${m.travel_time_hours} hrs driving)</small>
               </div>
             </div>
-          `;
-        }).join("");
+            ${badgeHtml}
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;background:var(--surface);border-radius:10px;padding:10px 12px;font-size:0.8rem">
+            <div>
+              <span style="color:var(--muted);display:block">Auction Price:</span>
+              <b style="color:var(--gold);font-size:0.95rem">₹${m.modal_price_qtl.toLocaleString('en-IN')}/q</b>
+            </div>
+            <div>
+              <span style="color:var(--muted);display:block">Gross Sale:</span>
+              <b style="color:var(--txt)">₹${m.gross_revenue.toLocaleString('en-IN')}</b>
+            </div>
+            <div>
+              <span style="color:var(--muted);display:block">Fuel & Freight:</span>
+              <span style="color:#fca5a5">-₹${m.transport_cost.toLocaleString('en-IN')}</span>
+            </div>
+            <div>
+              <span style="color:var(--green);font-weight:700;display:block">Net In-Pocket:</span>
+              <b style="color:var(--green);font-size:1.05rem">₹${m.net_profit.toLocaleString('en-IN')}</b>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;margin-top:2px;flex-wrap:wrap;gap:6px">
+            <a href="${m.maps_url}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:700">🗺️ Live GPS Navigation on Maps ↗</a>
+            <a href="#register" style="color:var(--gold);text-decoration:none;font-weight:700">🎟️ Book Token For This Mandi →</a>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+}
+
+async function runMandiArbitrage() {
+  const crop = document.getElementById("arbCropSelect") ? document.getElementById("arbCropSelect").value : "Wheat";
+  const qty = document.getElementById("arbQtyInput") ? Number(document.getElementById("arbQtyInput").value) || 25 : 25;
+  const originVal = document.getElementById("arbOriginSelect") ? document.getElementById("arbOriginSelect").value : "28.4595,77.0266,Gurgaon";
+  const parts = originVal.split(",");
+  const latNum = Number(parts[0]) || 28.4595;
+  const lonNum = Number(parts[1]) || 77.0266;
+  const district = parts[2] || "NCR";
+
+  // 1. Instant Synchronous Calculation (0ms response guarantee)
+  const localRes = calculateArbitrageClient(crop, qty, latNum, lonNum, selectedArbitrageVehicle, currentArbitrageSort);
+  renderArbitrageResults(localRes, latNum, lonNum);
+
+  // 2. Async API sync if KM_API is loaded
+  if (typeof KM_API !== 'undefined' && typeof KM_API.calculateMandiArbitrage === 'function') {
+    try {
+      const apiRes = await KM_API.calculateMandiArbitrage({
+        crop,
+        quantity_qtl: qty,
+        origin_lat: latNum,
+        origin_lon: lonNum,
+        origin_district: district,
+        vehicle_type: selectedArbitrageVehicle,
+        sort_by: currentArbitrageSort
+      });
+      if (apiRes && apiRes.success) {
+        renderArbitrageResults(apiRes, latNum, lonNum);
       }
+    } catch (e) {
+      console.log("Mandi arbitrage synced with local calculations:", e);
     }
-  } catch (err) {
-    if (listEl) listEl.innerHTML = `<p style="color:#fca5a5;padding:12px">Could not compute arbitrage: ${err.message}</p>`;
   }
 }
 
