@@ -258,8 +258,180 @@
   /* History Modal / Drawer */
   #cqHistoryModal{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);z-index:900;display:none;align-items:center;justify-content:center;padding:20px}
   .cq-hist-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);max-width:760px;width:100%;max-height:85vh;overflow-y:auto;padding:28px;box-shadow:var(--shadow)}
+
+  /* 🤖 Kisan AI Chatbot Floating Widget */
+  .kisan-chat-fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #0b0f0d;
+    padding: 12px 20px;
+    border-radius: 35px;
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+    cursor: pointer;
+    font-weight: 800;
+    font-size: 0.92rem;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: fabFloat 3s ease-in-out infinite;
+  }
+  .kisan-chat-fab:hover {
+    transform: translateY(-4px) scale(1.04);
+    box-shadow: 0 14px 38px rgba(16, 185, 129, 0.55);
+  }
+  @keyframes fabFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .kisan-chat-box {
+    position: fixed;
+    bottom: 90px;
+    right: 24px;
+    width: 400px;
+    max-width: calc(100vw - 32px);
+    height: 590px;
+    max-height: calc(100vh - 120px);
+    background: var(--surface);
+    border: 1.5px solid var(--line);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65);
+    z-index: 1001;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    backdrop-filter: blur(16px);
+    animation: chatSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes chatSlideUp {
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .kisan-chat-header {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .kisan-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .kisan-chat-msg {
+    max-width: 86%;
+    padding: 11px 15px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  .kisan-chat-msg.bot {
+    align-self: flex-start;
+    background: var(--surface2);
+    border: 1px solid var(--line);
+    color: var(--txt);
+    border-bottom-left-radius: 4px;
+  }
+  .kisan-chat-msg.user {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #0b0f0d;
+    font-weight: 600;
+    border-bottom-right-radius: 4px;
+  }
+  .kisan-chat-suggestions {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(0, 0, 0, 0.2);
+    scrollbar-width: none;
+  }
+  .kisan-chat-chip {
+    white-space: nowrap;
+    background: var(--surface2);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.74rem;
+    padding: 5px 11px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .kisan-chat-chip:hover {
+    background: rgba(62, 207, 111, 0.15);
+    color: var(--green);
+    border-color: var(--green);
+  }
+  .kisan-chat-input-area {
+    padding: 12px;
+    border-top: 1px solid var(--line);
+    background: var(--surface2);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .kisan-chat-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 10px 14px;
+    color: var(--txt);
+    font-size: 0.85rem;
+    outline: none;
+  }
+  .kisan-chat-input:focus {
+    border-color: var(--green);
+  }
+  .kisan-chat-btn {
+    background: var(--grad);
+    border: none;
+    color: #0b0f0d;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .kisan-chat-btn:hover {
+    transform: scale(1.08);
+  }
+  .kisan-chat-btn.voice-btn {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--txt);
+  }
+  .kisan-chat-btn.voice-btn.recording {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+    color: #ef4444;
+    animation: pulseRed 1.2s infinite;
+  }
+  @keyframes pulseRed {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+
   @media(max-width:850px){
     .cq-grid{grid-template-columns:1fr}
+    .kisan-chat-box{right:16px;bottom:80px;width:calc(100vw - 32px);height:500px}
+    .kisan-chat-fab{bottom:18px;right:18px;padding:10px 16px;font-size:0.85rem}
   }
 </style>
 </head>
@@ -2729,6 +2901,186 @@ function closeCropQualityHistory() {
   if (modal) modal.style.display = "none";
 }
 
+// 🤖 KISAN AI ASSISTANT CHATBOT LOGIC
+let kisanChatHistory = [];
+let kisanSpeechRec = null;
+let isKisanRecording = false;
+
+function toggleKisanChat() {
+  const box = document.getElementById("kisanChatBox");
+  if (!box) return;
+  const isHidden = box.style.display === "none" || !box.style.display;
+  box.style.display = isHidden ? "flex" : "none";
+  if (isHidden) {
+    const input = document.getElementById("kisanChatInput");
+    if (input) setTimeout(() => input.focus(), 200);
+  }
+}
+
+function clearKisanChatHistory() {
+  kisanChatHistory = [];
+  const container = document.getElementById("kisanChatMessages");
+  if (container) {
+    container.innerHTML = `
+      <div class="kisan-chat-msg bot">
+        <b>🙏 Namaste Kisan Mitra!</b><br>
+        I am your <b>AI Agricultural Assistant</b>. Ask me anything about crop diseases, pest remedies, fertilizer doses, government subsidies, or APMC mandi prices in any language (English, हिंदी, తెలుగు, தமிழ், मराठी, etc.).
+      </div>
+    `;
+  }
+}
+
+function askKisanChip(btn) {
+  const text = btn.textContent.replace(/^[^\w\u0900-\u0DFF]+/, "").trim();
+  const input = document.getElementById("kisanChatInput");
+  if (input) {
+    input.value = text;
+    sendKisanChatMessage();
+  }
+}
+
+function formatChatText(text) {
+  if (!text) return "";
+  let html = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>")
+    .replace(/\*(.*?)\*/g, "<i>$1</i>")
+    .replace(/^### (.*$)/gim, '<b style="display:block;margin:6px 0 2px;color:var(--green);font-size:0.9rem">$1</b>')
+    .replace(/^## (.*$)/gim, '<b style="display:block;margin:8px 0 3px;color:var(--green);font-size:0.95rem">$1</b>')
+    .replace(/^\* (.*$)/gim, '• $1<br>')
+    .replace(/^- (.*$)/gim, '• $1<br>')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>');
+  return html;
+}
+
+async function sendKisanChatMessage() {
+  const input = document.getElementById("kisanChatInput");
+  const container = document.getElementById("kisanChatMessages");
+  if (!input || !container) return;
+
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = "";
+
+  // Append user message
+  const userDiv = document.createElement("div");
+  userDiv.className = "kisan-chat-msg user";
+  userDiv.textContent = msg;
+  container.appendChild(userDiv);
+
+  // Append thinking bubble
+  const typingDiv = document.createElement("div");
+  typingDiv.className = "kisan-chat-msg bot";
+  typingDiv.id = "kisanTypingIndicator";
+  typingDiv.innerHTML = "⏳ <i>Kisan AI is thinking...</i>";
+  container.appendChild(typingDiv);
+  container.scrollTop = container.scrollHeight;
+
+  try {
+    const res = await KM_API.sendChatMessage({
+      message: msg,
+      history: kisanChatHistory
+    });
+
+    const indicator = document.getElementById("kisanTypingIndicator");
+    if (indicator) indicator.remove();
+
+    if (res && res.success && res.reply) {
+      kisanChatHistory.push({ role: "user", content: msg });
+      kisanChatHistory.push({ role: "model", content: res.reply });
+
+      const botDiv = document.createElement("div");
+      botDiv.className = "kisan-chat-msg bot";
+      botDiv.innerHTML = formatChatText(res.reply);
+      container.appendChild(botDiv);
+    } else {
+      const errDiv = document.createElement("div");
+      errDiv.className = "kisan-chat-msg bot";
+      errDiv.style.borderColor = "#ef4444";
+      errDiv.innerHTML = `<span style="color:#fca5a5">⚠️ ${res ? res.message : "Unable to reach AI assistant. Please try again."}</span>`;
+      container.appendChild(errDiv);
+    }
+  } catch (err) {
+    const indicator = document.getElementById("kisanTypingIndicator");
+    if (indicator) indicator.remove();
+
+    const errDiv = document.createElement("div");
+    errDiv.className = "kisan-chat-msg bot";
+    errDiv.style.borderColor = "#ef4444";
+    errDiv.innerHTML = `<span style="color:#fca5a5">⚠️ Connection error: ${err.message}</span>`;
+    container.appendChild(errDiv);
+  }
+
+  container.scrollTop = container.scrollHeight;
+}
+
+function toggleKisanChatVoice() {
+  const micBtn = document.getElementById("kisanChatMicBtn");
+  const input = document.getElementById("kisanChatInput");
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRec) {
+    alert("Voice recognition is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
+    return;
+  }
+
+  if (isKisanRecording && kisanSpeechRec) {
+    kisanSpeechRec.stop();
+    isKisanRecording = false;
+    if (micBtn) {
+      micBtn.classList.remove("recording");
+      micBtn.innerHTML = "🎤";
+    }
+    return;
+  }
+
+  try {
+    kisanSpeechRec = new SpeechRec();
+    kisanSpeechRec.lang = "hi-IN"; // Default Hindi / Multilingual
+    kisanSpeechRec.interimResults = false;
+    kisanSpeechRec.maxAlternatives = 1;
+
+    kisanSpeechRec.onstart = function() {
+      isKisanRecording = true;
+      if (micBtn) {
+        micBtn.classList.add("recording");
+        micBtn.innerHTML = "⏹️";
+      }
+    };
+
+    kisanSpeechRec.onresult = function(event) {
+      const transcript = event.results[0][0].transcript;
+      if (input) {
+        input.value = transcript;
+        sendKisanChatMessage();
+      }
+    };
+
+    kisanSpeechRec.onerror = function() {
+      isKisanRecording = false;
+      if (micBtn) {
+        micBtn.classList.remove("recording");
+        micBtn.innerHTML = "🎤";
+      }
+    };
+
+    kisanSpeechRec.onend = function() {
+      isKisanRecording = false;
+      if (micBtn) {
+        micBtn.classList.remove("recording");
+        micBtn.innerHTML = "🎤";
+      }
+    };
+
+    kisanSpeechRec.start();
+  } catch (e) {
+    console.warn("Speech recognition error:", e);
+  }
+}
+
 // Attach init hooks
 window.addEventListener("DOMContentLoaded", function(){
   updateAuthUI();
@@ -2755,6 +3107,59 @@ window.addEventListener("DOMContentLoaded", function(){
       <b>⚡ DBT Subsidy Disbursal</b>
       <p style="margin:0;color:var(--muted)">72-hour direct bank transfer guaranteed on approved smart tokens.</p>
     </div>
+  </div>
+</div>
+
+<!-- 🤖 KISAN AI ASSISTANT FLOATING CHATBOT -->
+<div class="kisan-chat-fab" id="kisanChatFab" onclick="toggleKisanChat()">
+  <span style="font-size:1.3rem">🤖</span>
+  <span>Ask Kisan AI</span>
+  <span style="background:#0b0f0d;color:var(--green);font-size:0.68rem;padding:2px 7px;border-radius:10px;font-weight:800">LIVE</span>
+</div>
+
+<div class="kisan-chat-box" id="kisanChatBox">
+  <!-- Header -->
+  <div class="kisan-chat-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:36px;height:36px;background:rgba(62,207,111,0.18);border:1.5px solid var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem">
+        🌾
+      </div>
+      <div>
+        <b style="font-size:0.95rem;color:var(--txt);display:block">Kisan AI Sahayak</b>
+        <small style="color:var(--green);font-size:0.72rem;display:flex;align-items:center;gap:4px">
+          <span style="width:6px;height:6px;background:var(--green);border-radius:50%;display:inline-block"></span>
+          Online • Gemini AI Powered
+        </small>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button onclick="clearKisanChatHistory()" title="Clear Chat" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:4px">🗑️</button>
+      <button onclick="toggleKisanChat()" title="Close" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;padding:2px 6px">&times;</button>
+    </div>
+  </div>
+
+  <!-- Quick Suggestion Chips -->
+  <div class="kisan-chat-suggestions" id="kisanChatChips">
+    <button class="kisan-chat-chip" onclick="askKisanChip(this)">🍅 Leaf curl remedy</button>
+    <button class="kisan-chat-chip" onclick="askKisanChip(this)">💰 PM-KISAN ₹6,000</button>
+    <button class="kisan-chat-chip" onclick="askKisanChip(this)">🌾 Wheat fertilizer</button>
+    <button class="kisan-chat-chip" onclick="askKisanChip(this)">📈 Mandi selling tips</button>
+    <button class="kisan-chat-chip" onclick="askKisanChip(this)">🌧️ Rain precautions</button>
+  </div>
+
+  <!-- Messages Container -->
+  <div class="kisan-chat-messages" id="kisanChatMessages">
+    <div class="kisan-chat-msg bot">
+      <b>🙏 Namaste Kisan Mitra!</b><br>
+      I am your <b>AI Agricultural Assistant</b>. Ask me anything about crop diseases, pest remedies, fertilizer doses, government subsidies, or APMC mandi prices in any language (English, हिंदी, తెలుగు, தமிழ், मराठी, etc.).
+    </div>
+  </div>
+
+  <!-- Input Bar -->
+  <div class="kisan-chat-input-area">
+    <input type="text" class="kisan-chat-input" id="kisanChatInput" placeholder="Ask in any language or tap 🎤..." onkeydown="if(event.key==='Enter') sendKisanChatMessage()">
+    <button class="kisan-chat-btn voice-btn" id="kisanChatMicBtn" onclick="toggleKisanChatVoice()" title="Voice Typing">🎤</button>
+    <button class="kisan-chat-btn" onclick="sendKisanChatMessage()" title="Send">➤</button>
   </div>
 </div>
 

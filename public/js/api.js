@@ -740,6 +740,52 @@ const KM_API = (function() {
       if (cat && cat !== 'all') url += 'cat=' + encodeURIComponent(cat) + '&';
       if (query) url += 'q=' + encodeURIComponent(query);
       return request(url);
+    },
+
+    // 🔬 AI CROP QUALITY & MARKET VALUE ESTIMATION
+    async analyzeCropQuality(payload) {
+      return request('/crop-quality/analyze', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        timeout: 20000
+      });
+    },
+
+    async getCropQualityHistory() {
+      let res = await request('/crop-quality/history');
+      if (res && res.success) return res;
+
+      const user = getUser();
+      if (user && user.id) {
+        try {
+          const rows = await supabaseFetch('/crop_quality_assessments?user_id=eq.' + encodeURIComponent(user.id) + '&order=created_at.desc');
+          if (Array.isArray(rows)) {
+            return { success: true, count: rows.length, records: rows, source: 'supabase' };
+          }
+        } catch (err) {}
+      }
+      return res;
+    },
+
+    async getCropQualityAnalytics() {
+      return request('/crop-quality/analytics');
+    },
+
+    async getCropQualityModelStatus() {
+      return request('/crop-quality/model-status');
+    },
+
+    // 🤖 AI AGRI ASSISTANT CHAT
+    async sendChatMessage(payload) {
+      return request('/chat', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        timeout: 25000
+      });
+    },
+
+    async getChatSuggestions() {
+      return request('/chat/suggestions');
     }
   };
 })();

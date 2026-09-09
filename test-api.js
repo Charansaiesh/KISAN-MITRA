@@ -421,6 +421,25 @@ async function runAllTests() {
       '30. Role-Based Security Guard on Analytics (Farmer 403, Unauthenticated 401)'
     );
 
+    // 31. AI Chatbot Suggestions
+    const chatSuggestions = await request('/chat/suggestions', 'GET');
+    assert(
+      chatSuggestions.status === 200 &&
+      chatSuggestions.data.success === true &&
+      Array.isArray(chatSuggestions.data.suggestions) &&
+      chatSuggestions.data.suggestions.length > 0,
+      '31. GET /api/chat/suggestions (Smart agricultural question suggestions delivered)',
+      `Suggestions: ${chatSuggestions.data.suggestions.length}`
+    );
+
+    // 32. AI Chatbot Message Validation (Rejects empty message gracefully)
+    const emptyChatRes = await request('/chat', 'POST', { message: '' });
+    assert(
+      emptyChatRes.status === 400 &&
+      emptyChatRes.data.error_code === 'INVALID_MESSAGE',
+      '32. POST /api/chat (Rejects empty message with clear validation error)'
+    );
+
   } catch (err) {
     console.error('⚠️ Unexpected test exception:', err);
     failed++;

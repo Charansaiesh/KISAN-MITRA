@@ -16,6 +16,7 @@ const feedbackRoutes = require('./src/routes/feedback.routes');
 const schemesRoutes = require('./src/routes/schemes.routes');
 const notificationsRoutes = require('./src/routes/notifications.routes');
 const cropQualityRoutes = require('./src/routes/cropQuality.routes');
+const chatRoutes = require('./src/routes/chat.routes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -91,6 +92,7 @@ const mountRoutes = (prefix) => {
   app.use(`${prefix}/notifications`, notificationsRoutes);
   app.use(`${prefix}/schemes`, schemesRoutes);
   app.use(`${prefix}/crop-quality`, cropQualityRoutes);
+  app.use(`${prefix}/chat`, chatRoutes);
 };
 mountRoutes('/api');
 mountRoutes('');
