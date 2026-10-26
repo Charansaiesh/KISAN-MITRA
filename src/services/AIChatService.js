@@ -24,7 +24,7 @@ CRITICAL INSTRUCTIONS:
   static async chat(messages = [], currentMessage = "", context = {}) {
     let apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey || apiKey.trim().length < 10) {
-      const enc = "QVEuQWI4Uk42S1RTcVp6U1dKWUU1aEM0Z0ZCVkNXNmlRdlBhU0p4Y2NiNkdsb2FNdVpvZnc=";
+      const enc = "QVEuQWI4Uk42SnZHWHBSZVl6WXVJeHpoXzBFTnk3ZzVDbmJiV3NFMG41b3huUVhZSG9aUVE=";
       apiKey = Buffer.from(enc, "base64").toString("utf8");
     }
     if (!apiKey) {

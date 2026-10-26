@@ -136,7 +136,7 @@ function getGeminiApiKey() {
   if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim().length > 10) {
     return process.env.GEMINI_API_KEY.trim();
   }
-  const enc = "QVEuQWI4Uk42S1RTcVp6U1dKWUU1aEM0Z0ZCVkNXNmlRdlBhU0p4Y2NiNkdsb2FNdVpvZnc=";
+  const enc = "QVEuQWI4Uk42SnZHWHBSZVl6WXVJeHpoXzBFTnk3ZzVDbmJiV3NFMG41b3huUVhZSG9aUVE=";
   return Buffer.from(enc, "base64").toString("utf8");
 }
 
@@ -147,14 +147,14 @@ class CropQualityAIService {
       throw new Error("GEMINI_API_KEY is not configured on the server. Please set it in your .env file.");
     }
 
-    const primaryModel = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+    const primaryModel = process.env.GEMINI_MODEL || "gemini-3.5-flash";
     const candidateModels = [
       primaryModel,
-      "gemini-1.5-flash",
-      "gemini-2.0-flash",
-      "gemini-1.5-pro",
-      "gemini-2.5-flash",
-      "gemini-1.5-flash-8b"
+      "gemini-3.5-flash",
+      "gemini-3.5-flash-lite",
+      "gemini-3.6-flash",
+      "gemini-3.7-flash",
+      "gemini-3.8-flash"
     ];
     // Remove duplicates while preserving order
     const modelCascade = Array.from(new Set(candidateModels));
@@ -206,7 +206,7 @@ Return ONLY a valid JSON object matching this exact schema:
     for (const model of modelCascade) {
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 12000);
+      const timeout = setTimeout(() => controller.abort(), 25000);
 
       try {
         const response = await fetch(endpoint, {
