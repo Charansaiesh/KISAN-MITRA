@@ -3216,6 +3216,29 @@ function formatChatText(text) {
   return html;
 }
 
+function getClientAgriChatFallback(query) {
+  const q = (query || "").toLowerCase();
+  if (q.includes("leaf curl") || q.includes("curl") || (q.includes("tomato") && (q.includes("virus") || q.includes("yellow"))) || (q.includes("chilli") && (q.includes("leaf") || q.includes("curl")))) {
+    return "### 🍅 Management of Leaf Curl Disease\n\n• **Cause:** Transmitted by Whiteflies (*Bemisia tabaci*).\n• **Remedies:** Spray **Imidacloprid 17.8% SL** @ 0.5 ml/L or **Neem Oil (10,000 ppm)** @ 3 ml/L.\n• **Practices:** Set up yellow sticky traps (15-20/acre) and rogue out severely infected plants.";
+  }
+  if (q.includes("summer") || q.includes("telangana") || q.includes("what to grow") || q.includes("season") || q.includes("crops grow best") || q.includes("zaid")) {
+    return "### ☀️ Best Summer Crops for Telangana & Semi-Arid Regions\n\n• **Vegetables:** Okra (Bhindi), Watermelon, Muskmelon, and Cluster Beans.\n• **Pulses & Oilseeds:** Sesame (Til) and Green Gram (Moong) - low water, high heat tolerance.\n• **Water Conservation:** Use drip irrigation early morning (5-8 AM) to minimize evaporation.";
+  }
+  if (q.includes("pm-kisan") || q.includes("subsidy") || q.includes("6000") || q.includes("scheme") || q.includes("rythu") || q.includes("fasal bima") || q.includes("kcc")) {
+    return "### 💰 Agricultural Schemes & Subsidies\n\n• **PM-KISAN:** ₹6,000/year in 3 installments of ₹2,000 via DBT. Check status on pmkisan.gov.in.\n• **PM Fasal Bima (PMFBY):** Comprehensive crop insurance (1.5% premium Rabi, 2% Kharif).\n• **Kisan Credit Card (KCC):** Short term credit up to ₹3 Lakh at 4% subsidized interest.";
+  }
+  if (q.includes("fertilizer") || q.includes("urea") || q.includes("dap") || q.includes("npk") || q.includes("soil")) {
+    return "### 🌾 Optimal Fertilizer Schedule\n\n• **Basal Dose:** Apply full DAP (50 kg/acre) + MOP (25 kg/acre) at sowing.\n• **Split Nitrogen:** Top dress Urea at 21-25 days and at panicle/flowering stage.\n• **Organic:** Apply well-rotted FYM (2 tonnes/acre) 15 days before sowing.";
+  }
+  if (q.includes("potato") || q.includes("storage") || q.includes("onion") || q.includes("rot")) {
+    return "### 🥔 Produce Storage Tips\n\n• **Potato:** Cure at 15-20°C for 10-12 days; store in diffuse dark shade in breathable jute bags.\n• **Onion:** Cure under shade for 7-10 days, store in ventilated bamboo racks.";
+  }
+  if (q.includes("mandi") || q.includes("price") || q.includes("apmc") || q.includes("sell") || q.includes("arbitrage")) {
+    return "### 📈 Mandi Selling & Grading Strategy\n\n• **Grading:** Sort into uniform Grade A lots for up to 25% higher auction realization.\n• **Moisture:** Keep grain moisture under 12-14% to avoid mandi deductions.\n• **Arbitrage:** Use KisanMitra Mandi Arbitrage feature to find top net-profit mandis.";
+  }
+  return "### 🌾 KisanMitra AI Sahayak (किसानमित्र एआई सहायक)\n\nNamaste! I am your agricultural companion. You can ask me about:\n• Crop disease & pest remedies (leaf curl, blight, bollworm)\n• Fertilizer & spray schedules\n• Mandi prices, APMC grading & arbitrage\n• Government subsidies (PM-KISAN, PMFBY, KCC)\n• Seasonal crop recommendations (Kharif, Rabi, Summer)";
+}
+
 async function sendKisanChatMessage() {
   const input = document.getElementById("kisanChatInput");
   const container = document.getElementById("kisanChatMessages");
@@ -3248,30 +3271,37 @@ async function sendKisanChatMessage() {
     const indicator = document.getElementById("kisanTypingIndicator");
     if (indicator) indicator.remove();
 
-    if (res && res.success && res.reply) {
-      kisanChatHistory.push({ role: "user", content: msg });
-      kisanChatHistory.push({ role: "model", content: res.reply });
+    let finalReply = (res && res.success && res.reply) ? res.reply : null;
+    let isClientFallback = false;
 
-      const botDiv = document.createElement("div");
-      botDiv.className = "kisan-chat-msg bot";
-      botDiv.innerHTML = formatChatText(res.reply);
-      container.appendChild(botDiv);
-    } else {
-      const errDiv = document.createElement("div");
-      errDiv.className = "kisan-chat-msg bot";
-      errDiv.style.borderColor = "#ef4444";
-      errDiv.innerHTML = `<span style="color:#fca5a5">⚠️ ${res ? res.message : "Unable to reach AI assistant. Please try again."}</span>`;
-      container.appendChild(errDiv);
+    if (!finalReply) {
+      finalReply = getClientAgriChatFallback(msg);
+      isClientFallback = true;
     }
+
+    kisanChatHistory.push({ role: "user", content: msg });
+    kisanChatHistory.push({ role: "model", content: finalReply });
+
+    const botDiv = document.createElement("div");
+    botDiv.className = "kisan-chat-msg bot";
+    let formatted = formatChatText(finalReply);
+    if (isClientFallback) {
+      formatted += '<div style="margin-top:6px;font-size:0.75rem;color:#f59e0b">🌾 KisanMitra Field Knowledge Engine (Offline Advisory Mode)</div>';
+    }
+    botDiv.innerHTML = formatted;
+    container.appendChild(botDiv);
   } catch (err) {
     const indicator = document.getElementById("kisanTypingIndicator");
     if (indicator) indicator.remove();
 
-    const errDiv = document.createElement("div");
-    errDiv.className = "kisan-chat-msg bot";
-    errDiv.style.borderColor = "#ef4444";
-    errDiv.innerHTML = `<span style="color:#fca5a5">⚠️ Connection error: ${err.message}</span>`;
-    container.appendChild(errDiv);
+    const fallbackReply = getClientAgriChatFallback(msg);
+    kisanChatHistory.push({ role: "user", content: msg });
+    kisanChatHistory.push({ role: "model", content: fallbackReply });
+
+    const botDiv = document.createElement("div");
+    botDiv.className = "kisan-chat-msg bot";
+    botDiv.innerHTML = formatChatText(fallbackReply) + '<div style="margin-top:6px;font-size:0.75rem;color:#f59e0b">🌾 KisanMitra Field Knowledge Engine (Offline Advisory Mode)</div>';
+    container.appendChild(botDiv);
   }
 
   container.scrollTop = container.scrollHeight;
