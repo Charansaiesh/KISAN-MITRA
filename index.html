@@ -406,13 +406,27 @@
     color: var(--green);
     border-color: var(--green);
   }
-  .kisan-chat-input-area {
-    padding: 12px;
+  .kisan-chat-footer {
+    padding: 10px 12px 8px;
     border-top: 1px solid var(--line);
     background: var(--surface2);
     display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .kisan-chat-input-area {
+    display: flex;
     gap: 8px;
     align-items: center;
+    width: 100%;
+  }
+  .kisan-chat-disclaimer {
+    font-size: 0.68rem;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.35;
+    padding: 2px 4px 0;
+    letter-spacing: 0.2px;
   }
   .kisan-chat-input {
     flex: 1;
@@ -2219,8 +2233,9 @@ function distanceKm(lat1, lon1, lat2, lon2){
 
 /* ============ LEAFLET MAP + CLUSTERING ============ */
 const map = L.map('mapBox', {scrollWheelZoom: false}).setView([22.5, 80], 4.4);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  subdomains: 'abcd',
   maxZoom: 19
 }).addTo(map);
 
@@ -2428,7 +2443,7 @@ async function loadPrices(){
     '<tr><th>Mandi</th><th>District / State</th><th>Min ₹</th><th>Max ₹</th><th>Modal ₹ (per quintal)</th></tr>';
 
   try {
-    const r = await fetch(AGMARK_URL + "?api-key=" + AGMARK_KEY + "&format=json&limit=40&filters[commodity]=" + encodeURIComponent(crop));
+    const r = await fetch(AGMARK_URL + "?api-key=" + AGMARK_KEY + "&format=json&limit=120&filters[commodity]=" + encodeURIComponent(crop));
     const data = await r.json();
     const recs = data.records || [];
     if(recs.length){
@@ -4534,12 +4549,14 @@ window.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
 
-  <!-- Input Bar -->
-  <div class="kisan-chat-input-area">
-    <input type="text" class="kisan-chat-input" id="kisanChatInput" placeholder="Ask in English or Hindi or tap 🎤..." onkeydown="if(event.key==='Enter') sendKisanChatMessage()">
-    <button type="button" class="kisan-chat-btn voice-btn" id="kisanChatMicBtn" onclick="toggleKisanChatVoice()" title="Voice Typing">🎤</button>
-    <button type="button" class="kisan-chat-btn" onclick="sendKisanChatMessage()" title="Send">➤</button>
-    <div id="kisanChatDisclaimer" style="font-size:0.68rem;color:var(--muted);text-align:center;padding:4px 8px;border-top:1px solid var(--line)">
+  <!-- Input Bar & Warning Footer -->
+  <div class="kisan-chat-footer">
+    <div class="kisan-chat-input-area">
+      <input type="text" class="kisan-chat-input" id="kisanChatInput" placeholder="Ask in English or Hindi or tap 🎤..." onkeydown="if(event.key==='Enter') sendKisanChatMessage()">
+      <button type="button" class="kisan-chat-btn voice-btn" id="kisanChatMicBtn" onclick="toggleKisanChatVoice()" title="Voice Typing">🎤</button>
+      <button type="button" class="kisan-chat-btn" onclick="sendKisanChatMessage()" title="Send">➤</button>
+    </div>
+    <div id="kisanChatDisclaimer" class="kisan-chat-disclaimer">
       ⚠️ AI-generated advice. Please verify chemical doses with local agricultural officers before field application.
     </div>
   </div>
