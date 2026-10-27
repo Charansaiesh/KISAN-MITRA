@@ -653,8 +653,8 @@
     <h2 class="sec-title" data-i18n="prices_title">Today's real mandi prices 📈</h2>
     <p class="sec-sub" data-i18n="prices_sub">Live data from AGMARKNET — Government of India official database (3,000+ mandis). Pick a crop to see today's actual traded prices.</p>
   </div>
-  <div style="max-width:1050px;margin:0 auto 16px;display:flex;gap:10px;flex-wrap:wrap">
-    <select class="field" id="priceCrop" style="max-width:240px;margin-bottom:0" onchange="loadPrices()">
+  <div style="max-width:1050px;margin:0 auto 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+    <select class="field" id="priceCrop" style="max-width:220px;margin-bottom:0" onchange="document.getElementById('priceSearchInput').value=''; loadPrices()">
       <option value="Wheat">🌾 Wheat</option>
       <option value="Paddy">🌾 Paddy</option>
       <option value="Mustard">🌱 Mustard</option>
@@ -666,8 +666,8 @@
       <option value="Turmeric">🟡 Turmeric</option>
       <option value="Chilli">🌶️ Chilli</option>
     </select>
-
-    <button class="btn btn-ghost" style="margin-left:0;padding:12px 20px" onclick="loadPrices()" data-i18n="prices_refresh">🔄 Refresh</button>
+    <input type="text" class="field" id="priceSearchInput" placeholder="🔍 Search Mandi, District, or State..." data-i18n-ph="ph_price_search" style="flex:1;min-width:240px;margin-bottom:0" oninput="filterMandiPrices()">
+    <button class="btn btn-ghost" style="margin-left:0;padding:12px 20px;white-space:nowrap" onclick="loadPrices()" data-i18n="prices_refresh">🔄 Refresh</button>
   </div>
   <div class="table-wrap reveal" id="priceTableWrap">
     <table id="priceTable"><tr><th>Mandi</th><th>District / State</th><th>Min ₹</th><th>Max ₹</th><th>Modal ₹ (per quintal)</th></tr></table>
@@ -1359,6 +1359,7 @@ const I18N = {
     crop_wheat: "Wheat", crop_paddy: "Paddy", crop_mustard: "Mustard", crop_gram: "Gram", crop_maize: "Maize",
     prices_tag: "Live Market", prices_title: "Today's real mandi prices 📈", prices_sub: "Live data from AGMARKNET — Government of India official database (3,000+ mandis). Pick a crop to see today's actual traded prices.",
     prices_refresh: "🔄 Refresh",
+    ph_price_search: "🔍 Search Mandi, District, or State...",
     mandi_tag: "Mandi Locator + Weather", mandi_title: "Find your nearest mandi on the map 🗺️", mandi_sub: "67 APMC mandis across India. Search your city/district or use GPS — mandis rank by distance, with live weather so rain never damages your harvest in transit.",
     mandi_ph: "🔍 Type your city / district (e.g. Coimbatore)", mandi_gps: "📍 GPS",
     wx_head: "🌦️ Weather at Mandi", wx_desc: "Select a mandi to view its live 5-day forecast and transport-safety advice.",
@@ -1431,6 +1432,7 @@ const I18N = {
     crop_wheat: "गेहूं", crop_paddy: "धान", crop_mustard: "सरसों", crop_gram: "चना", crop_maize: "मक्का",
     prices_tag: "लाइव बाज़ार भाव", prices_title: "आज के वास्तविक मंडी भाव 📈", prices_sub: "AGMARKNET (भारत सरकार) से लाइव डेटा। आज के असली भाव देखने के लिए फसल चुनें।",
     prices_refresh: "🔄 ताज़ा करें",
+    ph_price_search: "🔍 मंडी, जिला या राज्य खोजें...",
     mandi_tag: "मंडी लोकेटर + मौसम", mandi_title: "नक्शे पर नजदीकी मंडी खोजें 🗺️", mandi_sub: "भारत भर की 67 मंडियां। शहर खोजें या GPS का उपयोग करें — दूरी और मौसम की जानकारी के साथ।",
     mandi_ph: "🔍 अपना शहर / जिला दर्ज करें (उदा. Lucknow, Jaipur)", mandi_gps: "📍 GPS स्थान",
     wx_head: "🌦️ मंडी में मौसम", wx_desc: "5 दिवसीय मौसम पूर्वानुमान और परिवहन सुरक्षा सलाह देखने के लिए मंडी चुनें।",
@@ -1503,6 +1505,7 @@ const I18N = {
     crop_wheat: "கோதுமை", crop_paddy: "நெல்", crop_mustard: "கடுகு", crop_gram: "கடலை", crop_maize: "மக்காச்சோளம்",
     prices_tag: "நேரடி சந்தை", prices_title: "இன்றைய மண்டி விலைகள் 📈", prices_sub: "AGMARKNET நேரடி அரசு தரவுத்தளம் (3,000+ மண்டிகள்). இன்றைய விலையை அறிய பயிரை தேர்ந்தெடுக்கவும்.",
     prices_refresh: "🔄 புதுப்பிக்க",
+    ph_price_search: "🔍 மண்டி, மாவட்டம் அல்லது மாநிலத்தை தேடவும்...",
     mandi_tag: "மண்டி வரைபடம் + வானிலை", mandi_title: "அருகிலுள்ள மண்டியை கண்டறியவும் 🗺️", mandi_sub: "67 மண்டிகள். உங்கள் ஊரை தட்டச்சு செய்து நேரடி தூரம் மற்றும் வானிலை அறியவும்.",
     mandi_ph: "🔍 உங்கள் ஊர் / மாவட்டம் (எ.கா. Coimbatore, Erode)", mandi_gps: "📍 GPS இடம்",
     wx_head: "🌦️ மண்டியில் வானிலை", wx_desc: "5 நாள் வானிலை முன்னறிவிப்பை காண மண்டியை தேர்ந்தெடுக்கவும்.",
@@ -1575,6 +1578,7 @@ const I18N = {
     crop_wheat: "గోధుమ", crop_paddy: "వరి", crop_mustard: "ఆవాలు", crop_gram: "శనగలు", crop_maize: "మొక్కజొన్న",
     prices_tag: "లైవ్ మార్కెట్", prices_title: "నేటి మార్కెట్ ధరలు 📈", prices_sub: "AGMARKNET ప్రభుత్వ లైవ్ డేటా (3,000+ మార్కెట్లు). నేటి ధరలను చూడటానికి పంటను ఎంచుకోండి.",
     prices_refresh: "🔄 తాజా చేయండి",
+    ph_price_search: "🔍 మార్కెట్, జిల్లా లేదా రాష్ట్రాన్ని శోధించండి...",
     mandi_tag: "మార్కెట్ లొకేటర్ + వాతావరణం", mandi_title: "మ్యాప్‌లో సమీప మార్కెట్‌ను కనుగొనండి 🗺️", mandi_sub: "67 మార్కెట్లు. మీ నగరాన్ని శోధించండి లేదా GPS ఉపయోగించి దూరం మరియు వాతావరణం తెలుసుకోండి.",
     mandi_ph: "🔍 మీ నగరం / జిల్లా (ఉదా. Warangal, Kurnool)", mandi_gps: "📍 GPS స్థానం",
     wx_head: "🌦️ మార్కెట్ వద్ద వాతావరణం", wx_desc: "5 రోజుల వాతావరణ సూచనను చూడటానికి మార్కెట్‌ను ఎంచుకోండి.",
@@ -2434,8 +2438,64 @@ function loadWeather(m){
 const AGMARK_KEY = "579b464db66ec23bdd000001f37bbca8e0684df7653a8bd4fac86363";
 const AGMARK_URL = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070";
 
+let loadedPriceRecords = [];
+let loadedPriceCrop = "";
+let loadedPriceSource = "";
+
+function renderPriceTable(records, totalCount) {
+  const wrap = document.getElementById("priceTableWrap");
+  const note = document.getElementById("priceNote");
+  const searchVal = (document.getElementById("priceSearchInput")?.value || "").trim();
+
+  if (!records || !records.length) {
+    wrap.querySelector("table").innerHTML =
+      '<tr><th>Mandi</th><th>District / State</th><th>Min ₹</th><th>Max ₹</th><th>Modal ₹ (per quintal)</th></tr>' +
+      '<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--muted)">🔍 No mandis found matching "' + searchVal + '". Try another mandi name, district, or state.</td></tr>';
+    note.textContent = "ℹ️ 0 matching mandis found for \"" + searchVal + "\" (" + loadedPriceCrop + ").";
+    return;
+  }
+
+  let rows = "";
+  records.forEach(function(r) {
+    const marketName = r.market || r.mandi || "-";
+    const distState = (r.district || "-") + ", " + (r.state || "-");
+    const minP = r.min_price || r.min || "-";
+    const maxP = r.max_price || r.max || "-";
+    const modP = r.modal_price || r.modal || "-";
+    rows += '<tr><td><b>' + marketName + '</b></td><td>' + distState +
+      '</td><td>₹' + minP + '</td><td>₹' + maxP +
+      '</td><td><b style="color:var(--green)">₹' + modP + '</b></td></tr>';
+  });
+
+  wrap.querySelector("table").innerHTML =
+    '<tr><th>Mandi</th><th>District / State</th><th>Min ₹</th><th>Max ₹</th><th>Modal ₹ (per quintal)</th></tr>' + rows;
+
+  if (searchVal) {
+    note.textContent = "🔍 Showing " + records.length + " of " + totalCount + " mandis matching \"" + searchVal + "\" · " + loadedPriceSource;
+  } else {
+    note.textContent = "✅ " + records.length + " live mandi prices for " + loadedPriceCrop + " · " + loadedPriceSource;
+  }
+}
+
+function filterMandiPrices() {
+  const searchVal = (document.getElementById("priceSearchInput")?.value || "").trim().toLowerCase();
+  if (!loadedPriceRecords || !loadedPriceRecords.length) return;
+  if (!searchVal) {
+    renderPriceTable(loadedPriceRecords, loadedPriceRecords.length);
+    return;
+  }
+  const filtered = loadedPriceRecords.filter(r => {
+    const m = (r.market || r.mandi || "").toLowerCase();
+    const d = (r.district || "").toLowerCase();
+    const s = (r.state || "").toLowerCase();
+    return m.includes(searchVal) || d.includes(searchVal) || s.includes(searchVal);
+  });
+  renderPriceTable(filtered, loadedPriceRecords.length);
+}
+
 async function loadPrices(){
   const crop = document.getElementById("priceCrop").value;
+  loadedPriceCrop = crop;
   const note = document.getElementById("priceNote");
   const wrap = document.getElementById("priceTableWrap");
   note.textContent = "⏳ Fetching live " + crop + " prices from AGMARKNET / Mandi Cloud...";
@@ -2447,15 +2507,9 @@ async function loadPrices(){
     const data = await r.json();
     const recs = data.records || [];
     if(recs.length){
-      let rows = "";
-      recs.forEach(function(r){
-        rows += '<tr><td><b>' + (r.market || "-") + '</b></td><td>' + (r.district || "-") + ', ' + (r.state || "-") +
-          '</td><td>₹' + (r.min_price || "-") + '</td><td>₹' + (r.max_price || "-") +
-          '</td><td><b style="color:var(--green)">₹' + (r.modal_price || "-") + '</b></td></tr>';
-      });
-      wrap.querySelector("table").innerHTML =
-        '<tr><th>Mandi</th><th>District / State</th><th>Min ₹</th><th>Max ₹</th><th>Modal ₹ (per quintal)</th></tr>' + rows;
-      note.textContent = "✅ " + recs.length + " live mandi prices for " + crop + " · Source: AGMARKNET, Govt. of India";
+      loadedPriceRecords = recs;
+      loadedPriceSource = "Source: AGMARKNET, Govt. of India";
+      filterMandiPrices();
       return;
     }
   } catch(err){}
@@ -2465,20 +2519,17 @@ async function loadPrices(){
     if (typeof KM_API !== "undefined" && KM_API.getPrices) {
       const res = await KM_API.getPrices(crop);
       if (res && res.records && res.records.length) {
-        let rows = "";
-        res.records.forEach(function(r){
-          rows += '<tr><td><b>' + (r.mandi || "-") + '</b></td><td>' + (r.district || "-") + ', ' + (r.state || "-") +
-            '</td><td>₹' + (r.min || "-") + '</td><td>₹' + (r.max || "-") +
-            '</td><td><b style="color:var(--green)">₹' + (r.modal || "-") + '</b></td></tr>';
-        });
-        wrap.querySelector("table").innerHTML =
-          '<tr><th>Mandi</th><th>District / State</th><th>Min ₹</th><th>Max ₹</th><th>Modal ₹ (per quintal)</th></tr>' + rows;
-        note.textContent = "✅ Live mandi market & MSP rates for " + crop + " · Cloud APMC Mandi DB (MSP: ₹" + (res.msp || "Guaranteed") + "/quintal)";
+        loadedPriceRecords = res.records;
+        loadedPriceSource = "Cloud APMC Mandi DB (MSP: ₹" + (res.msp || "Guaranteed") + "/quintal)";
+        filterMandiPrices();
         return;
       }
     }
   } catch(e){}
 
+  loadedPriceRecords = [];
+  wrap.querySelector("table").innerHTML =
+    '<tr><th>Mandi</th><th>District / State</th><th>Min ₹</th><th>Max ₹</th><th>Modal ₹ (per quintal)</th></tr>';
   note.textContent = "ℹ️ No records found today for " + crop + " — try another crop (Wheat, Onion, Potato).";
 }
 
