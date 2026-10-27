@@ -131,6 +131,8 @@
   .leaflet-popup-content b{color:var(--green)}
   .leaflet-container{background:#0d1410;font-family:'Plus Jakarta Sans',sans-serif}
   .leaflet-control-attribution{background:rgba(11,15,13,.8)!important;color:var(--muted)!important}
+  .leaflet-control-layers{background:var(--surface2)!important;color:var(--txt)!important;border:1px solid var(--line)!important;border-radius:12px!important;padding:6px 12px!important;box-shadow:0 6px 20px rgba(0,0,0,.5)!important;font-size:.85rem}
+  .leaflet-control-layers-base label{cursor:pointer;display:flex;align-items:center;gap:6px;margin:4px 0}
   .gmap-btn{margin-top:8px;padding:6px 14px;border:none;border-radius:16px;background:var(--green);color:#0b0f0d;font-weight:700;cursor:pointer;font-family:inherit}
   .marker-cluster-small{background:rgba(62,207,111,.25)}
   .marker-cluster-small div,.marker-cluster-medium div,.marker-cluster-large div{background:var(--green);color:#0b0f0d;font-weight:800}
@@ -2237,11 +2239,31 @@ function distanceKm(lat1, lon1, lat2, lon2){
 
 /* ============ LEAFLET MAP + CLUSTERING ============ */
 const map = L.map('mapBox', {scrollWheelZoom: false}).setView([22.5, 80], 4.4);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-  subdomains: 'abcd',
-  maxZoom: 19
+
+// High-reliability public street basemap (Esri World Street Map) - completely keyless, no API key required, crisp coverage of India
+const streetLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, METI, TomTom',
+  maxZoom: 18
 }).addTo(map);
+
+// High-resolution satellite basemap for observing agricultural land & mandi surroundings
+const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics, USDA, USGS',
+  maxZoom: 18
+});
+
+// OpenStreetMap layer as additional standard fallback
+const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom: 19
+});
+
+// Interactive layer switcher allowing farmers to switch between Street Map, Satellite View, and OSM
+L.control.layers({
+  "🗺️ Street Map": streetLayer,
+  "🛰️ Satellite": satelliteLayer,
+  "🌐 OpenStreetMap": osmLayer
+}, null, { position: 'topright' }).addTo(map);
 
 let userMarker = null;
 const mandiMarkers = [];
