@@ -302,6 +302,16 @@ const KM_API = (function() {
       return request('/ai/status');
     },
 
+    // 🌦️ LIVE AGRICULTURAL WEATHER & FORECAST
+    async getWeather(params = {}) {
+      const q = new URLSearchParams();
+      if (params.location) q.append('location', params.location);
+      if (params.lat) q.append('lat', params.lat);
+      if (params.lon) q.append('lon', params.lon);
+      const queryStr = q.toString() ? `?${q.toString()}` : '';
+      return request(`/weather${queryStr}`);
+    },
+
     // 🚜 SMART MANDI ARBITRAGE & NET PROFIT CALCULATOR
     async calculateMandiArbitrage(payload) {
       return request('/mandis/arbitrage-calculator', {

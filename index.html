@@ -3666,34 +3666,51 @@ function toggleKisanChat() {
 
 const KISAN_AI_I18N = {
   en: {
-    greeting: "<b>🙏 Namaste Kisan Mitra!</b><br>I am your <b>AI Agricultural Assistant</b>. Ask me anything about crop diseases, pest remedies, fertilizer doses, government subsidies, or APMC mandi prices in <b>English</b> or <b>Hindi</b>.",
+    greeting: "<b>🙏 Namaste Kisan Mitra!</b><br>I am your <b>AI Agricultural Assistant</b>. Ask me anything about crop diseases, pest remedies, fertilizer doses, government subsidies, live weather, or APMC mandi prices in <b>English</b>, <b>Telugu</b>, or <b>Hindi</b>. You can also upload a photo of an affected leaf or crop! 📸",
     chips: [
-      "🍅 Leaf curl remedy",
-      "💰 PM-KISAN ₹6,000",
-      "🌾 Wheat fertilizer",
-      "📈 Mandi selling tips",
-      "🌧️ Rain precautions"
+      "🌾 Yellow paddy leaves",
+      "🌿 Nitrogen deficiency",
+      "⚖️ Organic vs chemical fertilizer",
+      "🌾 Telangana paddy seasons",
+      "🌧️ Rain precautions & spraying"
     ],
-    placeholder: "Ask in English or Hindi or tap 🎤...",
+    placeholder: "Ask in English, Telugu, or Hindi, or tap 🎤...",
     thinking: "⏳ <i>Kisan AI is thinking...</i>",
-    offlineNotice: "⚠️ Offline answer (AI unavailable)",
+    offlineNotice: "⚠️ Offline answer (AI server busy)",
     busyMessage: "AI is busy, please try again in a few minutes.",
     disclaimer: "⚠️ AI-generated advice. Please verify chemical doses with local agricultural officers before field application.",
     readAloud: "🔊 Read",
     readStop: "⏹️ Stop"
   },
-  hi: {
-    greeting: "<b>🙏 नमस्ते किसान मित्र!</b><br>मैं आपका <b>एआई कृषि सहायक</b> हूँ। मुझसे फसल रोग, कीट उपचार, खाद की मात्रा, सरकारी सब्सिडी या APMC मंडी भाव के बारे में <b>हिंदी</b> या <b>अंग्रेजी</b> में पूछें।",
+  te: {
+    greeting: "<b>🙏 నమస్తే రైతు మిత్రమా!</b><br>నేను మీ <b>కిసాన్ మిత్ర ఏఐ సహాయకుడిని</b>. పంట రోగాలు, తెగుళ్ల నివారణ, పురుగు మందుల మోతాదు, ఎరువులు, తెలంగాణ వాతావరణం లేదా APMC మార్కెట్ ధరల గురించి <b>తెలుగు</b>, <b>ఇంగ్లీష్</b> లేదా <b>హిందీ</b>లో అడగండి. మీ పంట ఆకు లేదా కాయ ఫోటోను కూడా పంపవచ్చు 📸.",
     chips: [
-      "🍅 पत्ती मरोड़ का उपचार",
-      "💰 PM-किसान ₹6,000",
-      "🌾 गेहूं में यूरिया की मात्रा",
-      "📈 मंडी में अधिक मुनाफा",
-      "🌧️ बारिश से फसल बचाव"
+      "🌾 వరి ఆకులు పసుపుబారడం",
+      "🌿 నత్రజని లోపం నివారణ",
+      "⚖️ సేంద్రీయ vs రసాయన ఎరువులు",
+      "🌾 తెలంగాణ వరి సీజన్లు & రకాలు",
+      "🌧️ వర్షంలో పంట రక్షణ"
     ],
-    placeholder: "हिंदी या अंग्रेजी में पूछें या 🎤 दबाएं...",
+    placeholder: "తెలుగు లేదా ఇంగ్లీష్ లో అడగండి లేదా 🎤 నొక్కండి...",
+    thinking: "⏳ <i>రైతు మిత్ర ఆలోచిస్తోంది...</i>",
+    offlineNotice: "⚠️ ఆఫ్ లైన్ సమాధానం (AI సర్వర్ బిజీగా ఉంది)",
+    busyMessage: "ఎఐ సర్వర్ ప్రస్తుతం బిజీగా ఉంది, దయచేసి కాసేపటి తర్వాత ప్రయత్నించండి.",
+    disclaimer: "⚠️ ఏఐ-సూచించిన సమాచారం. పంటలకు రసాయన మందులు వాడే ముందు స్థానిక వ్యవసాయ అధికారి (AEO)ని సంప్రదించండి.",
+    readAloud: "🔊 చదవండి",
+    readStop: "⏹️ ఆపండి"
+  },
+  hi: {
+    greeting: "<b>🙏 नमस्ते किसान मित्र!</b><br>मैं आपका <b>एआई कृषि सहायक</b> हूँ। मुझसे फसल रोग, कीट उपचार, खाद की मात्रा, सरकारी सब्सिडी, लाइव मौसम या APMC मंडी भाव के बारे में <b>हिंदी</b>, <b>तेलुगु</b> या <b>अंग्रेजी</b> में पूछें। आप फसल की फोटो भी अपलोड कर सकते हैं 📸।",
+    chips: [
+      "🌾 धान में पत्तियों का पीलापन",
+      "🌿 नाइट्रोजन की कमी",
+      "⚖️ जैविक बनाम रासायनिक खाद",
+      "🌾 तेलंगाना में धान का सही समय",
+      "🌧️ भारी बारिश में फसल सुरक्षा"
+    ],
+    placeholder: "हिंदी, तेलुगु या अंग्रेजी में पूछें या 🎤 दबाएं...",
     thinking: "⏳ <i>किसान एआई सोच रहा है...</i>",
-    offlineNotice: "⚠️ ऑफ़लाइन उत्तर (AI अनुपलब्ध)",
+    offlineNotice: "⚠️ ऑफ़लाइन उत्तर (AI सर्वर व्यस्त)",
     busyMessage: "एआई अभी व्यस्त है, कृपया कुछ मिनटों में पुनः प्रयास करें।",
     disclaimer: "⚠️ AI-निर्मित सलाह। कृपया खेत में प्रयोग से पहले स्थानीय कृषि अधिकारी से पुष्टि करें।",
     readAloud: "🔊 सुनें",
@@ -3702,15 +3719,56 @@ const KISAN_AI_I18N = {
 };
 
 let kisanAILang = localStorage.getItem("km_ai_lang") || "en";
-if (kisanAILang !== "hi" && kisanAILang !== "en") {
+if (kisanAILang !== "hi" && kisanAILang !== "te" && kisanAILang !== "en") {
   kisanAILang = "en";
+}
+
+let kisanChatAttachedImage = null; // { data: base64, mimeType, name }
+
+function handleKisanChatImageSelected(file) {
+  if (!file) return;
+  if (!file.type.startsWith("image/")) {
+    alert("Please select a valid image file (JPG, PNG, or WebP).");
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    alert("Image size exceeds 10MB limit. Please choose a smaller photo.");
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const rawData = e.target.result;
+    const base64 = rawData.split(",")[1];
+    kisanChatAttachedImage = {
+      data: base64,
+      mimeType: file.type || "image/jpeg",
+      name: file.name
+    };
+    const previewWrap = document.getElementById("kisanChatImgPreview");
+    const thumb = document.getElementById("kisanChatImgThumb");
+    const nameEl = document.getElementById("kisanChatImgName");
+    if (previewWrap && thumb && nameEl) {
+      thumb.src = rawData;
+      nameEl.textContent = file.name + " (" + Math.round(file.size / 1024) + " KB)";
+      previewWrap.style.display = "flex";
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearKisanChatImage() {
+  kisanChatAttachedImage = null;
+  const previewWrap = document.getElementById("kisanChatImgPreview");
+  if (previewWrap) previewWrap.style.display = "none";
+  const fileInput = document.getElementById("kisanChatFileInput");
+  if (fileInput) fileInput.value = "";
 }
 
 function setKisanAILanguage(lang, persist = true) {
   if (typeof window !== "undefined" && "speechSynthesis" in window) {
     window.speechSynthesis.cancel();
   }
-  kisanAILang = (lang === "hi") ? "hi" : "en";
+  kisanAILang = (lang === "te") ? "te" : ((lang === "hi") ? "hi" : "en");
   if (persist) {
     try {
       localStorage.setItem("km_ai_lang", kisanAILang);
@@ -3720,26 +3778,31 @@ function setKisanAILanguage(lang, persist = true) {
 }
 
 function updateKisanChatLanguageUI() {
-  const isHi = (kisanAILang === "hi");
   const dict = KISAN_AI_I18N[kisanAILang] || KISAN_AI_I18N.en;
 
   const btnEn = document.getElementById("kisanAiLangEn");
   const btnHi = document.getElementById("kisanAiLangHi");
+  const btnTe = document.getElementById("kisanAiLangTe");
   if (btnEn && btnHi) {
-    if (isHi) {
+    [btnEn, btnHi, btnTe].forEach(b => {
+      if (b) {
+        b.style.background = "transparent";
+        b.style.color = "var(--muted)";
+        b.style.fontWeight = "600";
+      }
+    });
+    if (kisanAILang === "te" && btnTe) {
+      btnTe.style.background = "var(--green)";
+      btnTe.style.color = "#0b0f0d";
+      btnTe.style.fontWeight = "700";
+    } else if (kisanAILang === "hi") {
       btnHi.style.background = "var(--green)";
       btnHi.style.color = "#0b0f0d";
       btnHi.style.fontWeight = "700";
-      btnEn.style.background = "transparent";
-      btnEn.style.color = "var(--muted)";
-      btnEn.style.fontWeight = "600";
     } else {
       btnEn.style.background = "var(--green)";
       btnEn.style.color = "#0b0f0d";
       btnEn.style.fontWeight = "700";
-      btnHi.style.background = "transparent";
-      btnHi.style.color = "var(--muted)";
-      btnHi.style.fontWeight = "600";
     }
   }
 
@@ -3775,7 +3838,7 @@ function updateKisanChatLanguageUI() {
   });
 
   if (kisanSpeechRec) {
-    kisanSpeechRec.lang = isHi ? "hi-IN" : "en-IN";
+    kisanSpeechRec.lang = (kisanAILang === "te") ? "te-IN" : ((kisanAILang === "hi") ? "hi-IN" : "en-IN");
   }
 }
 
@@ -3899,62 +3962,181 @@ function formatChatText(text) {
 
 function getClientAgriChatFallback(query) {
   const q = (query || "").toLowerCase();
+  const isTe = (kisanAILang === "te");
   const isHi = (kisanAILang === "hi");
-  if (q.includes("leaf curl") || q.includes("curl") || q.includes("मरोड़") || q.includes("पत्ती") || (q.includes("tomato") && (q.includes("virus") || q.includes("yellow"))) || (q.includes("chilli") && (q.includes("leaf") || q.includes("curl")))) {
-    return isHi
-      ? "### 🍅 पत्ती मरोड़ (लीफ कर्ल) रोग नियंत्रण\n\n• **कारण:** सफेद मक्खी (Whitefly) द्वारा फैलता है।\n• **उपचार:** **इमिडाक्लोप्रिड 17.8% SL** @ 0.5 मिली/लीटर या **नीम तेल (10,000 ppm)** @ 3 मिली/लीटर का छिड़काव करें।\n• **रोकथाम:** पीले चिपचिपे ट्रैप (15-20 प्रति एकड़) लगाएं और गंभीर रूप से ग्रसित पौधों को उखाड़कर नष्ट करें।"
-      : "### 🍅 Management of Leaf Curl Disease\n\n• **Cause:** Transmitted by Whiteflies (*Bemisia tabaci*).\n• **Remedies:** Spray **Imidacloprid 17.8% SL** @ 0.5 ml/L or **Neem Oil (10,000 ppm)** @ 3 ml/L.\n• **Practices:** Set up yellow sticky traps (15-20/acre) and rogue out severely infected plants.";
+
+  // 1. Paddy / Rice Leaf Yellowing
+  if ((q.includes("paddy") || q.includes("rice") || q.includes("వరి") || q.includes("धान") || q.includes("चावल")) &&
+      (q.includes("yellow") || q.includes("leaf") || q.includes("leaves") || q.includes("పసుపు") || q.includes("ఆకు") || q.includes("पीली") || q.includes("पीला") || q.includes("chlorosis"))) {
+    if (isTe) {
+      return "### 🌾 వరి ఆకులు పసుపు రంగులోకి మారడానికి కారణాలు & నివారణ చర్యలు (PJTSAU మార్గదర్శకాలు)\n\n• **నత్రజని (Nitrogen) లోపం:** క్రింది ఆకులు పసుపుబారతాయి. ఎకరాకు 20-25 కిలోల యూరియా పైపాటుగా వేయండి లేదా 2% యూరియా ద్రావణం పిచికారీ చేయండి.\n• **జింక్ (ఖైరా) లోపం:** పిలక దశలో ఆకులపై తుప్పు మచ్చలు. 2 గ్రాముల జింక్ సల్ఫేట్ (21%) లీటరు నీటికి కలిపి పిచికారీ చేయండి.\n• **ఇనుము (Iron) లోపం:** లేత ఆకులు తెల్లగా లేదా లేత పసుపు రంగులోకి మారతాయి. అన్నభేది 5 గ్రాములు + నిమ్మ ఉప్పు 1 గ్రాము లీటరు నీటికి పిచికారీ చేయండి.\n• **కాండం తొలిచే పురుగు:** కార్టాప్ హైడ్రోక్లోరైడ్ 50% SP @ 2 గ్రాములు/లీటరు పిచికారీ చేయండి.";
+    }
+    if (isHi) {
+      return "### 🌾 धान में पत्तियों का पीलापन: कारण एवं वैज्ञानिक उपचार\n\n• **नाइट्रोजन की कमी:** नीचे की पुरानी पत्तियां पहले पीली पड़ती हैं। यूरिया @ 25-30 किग्रा/एकड़ की टॉप-ड्रेसिंग करें या 2% यूरिया घोल का छिड़काव करें।\n• **जिंक की कमी (खैरा रोग):** पत्तियों पर कत्थई/भूरे धब्बे। 5 किग्रा जिंक सल्फेट (21%) + 2.5 किग्रा बुझा चूना 200 लीटर पानी में मिलाकर प्रति एकड़ छिड़कें।\n• **लोहा (Iron) की कमी:** नई पत्तियों की नसें हरी लेकिन बीच का भाग पीला। फेरस सल्फेट @ 10 ग्राम + 1 ग्राम साइट्रिक एसिड प्रति लीटर पानी में मिलाकर छिड़कें।\n• **तना छेदक कीट:** क्लोरांट्रानिलीप्रोल 18.5% SC @ 0.3 मिली/लीटर या कार्टाप 50% SP @ 2 ग्राम/लीटर का छिड़काव करें।";
+    }
+    return "### 🌾 Diagnostic Guide: Yellow Leaves in Paddy (Rice)\n\n• **Nitrogen (N) Deficiency:** Starts on older lower leaves progressing upward with pale yellow chlorosis. Top-dress Urea @ 25–30 kg/acre or spray 2% Urea foliar solution.\n• **Zinc Deficiency (Khaira):** Appears 2–3 weeks after transplanting with bronze/rusty blotches. Foliar spray Zinc Sulphate (21%) @ 5 g/L + 2.5 g/L slaked lime.\n• **Iron Chlorosis:** Emerging young leaves turn creamy white/yellow. Foliar spray Ferrous Sulphate (19%) @ 5–10 g/L + 1 g/L citric acid.\n• **Stem Borer:** Dead hearts visible. Spray Chlorantraniliprole 18.5% SC @ 0.3 ml/L or Cartap Hydrochloride 50% SP @ 2 g/L.";
   }
-  if (q.includes("summer") || q.includes("telangana") || q.includes("गर्मी") || q.includes("जायद") || q.includes("what to grow") || q.includes("season") || q.includes("crops grow best") || q.includes("zaid")) {
-    return isHi
-      ? "### ☀️ गर्मी (जायद) की सर्वोत्तम फसलें\n\n• **सब्जियां:** भिंडी, तरबूज, खरबूजा, और ग्वार फली।\n• **दलहन व तिलहन:** तिल और मूंग — कम पानी में अधिक गर्मी सहने में सक्षम।\n• **जल संरक्षण:** वाष्पीकरण से बचने के लिए सुबह (5-8 बजे) ड्रिप सिंचाई करें।"
-      : "### ☀️ Best Summer Crops for Telangana & Semi-Arid Regions\n\n• **Vegetables:** Okra (Bhindi), Watermelon, Muskmelon, and Cluster Beans.\n• **Pulses & Oilseeds:** Sesame (Til) and Green Gram (Moong) - low water, high heat tolerance.\n• **Water Conservation:** Use drip irrigation early morning (5-8 AM) to minimize evaporation.";
+
+  // 2. Nitrogen Deficiency (General Crops)
+  if (q.includes("nitrogen") || q.includes("నత్రజని") || q.includes("नाइट्रोजन") || (q.includes("deficiency") && q.includes("nutrient"))) {
+    if (isTe) {
+      return "### 🌿 పంటలలో నత్రజని (Nitrogen) లోపం - సమగ్ర యాజమాన్యం\n\n• **లక్షణాలు:** క్రింది ముదురు ఆకులు పసుపుబారడం, మొక్క గిడసబారడం, పిలకలు తగ్గడం.\n• **ఉపశమనం:** ఎకరాకు 25-30 కిలోల వేపపూత పూసిన యూరియా తేమ ఉన్నప్పుడు వేయండి. తక్షణ ఉపశమనం కోసం 2% యూరియా ద్రావణం ఆకులపై పిచికారీ చేయండి.\n• **జీవన ఎరువులు:** అజోస్పైరిల్లమ్ లేదా అజటోబాక్టర్ @ 2 కిలోలు నేలలో కలపండి.";
+    }
+    if (isHi) {
+      return "### 🌿 फसलों में नाइट्रोजन (Nitrogen) की कमी: लक्षण एवं प्रबंधन\n\n• **पहचान:** निचली पुरानी पत्तियां पहले पीली पड़ती हैं; पौधों का विकास रुक जाता है और कल्ले कम निकलते हैं।\n• **सुधारात्मक कदम:** नीम लेपित यूरिया @ 25-30 किग्रा/एकड़ की टॉप-ड्रेसिंग करें। आपातकालीन सुधार हेतु 2% यूरिया घोल (20 ग्राम/लीटर) का पर्णीय छिड़काव करें।\n• **संतुलित NPK:** नाइट्रोजन के साथ फॉस्फोरस और पोटाश का 4:2:1 संतुलित अनुपात बनाए रखें।";
+    }
+    return "### 🌿 Nitrogen (N) Deficiency Symptoms & Correction\n\n• **Symptoms:** General chlorosis beginning on older lower foliage; stunted thin stems and restricted tillering.\n• **Soil Application:** Top-dress Neem Coated Urea @ 25–35 kg/acre with adequate soil moisture.\n• **Emergency Foliar Rescue:** Spray 2% aqueous Urea solution (20 g/L water) in early morning or evening.\n• **Biological Support:** Incorporate Azotobacter/Azospirillum and green manures (Dhaincha/Sunnhemp).";
   }
-  if (q.includes("pm-kisan") || q.includes("subsidy") || q.includes("6000") || q.includes("योजना") || q.includes("सब्सिडी") || q.includes("scheme") || q.includes("rythu") || q.includes("fasal bima") || q.includes("kcc")) {
-    return isHi
-      ? "### 💰 सरकारी कृषि योजनाएं एवं सब्सिडी\n\n• **PM-किसान:** ₹6,000 प्रति वर्ष (₹2,000 की 3 किस्तें DBT द्वारा)। pmkisan.gov.in पर स्थिति जांचें।\n• **PM फसल बीमा (PMFBY):** व्यापक फसल बीमा (रबी 1.5%, खरीफ 2% प्रीमियम)।\n• **किसान क्रेडिट कार्ड (KCC):** 4% रियायती ब्याज दर पर ₹3 लाख तक का अल्पकालिक ऋण।"
-      : "### 💰 Agricultural Schemes & Subsidies\n\n• **PM-KISAN:** ₹6,000/year in 3 installments of ₹2,000 via DBT. Check status on pmkisan.gov.in.\n• **PM Fasal Bima (PMFBY):** Comprehensive crop insurance (1.5% premium Rabi, 2% Kharif).\n• **Kisan Credit Card (KCC):** Short term credit up to ₹3 Lakh at 4% subsidized interest.";
+
+  // 3. Organic vs Chemical Fertilizers
+  if ((q.includes("organic") || q.includes("సేంద్రీయ") || q.includes("जैविक")) &&
+      (q.includes("chemical") || q.includes("రసాయన") || q.includes("रासायनिक") || q.includes("versus") || q.includes("vs") || q.includes("difference") || q.includes("उर्वरक") || q.includes("fertilizer"))) {
+    if (isTe) {
+      return "### ⚖️ సేంద్రీయ ఎరువులు vs రసాయన ఎరువులు: సమగ్ర పోలిక\n\n• **సేంద్రీయ ఎరువులు (FYM, వర్మీకంపోస్ట్):** పోషకాలు నెమ్మదిగా, నిరంతరం అందుతాయి. నేలలో సేంద్రీయ కర్బనం (Organic Carbon) పెరిగి నీటి నిల్వ సామర్థ్యం పెరుగుతుంది.\n• **రసాయన ఎరువులు (Urea, DAP, MOP):** పంటకు తక్షణమే పోషకాలను అందిస్తాయి. అధిక మోతాదులో వాడితే నేల గట్టిపడే అవకాశం ఉంది.\n• **సిఫార్సు (INM):** 70% సిఫార్సు చేసిన రసాయన ఎరువులు + 30% సేంద్రీయ ఎరువుల కలయిక అత్యధిక దిగుబడి మరియు భూసారాన్ని ఇస్తుంది.";
+    }
+    if (isHi) {
+      return "### ⚖️ जैविक खाद बनाम रासायनिक उर्वरक: तुलना एवं वैज्ञानिक सिफारिश\n\n• **जैविक खाद (FYM/वर्मीकम्पोस्ट):** पोषक तत्व धीमी गति से लंबे समय तक मिलते हैं; मृदा में जैविक कार्बन और केंचुओं की संख्या बढ़ती है।\n• **रासायनिक उर्वरक (यूरिया/DAP):** तुरंत फसल को उपलब्ध होते हैं, लेकिन अत्यधिक प्रयोग से मिट्टी की संरचना बिगड़ सकती है।\n• **सर्वोत्तम तकनीक (INM):** 70% अनुशंसित रासायनिक उर्वरक + 30% जैविक खाद (गोबर खाद/केंचुआ खाद) का समन्वित प्रयोग करें।";
+    }
+    return "### ⚖️ Organic Manures vs. Chemical Fertilizers: Comparative Guide\n\n• **Organic (FYM, Vermicompost):** Slow, sustained nutrient release; dramatically builds Soil Organic Carbon (SOC) and water-holding capacity.\n• **Synthetic Chemical (Urea, DAP, MOP):** Rapid nutrient uptake for immediate vegetative growth, but prone to leaching.\n• **Integrated Recommendation (INM):** Combine 75% soil-test-based chemical fertilizers with 25% organic sources (FYM @ 2–3 tonnes/acre) for high yields and long-term soil health.";
   }
-  if (q.includes("fertilizer") || q.includes("urea") || q.includes("dap") || q.includes("खाद") || q.includes("यूरिया") || q.includes("npk") || q.includes("soil")) {
-    return isHi
-      ? "### 🌾 संतुलित उर्वरक प्रबंधन\n\n• **बुवाई के समय:** DAP (50 किग्रा/एकड़) + MOP (25 किग्रा/एकड़) डालें।\n• **यूरिया का छिड़काव:** 21-25 दिन पर पहली बार और कल्ले/फूल आने पर दूसरी बार टॉप-ड्रेसिंग करें।\n• **जैविक खाद:** बुवाई से 15 दिन पूर्व 2 टन प्रति एकड़ गोबर की सड़ी खाद मिलाएं।"
-      : "### 🌾 Optimal Fertilizer Schedule\n\n• **Basal Dose:** Apply full DAP (50 kg/acre) + MOP (25 kg/acre) at sowing.\n• **Split Nitrogen:** Top dress Urea at 21-25 days and at panicle/flowering stage.\n• **Organic:** Apply well-rotted FYM (2 tonnes/acre) 15 days before sowing.";
+
+  // 4. Water Requirements for Paddy
+  if ((q.includes("water") || q.includes("నీటి") || q.includes("నీరు") || q.includes("पानी") || q.includes("सिंचाई")) &&
+      (q.includes("paddy") || q.includes("rice") || q.includes("వరి") || q.includes("धान"))) {
+    if (isTe) {
+      return "### 💧 వరి పంటలో నీటి యాజమాన్యం (Water Management in Paddy)\n\n• **మొత్తం అవసరం:** వరి పంటకు సుమారు 1200-1400 మి.మీ నీరు అవసరమవుతుంది.\n• **కీలక దశలు:** నాట్లు వేసిన మొదటి వారం (2-3 సెం.మీ), పిలక దశ (2-3 సెం.మీ), చిరుపొట్ట మరియు పూత దశ (5 సెం.మీ నిలకడగా ఉండాలి).\n• **కోతకు ముందు:** కోతకు 10-12 రోజుల ముందు పొలంలోని నీటిని పూర్తిగా తీసివేయాలి.\n• **నీటి పొదుపు (AWD):** ప్రత్యామ్నాయ తడి-ఆరబెట్టే విధానం ద్వారా 30% నీటిని ఆదా చేయవచ్చు.";
+    }
+    if (isHi) {
+      return "### 💧 धान में जल प्रबंधन एवं सिंचाई की क्रांतिक अवस्थाएं\n\n• **कुल आवश्यकता:** धान की फसल को पूरे जीवनकाल में लगभग 1200-1400 मिमी पानी की आवश्यकता होती है।\n• **क्रांतिक अवस्थाएं:** रोपाई के प्रथम सप्ताह (2-3 सेमी), कल्ले फूटते समय (2-3 सेमी), और बाली/फूल आते समय (5 सेमी जल स्तर अनिवार्य)।\n• **कटाई से पूर्व:** कटाई से 10-12 दिन पहले खेत से पानी पूरी तरह निकाल दें।\n• **AWD तकनीक:** लगातार जलभराव के बजाय 'वैकल्पिक गीला व सुखाना' (AWD) पद्धति अपनाएं जिससे 25-30% पानी की बचत होती है।";
+    }
+    return "### 💧 Water Management & Irrigation Regimes in Paddy (Rice)\n\n• **Total Requirement:** Approximately 1,200–1,400 mm across the crop cycle.\n• **Critical Stress-Sensitive Stages:** Active tillering (2–3 cm depth), Panicle initiation & Flowering (5 cm standing water required — water stress causes grain sterility).\n• **Pre-Harvest Drainage:** Drain water completely 10–12 days prior to harvest.\n• **AWD Method:** Alternate Wetting and Drying saves 25–35% irrigation water without yield reduction.";
   }
-  if (q.includes("potato") || q.includes("storage") || q.includes("आलू") || q.includes("प्याज") || q.includes("onion") || q.includes("rot")) {
-    return isHi
-      ? "### 🥔 भंडारण एवं सड़न रोकथाम के उपाय\n\n• **आलू:** 15-20°C पर 10-12 दिन छाया में सुखाएं; हवादार जूट के बोरों में अंधेरे में रखें।\n• **प्याज:** 7-10 दिन छाया में सुखाएं और हवादार बांस के रैक में फैलाकर रखें।"
-      : "### 🥔 Produce Storage Tips\n\n• **Potato:** Cure at 15-20°C for 10-12 days; store in diffuse dark shade in breathable jute bags.\n• **Onion:** Cure under shade for 7-10 days, store in ventilated bamboo racks.";
+
+  // 5. Best Paddy Season in Telangana
+  if ((q.includes("telangana") || q.includes("తెలంగాణ") || q.includes("तेलंगाना")) &&
+      (q.includes("paddy") || q.includes("rice") || q.includes("వరి") || q.includes("धान") || q.includes("season") || q.includes("సమయం") || q.includes("సీజన్") || q.includes("मौसम"))) {
+    if (isTe) {
+      return "### 🌾 తెలంగాణలో వరి సాగుకు అనుకూలమైన సీజన్లు & PJTSAU సిఫార్సు రకాలు\n\n• **వానాకాలం (Kharif):** నారుమడులు జూన్ 15 - జూలై 15; నాట్లు జూలై రెండవ పక్షం నుండి ఆగస్టు 10 లోపు. రకాలు: తెలంగాణ సోనా (RNR 15048), సాంబ మసూరి (BPT 5204), KNM 118, JGL 24423.\n• **యాసంగి (Rabi):** నారుమడులు నవంబర్ 15 - డిసెంబర్ 15; నాట్లు జనవరి 15 లోపు పూర్తి చేయాలి. రకాలు: MTU 1010, KNM 118, JGL 18047, RNR 15048.";
+    }
+    if (isHi) {
+      return "### 🌾 तेलंगाना में धान के प्रमुख सीजन एवं PJTSAU अनुशंसित किस्में\n\n• **वानाकालम (खरीफ):** नर्सरी 15 जून से 15 जुलाई; रोपाई 15 जुलाई से 10 अगस्त। उत्तम किस्में: तेलंगाना सोना (RNR 15048), बीपीटी 5204 (सांबा महसूरी), केएनएम 118।\n• **यासंगी (रबी):** नर्सरी 15 नवंबर से 15 दिसंबर; रोपाई जनवरी मध्य तक। ठंड सहनशील किस्में: एमटीयू 1010, केएनएम 118, आरएनआर 15048.";
+    }
+    return "### 🌾 Paddy Cropping Seasons & Recommended Varieties in Telangana (PJTSAU)\n\n• **Vaanakalam (Kharif):** Nursery June 15–July 15; Transplanting July 15–August 10. Varieties: Telangana Sona (RNR 15048 - low GI), BPT 5204 (Samba Mahsuri), KNM 118, MTU 1061.\n• **Yasangi (Rabi):** Nursery November 15–December 15; Transplanting completed by mid-January. Cold-tolerant short duration varieties: MTU 1010, KNM 118, JGL 18047, RNR 15048.";
   }
-  if (q.includes("mandi") || q.includes("price") || q.includes("apmc") || q.includes("मंडी") || q.includes("भाव") || q.includes("sell") || q.includes("arbitrage")) {
-    return isHi
-      ? "### 📈 मंडी बिक्री एवं ग्रेडिंग रणनीति\n\n• **ग्रेडिंग:** ग्रेड A में छांटकर बेचने पर बोली में 25% तक अधिक मूल्य मिलता है।\n• **नमी:** कटाई बाद अनाज की नमी 12-14% से कम रखें ताकि कटौती न हो।\n• **आर्बिट्रेज:** अधिकतम शुद्ध मुनाफे वाली नजदीकी मंडी खोजने के लिए किसानमित्र मुनाफा कैलकुलेटर का उपयोग करें।"
-      : "### 📈 Mandi Selling & Grading Strategy\n\n• **Grading:** Sort into uniform Grade A lots for up to 25% higher auction realization.\n• **Moisture:** Keep grain moisture under 12-14% to avoid mandi deductions.\n• **Arbitrage:** Use KisanMitra Mandi Arbitrage feature to find top net-profit mandis.";
+
+  // 6. Protecting Crops During Heavy Rain / Storms (Safe regex: zero accidental storage misrouting)
+  if ((q.includes("rain") || q.includes("storm") || q.includes("వర్షం") || q.includes("తుఫాను") || q.includes("बारिश") || q.includes("तूफान") || q.includes("flood") || q.includes("waterlog")) &&
+      (q.includes("protect") || q.includes("రక్షణ") || q.includes("బచావ్") || q.includes("बचाव") || q.includes("precaution") || q.includes("care") || q.includes("standing"))) {
+    if (isTe) {
+      return "### 🌧️ భారీ వర్షాలు & తుఫానుల సమయంలో పంటల రక్షణ చర్యలు\n\n• **మురుగు నీటి కాలువలు:** పొలంలో నీరు నిల్వ ఉండకుండా గట్ల వెంబడి డ్రైనేజీ కాలువలను వెంటనే తెరవండి.\n• **పిచికారీ నిలిపివేయండి:** వర్షం ఉన్నప్పుడు ఎటువంటి రసాయన లేదా ఎరువుల పిచికారీ చేయవద్దు.\n• **ఊతం ఇవ్వడం (Staking):** టమాటా, మిరప, అరటి చెట్లకు గాలికి పడిపోకుండా వెదురు కర్రలతో ఊతం ఇవ్వండి.\n• **వర్షం తగ్గిన తర్వాత:** వేరుకుళ్లు రాకుండా కాపర్ ఆక్సిక్లోరైడ్ (3 గ్రా/లీ) మొదళ్ల వద్ద తడపండి, పసుపుబారిన పంటకు 1% యూరియా పిచికారీ చేయండి.";
+    }
+    if (isHi) {
+      return "### 🌧️ भारी बारिश और जलभराव से खड़ी फसलों की सुरक्षा के उपाय\n\n• **जल निकासी:** खेत की मेड़ों के किनारे नालियां तुरंत खोलें ताकि 12-24 घंटे के भीतर खड़ा पानी निकल जाए।\n• **छिड़काव रोकें:** बारिश की संभावना होने पर किसी भी प्रकार का कीटनाशक या उर्वरक स्प्रे स्थगित रखें।\n• **सहारा देना:** टमाटर, मिर्च, केले के पौधों को हवा के झोंकों से बचाने के लिए बांस का सहारा दें।\n• **वर्षा पश्चात:** जड़ सड़न से बचाव के लिए कॉपर ऑक्सीक्लोराइड @ 3 ग्राम/लीटर से ड्रेंचिंग करें और 1% यूरिया का पर्णीय छिड़काव करें।";
+    }
+    return "### 🌧️ Protecting Standing Crops During Heavy Rains & Storms\n\n• **Drainage Management:** Open perimeter field trenches immediately so standing water drains within 12–24 hours.\n• **Suspend All Sprays:** Postpone foliar fertilizers and pesticide applications if rain is expected within 24 hours.\n• **Horticultural Staking:** Support tall tomato, chilli, and banana plants with stakes to prevent lodging under strong winds.\n• **Post-Flood Revival:** Drench root zones with Copper Oxychloride @ 3 g/L to prevent collar rot; foliar spray 1% Urea to reverse chlorosis.";
   }
-  if (q.includes("weather") || q.includes("rain") || q.includes("storm") || q.includes("मौसम") || q.includes("बारिश")) {
-    return isHi
-      ? "### 🌧️ बेमौसम बारिश व आंधी से पहले खेत सुरक्षा चेकलिस्ट\n\n• **जल निकासी:** खेत की मेड़ों के किनारे नालियां साफ करें ताकि खड़ा पानी तुरंत निकल सके।\n• **छिड़काव रोकें:** बारिश की संभावना होने पर कीटनाशक या उर्वरक का छिड़काव तुरंत टाल दें।\n• **कटी फसल की सुरक्षा:** खलिहान में रखी फसल को ऊंचे स्थान पर रखकर तिरपाल से अच्छी तरह ढकें।\n• **बागवानी सहारा:** आंधी से बचाने के लिए टमाटर व मिर्च के पौधों को बांस की खपच्चियों का सहारा दें।"
-      : "### 🌧️ Farm Protection Checklist Before Unseasonal Rain / Storms\n\n• **Drainage Management:** Deepen field perimeter trenches to allow rapid discharge of excess standing water.\n• **Postpone Chemical Sprays:** Do not apply foliar fertilizers or pesticides if rainfall is expected within 24 hours.\n• **Threshing Floor Safety:** Move harvested crops to elevated platforms and cover securely with tarpaulins.\n• **Horticultural Staking:** Provide bamboo support to tomato and chilli plants to prevent lodging under strong winds.";
+
+  // 7. Produce Storage (Word-bounded rot)
+  if (q.includes("potato") || q.includes("storage") || q.includes("ఆలుగడ్డ") || q.includes("ఉల్లి") || q.includes("आलू") || q.includes("प्याज") || q.includes("onion") || /\b(rot|rotting|rotten)\b/.test(q)) {
+    if (isTe) {
+      return "### 🥔 నిల్వ మరియు కుళ్లుడు తెగులు నివారణ చర్యలు\n\n• **ఆలుగడ్డ:** 15-20°C వద్ద 10-12 రోజులు నీడలో ఆరబెట్టి, గాలి ఆడే గోనె సంచులలో చీకటి గదిలో నిల్వ చేయండి.\n• **ఉల్లిపాయ:** 7-10 రోజులు నీడలో ఆరబెట్టి, వెదురు అరలలో పలుచగా పరచి గాలి తగిలేలా ఉంచండి.";
+    }
+    if (isHi) {
+      return "### 🥔 भंडारण एवं सड़न रोकथाम के उपाय\n\n• **आलू:** 15-20°C पर 10-12 दिन छाया में सुखाएं; हवादार जूट के बोरों में अंधेरे में रखें।\n• **प्याज:** 7-10 दिन छाया में सुखाएं और हवादार बांस के रैक में फैलाकर रखें।";
+    }
+    return "### 🥔 Produce Storage & Spoilage Prevention\n\n• **Potato:** Cure at 15–20°C for 10–12 days; store in diffuse dark, well-ventilated rooms in breathable jute sacks.\n• **Onion:** Cure under shade for 7–10 days; store in ventilated layered bamboo racks.";
   }
-  return isHi
-    ? "एआई अभी व्यस्त है, कृपया कुछ मिनटों में पुनः प्रयास करें।"
-    : "AI is busy, please try again in a few minutes.";
+
+  // 8. Pest & Disease Management (Tomato / Chilli / Leaf curl)
+  if (q.includes("leaf curl") || q.includes("curl") || q.includes("మరోడ") || q.includes("పత్తి") || q.includes("पत्ती मरोड़") || q.includes("whitefly") || (q.includes("tomato") && q.includes("virus")) || (q.includes("chilli") && (q.includes("leaf") || q.includes("thrips")))) {
+    if (isTe) {
+      return "### 🍅 టమాటా & మిరపలో ఆకుముడత నివారణ (Leaf Curl Management)\n\n• **కారణం:** తెల్లదోమ (Whitefly) మరియు తామర పురుగుల (Thrips) ద్వారా వ్యాపిస్తుంది.\n• **నివారణ:** ఇమిడాక్లోప్రిడ్ 17.8% SL @ 0.5 మి.లీ/లీ లేదా వేపనూనె (10,000 ppm) @ 3 మి.లీ/లీ పిచికారీ చేయండి.\n• **క్షేత్ర పరిశుభ్రత:** ఎకరాకు 15-20 పసుపు మరియు నీలి జిగురు అట్టలు అమర్చండి.";
+    }
+    if (isHi) {
+      return "### 🍅 पत्ती मरोड़ (लीफ कर्ल) रोग नियंत्रण\n\n• **कारण:** सफेद मक्खी (Whitefly) एवं थ्रिप्स द्वारा फैलता है।\n• **उपचार:** इमिडाक्लोप्रिड 17.8% SL @ 0.5 मिली/लीटर या नीम तेल (10,000 ppm) @ 3 मिली/लीटर का छिड़काव करें।\n• **रोकथाम:** पीले चिपचिपे ट्रैप (15-20 प्रति एकड़) लगाएं और ग्रसित पौधों को नष्ट करें।";
+    }
+    return "### 🍅 Management of Leaf Curl Disease\n\n• **Cause:** Transmitted by Whiteflies (*Bemisia tabaci*) and Thrips.\n• **Remedies:** Spray Imidacloprid 17.8% SL @ 0.5 ml/L or Neem Oil (10,000 ppm) @ 3 ml/L.\n• **Cultural Control:** Install yellow and blue sticky traps (15–20/acre) and rogue out virus-infected seedlings.";
+  }
+
+  // 9. Schemes & Subsidies
+  if (q.includes("pm-kisan") || q.includes("subsidy") || q.includes("6000") || q.includes("యोजना") || q.includes("సబ్సిడీ") || q.includes("scheme") || q.includes("rythu") || q.includes("fasal bima") || q.includes("kcc")) {
+    if (isTe) {
+      return "### 💰 ప్రధాన ప్రభుత్వ వ్యవసాయ పథకాలు & సబ్సిడీలు\n\n• **PM-కిసాన్:** సంవత్సరానికి ₹6,000 (₹2,000 చొప్పున 3 విడతల్లో DBT ద్వారా). pmkisan.gov.in లో e-KYC తప్పనిసరి.\n• **రైతు భరోసా / బంధు:** అర్హత కలిగిన రైతులకు పంట పెట్టుబడి సహాయం.\n• **PM ఫసల్ బీమా (PMFBY):** రబీ పంటలకు 1.5%, ఖరీఫ్ పంటలకు 2% ప్రీమియంతో పంటల బీమా రక్షణ.\n• **కిసాన్ క్రెడిట్ కార్డు (KCC):** సకాలంలో చెల్లిస్తే 4% రాయితీ వడ్డీతో రూ. 3 లక్షల వరకు రుణం.";
+    }
+    if (isHi) {
+      return "### 💰 प्रमुख सरकारी कृषि योजनाएं एवं सब्सिडी\n\n• **PM-किसान:** ₹6,000 प्रति वर्ष (₹2,000 की 3 किस्तें DBT द्वारा)। pmkisan.gov.in पर e-KYC अनिवार्य।\n• **PM फसल बीमा (PMFBY):** व्यापक फसल बीमा (रबी 1.5%, खरीफ 2% प्रीमियम)।\n• **किसान क्रेडिट कार्ड (KCC):** समय पर अदायगी पर 4% रियायती ब्याज दर पर ₹3 लाख तक का ऋण।";
+    }
+    return "### 💰 Agricultural Schemes & Financial Support\n\n• **PM-KISAN:** ₹6,000/year in 3 installments of ₹2,000 via DBT. Check status on pmkisan.gov.in.\n• **PM Fasal Bima (PMFBY):** Comprehensive crop insurance (1.5% premium Rabi, 2% Kharif).\n• **Kisan Credit Card (KCC):** Short-term crop credit up to ₹3 Lakh at 4% subsidized interest.";
+  }
+
+  // 10. Mandi Selling & Price Strategy
+  if (q.includes("mandi") || q.includes("price") || q.includes("apmc") || q.includes("మార్కెట్") || q.includes("మండి") || q.includes("ధర") || q.includes("मंडी") || q.includes("भाव") || q.includes("sell") || q.includes("arbitrage")) {
+    if (isTe) {
+      return "### 📈 మండి విక్రయాలు & గ్రేడింగ్ వ్యూహం\n\n• **గ్రేడింగ్:** నాణ్యమైన ఏ-గ్రేడ్ ఉత్పత్తులను వేరుచేసి అమ్మితే వేలంలో 20-25% అధిక ధర లభిస్తుంది.\n• **తేమ శాతం:** ధాన్యంలో తేమను 12-14% లోపు ఉంచడం వల్ల మండిలో కోతలు ఉండవు.\n• **ఆర్బిట్రేజ్:** కిసాన్ మిత్ర ప్రాఫిట్ కాలిక్యులేటర్ ద్వారా సమీపంలో ఎక్కువ లాభం వచ్చే మండిని ఎంచుకోండి.";
+    }
+    if (isHi) {
+      return "### 📈 मंडी बिक्री एवं ग्रेडिंग रणनीति\n\n• **ग्रेडिंग:** ग्रेड A में छांटकर बेचने पर बोली में 25% तक अधिक मूल्य मिलता है।\n• **नमी:** कटाई बाद अनाज की नमी 12-14% से कम रखें ताकि कटौती न हो।\n• **आर्बिट्रेज:** अधिकतम शुद्ध मुनाफे वाली नजदीकी मंडी खोजने के लिए किसानमित्र मुनाफा कैलकुलेटर का उपयोग करें।";
+    }
+    return "### 📈 Mandi Selling & Grading Strategy\n\n• **Grading:** Sort into uniform Grade A lots for up to 25% higher auction realization.\n• **Moisture:** Keep grain moisture under 12–14% to avoid APMC mandi deductions.\n• **Arbitrage:** Use KisanMitra Mandi Arbitrage to find highest net-profit mandis after factoring transport costs.";
+  }
+
+  // 11. General Questions Outside Agriculture (Math, Code, etc.)
+  if (q.includes("math") || q.includes("program") || q.includes("code") || q.includes("calculate") || q.includes("solve") || q.includes("what is") || q.includes("who is")) {
+    if (isTe) {
+      return "నమస్కారం! నేను కిసాన్ మిత్ర సహాయకుడిని. వ్యవసాయంతో పాటు గణితం, కోడింగ్, విజ్ఞానం మరియు సాధారణ సందేహాలకు కూడా సహాయం చేయగలను. మీ ప్రశ్నకు పూర్తి వివరాలు ఇవ్వండి.";
+    }
+    if (isHi) {
+      return "नमस्ते! मैं किसानमित्र सहायक हूँ। कृषि के साथ-साथ मैं गणित, विज्ञान, सामान्य ज्ञान एवं तकनीकी प्रश्नों का सटीक उत्तर देने में सक्षम हूँ। कृपया अपना प्रश्न स्पष्ट रूप से पूछें।";
+    }
+    return "Hello! I am your KisanMitra Assistant. In addition to agricultural advice, I am capable of answering mathematics, coding, science, and general knowledge questions. Please state your exact question.";
+  }
+
+  // Universal fallback
+  if (isTe) return "ఎఐ సర్వర్ ప్రస్తుతం రద్దీగా ఉంది, దయచేసి కాసేపటి తర్వాత ప్రయత్నించండి.";
+  if (isHi) return "एआई अभी व्यस्त है, कृपया कुछ मिनटों में पुनः प्रयास करें।";
+  return "AI is busy, please try again in a few minutes.";
 }
 
 async function sendKisanChatMessage() {
   const input = document.getElementById("kisanChatInput");
   const container = document.getElementById("kisanChatMessages");
-  if (!input || !container) return;
+  if (!container) return;
 
-  const msg = input.value.trim();
-  if (!msg) return;
-  input.value = "";
+  const msg = input ? input.value.trim() : "";
+  const imgToSend = kisanChatAttachedImage ? {
+    data: kisanChatAttachedImage.data,
+    mimeType: kisanChatAttachedImage.mimeType,
+    name: kisanChatAttachedImage.name
+  } : null;
+
+  if (!msg && !imgToSend) return;
+  if (input) input.value = "";
+  clearKisanChatImage();
 
   const dict = KISAN_AI_I18N[kisanAILang] || KISAN_AI_I18N.en;
 
   // Append user message
   const userDiv = document.createElement("div");
   userDiv.className = "kisan-chat-msg user";
-  userDiv.textContent = msg;
+  if (imgToSend) {
+    const thumbImg = document.createElement("img");
+    thumbImg.src = "data:" + imgToSend.mimeType + ";base64," + imgToSend.data;
+    thumbImg.style.maxWidth = "160px";
+    thumbImg.style.maxHeight = "160px";
+    thumbImg.style.borderRadius = "8px";
+    thumbImg.style.display = "block";
+    thumbImg.style.marginBottom = msg ? "6px" : "0";
+    userDiv.appendChild(thumbImg);
+  }
+  if (msg) {
+    const textSpan = document.createElement("span");
+    textSpan.textContent = msg;
+    userDiv.appendChild(textSpan);
+  } else if (imgToSend) {
+    const textSpan = document.createElement("span");
+    textSpan.textContent = (kisanAILang === 'te') ? "📸 పంట ఫోటో విశ్లేషణ" : ((kisanAILang === 'hi') ? "📸 फसल फोटो विश्लेषण" : "📸 Crop photo analysis");
+    userDiv.appendChild(textSpan);
+  }
   container.appendChild(userDiv);
 
   // Append thinking bubble
@@ -3965,12 +4147,16 @@ async function sendKisanChatMessage() {
   container.appendChild(typingDiv);
   container.scrollTop = container.scrollHeight;
 
+  const chosenLang = (kisanAILang === 'te') ? 'te' : ((kisanAILang === 'hi') ? 'hi' : 'en');
+  const mandiLoc = (typeof currentMandi !== "undefined" && currentMandi && currentMandi.name) ? currentMandi.name : "Warangal, Telangana";
+
   try {
-    kisanAILang = (kisanAILang === 'hi') ? 'hi' : 'en';
     const res = await KM_API.sendChatMessage({
-      message: msg,
+      message: msg || "Please analyze this crop photograph and provide diagnostic guidance.",
       history: kisanChatHistory,
-      language: kisanAILang
+      language: kisanAILang,
+      image: imgToSend ? { data: imgToSend.data, mimeType: imgToSend.mimeType } : null,
+      context: { location: mandiLoc }
     });
 
     const indicator = document.getElementById("kisanTypingIndicator");
@@ -3984,7 +4170,7 @@ async function sendKisanChatMessage() {
       isFallback = true;
     }
 
-    kisanChatHistory.push({ role: "user", content: msg });
+    kisanChatHistory.push({ role: "user", content: msg || "Crop photo analysis" });
     kisanChatHistory.push({ role: "model", content: finalReply });
 
     const botDiv = document.createElement("div");
@@ -4006,7 +4192,7 @@ async function sendKisanChatMessage() {
     if (indicator) indicator.remove();
 
     const fallbackReply = getClientAgriChatFallback(msg) || dict.busyMessage;
-    kisanChatHistory.push({ role: "user", content: msg });
+    kisanChatHistory.push({ role: "user", content: msg || "Crop photo analysis" });
     kisanChatHistory.push({ role: "model", content: fallbackReply });
 
     const botDiv = document.createElement("div");
@@ -4591,14 +4777,16 @@ window.addEventListener("DOMContentLoaded", function(){
       </div>
     </div>
     <div style="display:flex;gap:6px;align-items:center">
-      <!-- Two buttons: English | हिन्दी with hint underneath -->
+      <!-- Language toggle: English | हिन्दी | తెలుగు -->
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px">
         <div class="kisan-ai-lang-toggle" style="display:inline-flex;align-items:center;background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:2px 4px;gap:2px">
           <button type="button" id="kisanAiLangEn" onclick="setKisanAILanguage('en')" aria-label="Set AI Assistant to English" style="border:none;background:var(--green);color:#0b0f0d;font-weight:700;font-size:0.7rem;padding:2px 8px;border-radius:10px;cursor:pointer;transition:all .15s ease">English</button>
           <span style="color:var(--line);font-size:0.68rem;user-select:none;padding:0 1px">|</span>
           <button type="button" id="kisanAiLangHi" onclick="setKisanAILanguage('hi')" aria-label="Set AI Assistant to Hindi" style="border:none;background:transparent;color:var(--muted);font-weight:600;font-size:0.7rem;padding:2px 8px;border-radius:10px;cursor:pointer;transition:all .15s ease">हिन्दी</button>
+          <span style="color:var(--line);font-size:0.68rem;user-select:none;padding:0 1px">|</span>
+          <button type="button" id="kisanAiLangTe" onclick="setKisanAILanguage('te')" aria-label="Set AI Assistant to Telugu" style="border:none;background:transparent;color:var(--muted);font-weight:600;font-size:0.7rem;padding:2px 8px;border-radius:10px;cursor:pointer;transition:all .15s ease">తెలుగు</button>
         </div>
-        <small style="font-size:0.6rem;color:var(--muted);white-space:nowrap">AI replies in English or हिन्दी</small>
+        <small style="font-size:0.6rem;color:var(--muted);white-space:nowrap">AI replies in English, हिन्दी or తెలుగు</small>
       </div>
       <button onclick="clearKisanChatHistory()" title="Clear Chat" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:4px">🗑️</button>
       <button onclick="toggleKisanChat()" title="Close" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;padding:2px 6px">&times;</button>
@@ -4618,13 +4806,21 @@ window.addEventListener("DOMContentLoaded", function(){
   <div class="kisan-chat-messages" id="kisanChatMessages">
     <div class="kisan-chat-msg bot">
       <b>🙏 Namaste Kisan Mitra!</b><br>
-      I am your <b>AI Agricultural Assistant</b>. Ask me anything about crop diseases, pest remedies, fertilizer doses, government subsidies, or APMC mandi prices in <b>English</b> or <b>Hindi</b>.
+      I am your <b>AI Agricultural Assistant</b>. Ask me anything about crop diseases, pest remedies, fertilizer doses, government subsidies, live weather, or APMC mandi prices in <b>English</b>, <b>हिन्दी</b> or <b>తెలుగు</b>. You can also upload a crop photo 📸.
     </div>
   </div>
 
   <!-- Input Bar & Warning Footer -->
   <div class="kisan-chat-footer">
+    <!-- Image Preview Bar -->
+    <div id="kisanChatImgPreview" style="display:none;padding:6px 10px;background:var(--surface);border:1px solid var(--green);border-radius:10px;align-items:center;gap:10px;margin-bottom:6px">
+      <img id="kisanChatImgThumb" style="width:38px;height:38px;object-fit:cover;border-radius:6px;border:1px solid var(--line)" alt="Attached crop image">
+      <div style="flex:1;font-size:0.75rem;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="kisanChatImgName">crop_photo.jpg</div>
+      <button type="button" onclick="clearKisanChatImage()" style="background:rgba(239,68,68,0.2);border:1px solid #ef4444;color:#fca5a5;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.8rem;line-height:1" title="Remove image">&times;</button>
+    </div>
     <div class="kisan-chat-input-area">
+      <input type="file" id="kisanChatFileInput" accept="image/*" style="display:none" onchange="handleKisanChatImageSelected(this.files[0])">
+      <button type="button" class="kisan-chat-btn" id="kisanChatAttachBtn" onclick="document.getElementById('kisanChatFileInput').click()" title="Attach Crop Photo (Leaf/Stem/Fruit)">📷</button>
       <input type="text" class="kisan-chat-input" id="kisanChatInput" placeholder="Ask in English or Hindi or tap 🎤..." onkeydown="if(event.key==='Enter') sendKisanChatMessage()">
       <button type="button" class="kisan-chat-btn voice-btn" id="kisanChatMicBtn" onclick="toggleKisanChatVoice()" title="Voice Typing">🎤</button>
       <button type="button" class="kisan-chat-btn" onclick="sendKisanChatMessage()" title="Send">➤</button>

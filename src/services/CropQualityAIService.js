@@ -317,20 +317,25 @@ function isValidImageBuffer(buf) {
   return isJpeg || isPng || isWebp || isGif;
 }
 
+const CANDIDATE_MODELS = [
+  "gemini-flash-lite-latest",
+  "gemini-3.1-flash-lite",
+  process.env.GEMINI_MODEL,
+  "gemini-3.6-flash",
+  "gemini-3.5-flash",
+  "gemini-3.8-flash"
+].filter(Boolean);
+
 class CropQualityAIService {
   static async callGeminiVision(imageBuffer, mimeType = "image/jpeg", requestedCrop = null, language = "en") {
-    const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
     const base64Image = imageBuffer.toString("base64");
     const isHi = (language === "hi");
+    const isTe = (language === "te");
+    const langPrompt = isTe ? "Telugu (తెలుగు)" : (isHi ? "simple Hindi in Devanagari script" : "simple English");
 
     const allKeys = GeminiKeyManager.getAllKeys();
     if (allKeys.length === 0) {
       throw new Error("GEMINI_API_KEY is not configured on the server. Please set it in your .env file.");
-    }
-
-    if (GeminiKeyManager.isCooldownActive()) {
-      const remainingSec = Math.round(GeminiKeyManager.getRemainingCooldownMs() / 1000);
-      throw new Error(`Gemini API 429: 10-minute cooldown active (${remainingSec}s remaining)`);
     }
 
     const systemPrompt = `You are a specialized agricultural vision assistant for Indian farmers.
@@ -342,7 +347,7 @@ CRITICAL Produce Verification:
 - If the image is NOT produce (e.g. solid color, human, landscape, machinery, household object, blank/corrupt image), return cropName as "Unknown" and confidence below 20.
 
 LANGUAGE REQUIREMENT:
-Write the grade_explanation, visibleDefects list, advice (actionable recommendations), and shelf_life text in ${isHi ? "simple Hindi in Devanagari script (e.g. 'उत्कृष्ट रंग...', 'हल्के दाग...')" : "simple English"}.
+Write the grade_explanation, visibleDefects list, advice (actionable recommendations), and shelf_life text in ${langPrompt}.
 
 Return ONLY a valid JSON object matching this exact schema:
 {
@@ -351,11 +356,11 @@ Return ONLY a valid JSON object matching this exact schema:
   "ripeness": "unripe" | "early_ripe" | "ripe" | "overripe" | "spoiled",
   "is_fully_spoiled": <boolean>,
   "defect_ratio_pct": <number 0-100 indicating percentage of surface area with visible defects>,
-  "grade_explanation": "<concise explanation of the grade in ${isHi ? 'Hindi' : 'English'}>",
-  "shelf_life": "<estimated shelf life under recommended storage in ${isHi ? 'Hindi' : 'English'}>",
-  "observations": [<array of concise strings noting color, surface condition, firmness indicators in ${isHi ? 'Hindi' : 'English'}>],
-  "visibleDefects": [<array of strings describing visible lesions, bruises, mold, insect damage in ${isHi ? 'Hindi' : 'English'}>],
-  "advice": [<array of 2-3 actionable harvesting/storage/mandi recommendations in ${isHi ? 'Hindi' : 'English'}>]
+  "grade_explanation": "<concise explanation of the grade in ${langPrompt}>",
+  "shelf_life": "<estimated shelf life under recommended storage in ${langPrompt}>",
+  "observations": [<array of concise strings noting color, surface condition, firmness indicators in ${langPrompt}>],
+  "visibleDefects": [<array of strings describing visible lesions, bruises, mold, insect damage in ${langPrompt}>],
+  "advice": [<array of 2-3 actionable harvesting/storage/mandi recommendations in ${langPrompt}>]
 }`;
 
     const payload = {
@@ -377,38 +382,30 @@ Return ONLY a valid JSON object matching this exact schema:
     };
 
     let lastError = null;
-    let attempts = 0;
-    const maxKeyAttempts = allKeys.length;
+    const apiKey = GeminiKeyManager.getNextAvailableKey() || allKeys[0];
 
-    while (attempts < maxKeyAttempts) {
-      const apiKey = GeminiKeyManager.getNextAvailableKey();
-      if (!apiKey) break;
-      attempts++;
-
-      const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey;
+    // Model cascade across candidate vision models
+    for (const modelCandidate of CANDIDATE_MODELS) {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelCandidate}:generateContent?key=${apiKey}`;
       try {
-        const resData = await callGeminiWithRetry(endpoint, payload, 15000, 2);
-        const textOutput = resData?.candidates?.[0]?.content?.parts?.[0]?.text;
+        const resData = await callGeminiWithRetry(endpoint, payload, 18000, 1);
+        const textOutput = resData?.candidates?.[0]?.content?.parts?.find(p => p.text)?.text;
         if (textOutput) {
           GeminiKeyManager.markKeySuccess(apiKey);
           const parsed = extractJSON(textOutput);
-          parsed._active_model = model;
+          parsed._active_model = modelCandidate;
           parsed._source = "gemini";
           return parsed;
         }
-        throw new Error("Empty text output from Gemini Vision API.");
       } catch (err) {
         lastError = err;
-        console.error('Gemini Vision call error on ' + model + ' (key attempt ' + attempts + '/' + maxKeyAttempts + '):', err.message);
-        if (err.message && err.message.includes('429')) {
-          GeminiKeyManager.markKey429(apiKey);
-          console.warn('Vision Key placed on 10-minute cooldown. Rotating to next key (if available).');
-          continue;
+        console.warn(`Vision model ${modelCandidate} failed: ${err.message}. Trying next candidate...`);
+        if (err.message.includes("401")) {
+          throw err;
         }
-        throw err;
       }
     }
-    throw lastError || new Error("All Gemini Vision keys exhausted or on cooldown.");
+    throw lastError || new Error("All Gemini Vision models exhausted.");
   }
 
   static async analyze(imageBuffer, requestedCrop = null, mimeType = "image/jpeg", language = "en") {
