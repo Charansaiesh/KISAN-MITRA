@@ -2,7 +2,7 @@
   "version": 2,
   "functions": {
     "api/index.js": {
-      "includeFiles": "{src/**,data/**,js/**}",
+      "includeFiles": "{src/**,data/**,js/**,*.html,server.js}",
       "maxDuration": 30
     }
   },
