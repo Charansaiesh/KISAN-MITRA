@@ -1,9 +1,14 @@
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const supabase = require('../config/supabase');
 
 const DATA_DIR = path.join(__dirname, '..', '..', 'data');
 const DATA_FILE = path.join(DATA_DIR, 'crop_quality_assessments.json');
+
+function isProduction() {
+  return process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
+}
 
 // Initialize persistent fallback store
 let memoryAssessments = [];
@@ -33,7 +38,7 @@ class CropQualityPersistenceService {
    */
   static async saveAssessment(assessment) {
     const record = {
-      id: assessment.id || `cqa_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      id: assessment.id || crypto.randomUUID(),
       user_id: assessment.user_id || null,
       crop_type: assessment.crop_type,
       crop_confidence: assessment.crop_confidence,
@@ -67,15 +72,26 @@ class CropQualityPersistenceService {
         if (!error && data) {
           return { success: true, saved_to: 'supabase', data };
         }
+        // Log the actual error for debugging
+        console.error('Supabase insert error:', error ? error.message : 'No data returned');
+        if (isProduction()) {
+          return { success: false, saved_to: 'none', error: 'Database write failed. Please try again later.' };
+        }
       } catch (err) {
-        // Fallback gracefully
+        console.error('Supabase insert exception:', err.message);
+        if (isProduction()) {
+          return { success: false, saved_to: 'none', error: 'Database write failed. Please try again later.' };
+        }
       }
     }
 
-    // Fallback persistent disk store
+    // Local JSON fallback — development only
+    if (isProduction()) {
+      return { success: false, saved_to: 'none', error: 'Database unavailable. Local fallback is disabled in production.' };
+    }
     memoryAssessments.unshift(record);
     persistToDisk();
-    return { success: true, saved_to: 'local_cloud_sync', data: record };
+    return { success: true, saved_to: 'local_dev_fallback', data: record };
   }
 
   /**
@@ -128,7 +144,7 @@ class CropQualityPersistenceService {
       }
     }
 
-    if (allRecords.length === 0) {
+    if (allRecords.length === 0 && !isProduction()) {
       allRecords = memoryAssessments;
     }
 

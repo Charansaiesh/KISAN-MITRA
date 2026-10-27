@@ -13,7 +13,7 @@ const REFERENCE_CROP_MARKET_DATA = {
     msp_price: null,
     unit: 'quintal',
     currency: '₹',
-    as_of: 'Current Season 2024-25',
+    as_of: 'Current Season 2026-27',
     note: 'Reference APMC benchmark for modal tomato realizations'
   },
   Chilli: {
@@ -27,7 +27,7 @@ const REFERENCE_CROP_MARKET_DATA = {
     msp_price: null,
     unit: 'quintal',
     currency: '₹',
-    as_of: 'Current Season 2024-25',
+    as_of: 'Current Season 2026-27',
     note: 'Reference APMC benchmark for commercial dry/fresh chilli'
   },
   Onion: {
@@ -41,7 +41,7 @@ const REFERENCE_CROP_MARKET_DATA = {
     msp_price: null,
     unit: 'quintal',
     currency: '₹',
-    as_of: 'Current Season 2024-25',
+    as_of: 'Current Season 2026-27',
     note: 'Reference APMC benchmark for Lasalgaon onion market'
   },
   Potato: {
@@ -55,7 +55,7 @@ const REFERENCE_CROP_MARKET_DATA = {
     msp_price: null,
     unit: 'quintal',
     currency: '₹',
-    as_of: 'Current Season 2024-25',
+    as_of: 'Current Season 2026-27',
     note: 'Reference APMC benchmark for potato table stock'
   },
   Banana: {
@@ -69,7 +69,7 @@ const REFERENCE_CROP_MARKET_DATA = {
     msp_price: null,
     unit: 'quintal',
     currency: '₹',
-    as_of: 'Current Season 2024-25',
+    as_of: 'Current Season 2026-27',
     note: 'Reference APMC benchmark for Grand Naine/commercial banana'
   },
   Rice: {
@@ -80,10 +80,10 @@ const REFERENCE_CROP_MARKET_DATA = {
     min_price: 2300,
     max_price: 2800,
     modal_price: 2550,
-    msp_price: 2300, // Official Kharif 2024-25 Common Paddy MSP
+    msp_price: 2300, // Official Kharif 2026-27 Common Paddy MSP
     unit: 'quintal',
     currency: '₹',
-    as_of: 'Kharif 2024-25',
+    as_of: 'Kharif 2026-27',
     note: 'Reference APMC modal & official MSP benchmark for Common Rice/Paddy'
   }
 };

@@ -2,25 +2,38 @@ const { AIChatService } = require('../services/AIChatService');
 
 exports.sendMessage = async (req, res) => {
   try {
-    const { message, history, context } = req.body;
+    const { message, history, context, language } = req.body;
     if (!message || typeof message !== 'string' || !message.trim()) {
       return res.status(400).json({
         success: false,
+        source: 'fallback',
         error_code: 'INVALID_MESSAGE',
         message: 'A non-empty text message is required.'
       });
     }
 
-    const chatResponse = await AIChatService.chat(history || [], message, context || {});
+    // Accept only "en" or "hi", default to "en" for anything else
+    const rawLang = (typeof language === 'string' && language.trim())
+      ? language.trim().toLowerCase()
+      : (typeof context?.language === 'string' ? context.language.trim().toLowerCase() : '');
+    const chosenLang = (rawLang === 'hi') ? 'hi' : 'en';
+
+    const mergedContext = { ...(context || {}), language: chosenLang };
+    const chatResponse = await AIChatService.chat(history || [], message, mergedContext);
     return res.status(200).json(chatResponse);
   } catch (error) {
     console.error('Chat Controller Error:', error.message);
+    const rawLang = (typeof language === 'string' && language.trim())
+      ? language.trim().toLowerCase()
+      : (typeof context?.language === 'string' ? context.language.trim().toLowerCase() : '');
+    const isHi = (rawLang === 'hi');
     return res.status(500).json({
       success: false,
+      source: 'fallback',
       error_code: 'CHAT_ERROR',
       message: error.message.includes('GEMINI_API_KEY')
         ? error.message
-        : 'AI assistant is currently busy. Please try again in a few seconds.'
+        : (isHi ? 'एआई अभी व्यस्त है, कृपया कुछ मिनटों में पुनः प्रयास करें।' : 'AI is busy, please try again in a few minutes.')
     });
   }
 };

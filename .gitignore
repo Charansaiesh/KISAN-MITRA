@@ -65,3 +65,17 @@ Desktop.ini
 tmp/
 temp/
 scratch/
+
+# Uploads & Media Files
+uploads/
+*/uploads/
+
+# Local JSON Databases & Ephemeral Storage
+data/*.json
+!data/msp_rates.json
+*.json.db
+
+# Audit & Remediation Internal Reports
+QA_REPORT.md
+FIX_REPORT.md
+

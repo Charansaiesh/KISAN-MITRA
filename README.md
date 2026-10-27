@@ -119,7 +119,11 @@ The database is built on **PostgreSQL (Supabase)** with relational integrity and
    # JWT Configuration
    JWT_SECRET=your_super_secret_jwt_key
    JWT_EXPIRES_IN=7d
-   ADMIN_INITIAL_SECRET=admin123
+   ADMIN_INITIAL_SECRET=your_admin_secret_here
+   
+   # Google Gemini AI Configuration
+   GEMINI_API_KEY=your_gemini_api_key_here
+   GEMINI_MODEL=gemini-3.8-flash
    
    # SMS Gateway (Fast2SMS or Twilio)
    FAST2SMS_API_KEY=your_fast2sms_api_key

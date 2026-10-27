@@ -2,13 +2,17 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const supabase = require('../config/supabase');
 
+if (!process.env.JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET environment variable is missing.');
+}
+
 // Robust fallback user memory store
 const memoryUsers = [];
 
 const generateJWT = (user) => {
   return jwt.sign(
     { id: user.id, name: user.name, phone: user.phone, role: user.role, district: user.district },
-    process.env.JWT_SECRET || 'kisanmitra_jwt_secret_dev_key_2025_secure_983274293',
+    process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 };
@@ -131,36 +135,121 @@ exports.login = async (req, res, next) => {
   }
 };
 
+// INITIAL OFFICER SEEDING (FROM ADMIN_INITIAL_SECRET)
+const seedInitialOfficer = async () => {
+  const secret = process.env.ADMIN_INITIAL_SECRET;
+  if (!secret) {
+    console.log('ℹ️ ADMIN_INITIAL_SECRET not configured. Skipping initial officer seeding.');
+    return;
+  }
+
+  const phone = '9999900000';
+  const name = 'Lead Officer #1042';
+  const role = 'officer';
+  const district = 'Procurement Control HQ';
+  const password_hash = await bcrypt.hash(secret, 10);
+
+  if (supabase) {
+    try {
+      const { data: existing } = await supabase
+        .from('users')
+        .select('id')
+        .eq('phone', phone)
+        .maybeSingle();
+
+      if (!existing) {
+        const { error } = await supabase.from('users').insert([{
+          name,
+          phone,
+          password_hash,
+          role,
+          district
+        }]);
+        if (error) {
+          console.warn('⚠️ Could not seed officer to Supabase:', error.message);
+        } else {
+          console.log('✅ Initial officer seeded to Supabase with bcrypt hash.');
+        }
+      } else {
+        await supabase.from('users').update({ password_hash }).eq('phone', phone);
+        console.log('✅ Initial officer password hash updated in Supabase.');
+      }
+    } catch (err) {
+      console.warn('⚠️ Supabase officer seed error:', err.message);
+    }
+  }
+
+  const existingMemIdx = memoryUsers.findIndex(u => u.phone === phone);
+  const memUser = {
+    id: 'officer_1042',
+    name,
+    phone,
+    role,
+    district,
+    password_hash,
+    created_at: new Date().toISOString()
+  };
+  if (existingMemIdx >= 0) {
+    memoryUsers[existingMemIdx] = memUser;
+  } else {
+    memoryUsers.push(memUser);
+  }
+};
+
+// Seed officer at startup
+seedInitialOfficer().catch(err => console.warn('Officer seed warning:', err.message));
+
+exports.seedInitialOfficer = seedInitialOfficer;
+
 // OFFICER QUICK LOGIN (For Admin Portal Authentication)
 exports.officerLogin = async (req, res, next) => {
   try {
-    const { password } = req.body;
+    const { password, phone } = req.body;
     if (!password) {
       return res.status(400).json({ success: false, message: 'Officer password required.' });
     }
 
-    const validOfficerPass = process.env.ADMIN_INITIAL_SECRET || 'admin123';
-    const isOfficerMatch = (password === validOfficerPass || password === 'adminSecret2025' || password === 'kisan2024' || password === 'kisan123');
+    let officer = null;
 
-    if (isOfficerMatch) {
-      const officerUser = {
-        id: 'officer_1042',
-        name: 'Lead Officer #1042',
-        phone: '9999900000',
-        role: 'officer',
-        district: 'Procurement Control HQ'
-      };
-      const token = generateJWT(officerUser);
-
-      return res.json({
-        success: true,
-        message: 'Officer authenticated successfully.',
-        user: officerUser,
-        token
-      });
+    if (supabase) {
+      let query = supabase.from('users').select('*').eq('role', 'officer');
+      if (phone) {
+        query = query.eq('phone', phone);
+      }
+      const { data, error } = await query.limit(1).maybeSingle();
+      if (!error && data) {
+        officer = data;
+      }
     }
 
-    return res.status(401).json({ success: false, message: 'Invalid officer authentication credentials.' });
+    if (!officer) {
+      officer = memoryUsers.find(u => u.role === 'officer' && (!phone || u.phone === phone));
+    }
+
+    if (!officer || !officer.password_hash) {
+      return res.status(401).json({ success: false, message: 'Invalid officer authentication credentials.' });
+    }
+
+    const isMatch = await bcrypt.compare(password, officer.password_hash);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Invalid officer authentication credentials.' });
+    }
+
+    const officerUser = {
+      id: officer.id,
+      name: officer.name || 'Lead Officer #1042',
+      phone: officer.phone,
+      role: officer.role,
+      district: officer.district || 'Procurement Control HQ'
+    };
+    const token = generateJWT(officerUser);
+
+    return res.json({
+      success: true,
+      message: 'Officer authenticated successfully.',
+      user: officerUser,
+      token
+    });
   } catch (err) {
     next(err);
   }

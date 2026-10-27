@@ -74,7 +74,7 @@
       border-radius:16px;box-shadow:var(--shadow);padding:16px 20px;width:300px;display:none;animation:popIn .4s ease}
   @keyframes popIn{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
   #newAlert b{color:var(--green)} #newAlert p{font-size:.82rem;color:var(--muted);margin-top:4px}
-  #closeAlert{float:right;cursor:pointer;color:#667}
+  #closeAlert{float:right;cursor:pointer;color:var(--muted)}
   footer{text-align:center;padding:30px;color:var(--muted);font-size:.82rem;border-top:1px solid var(--line)}
   @media(max-width:600px){
     #newAlert{width:calc(100vw - 30px);right:15px}
@@ -82,7 +82,7 @@
   }
 </style>
 <script src="js/api.js"></script>
-<script>if(typeof KM_API==='undefined'){document.write('<script src="api.js"><\/script>');}</script>
+
 </head>
 <body>
 
@@ -108,7 +108,7 @@
     </div>
     <h1 class="sec-title" style="margin:4px 0 10px;font-size:clamp(1.9rem,3.2vw,2.6rem);background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent" data-i18n="admin_title">KisanMitra Officer Portal</h1>
     <p class="sec-sub" style="max-width:620px;margin:0 auto 14px;font-size:.92rem" data-i18n="admin_sub">Real-time farmer token queue, fast MSP verification, automated queue clearance, and community moderation.</p>
-    <div class="live-dot" style="background:rgba(62,207,111,0.1);border-color:rgba(62,207,111,0.35);margin-top:4px"><i data-i18n="live_sync"></i> Live sync active with all 70+ state mandis</div>
+    <div class="live-dot" style="background:rgba(62,207,111,0.1);border-color:rgba(62,207,111,0.35);margin-top:4px"><i data-i18n="live_sync"></i> Live sync active with all 67 state mandis</div>
   </div>
 
   <!-- LOGIN -->
@@ -126,11 +126,11 @@
     
     <!-- SUB-NAVIGATION TABS -->
     <div class="admin-tabs">
-      <button class="atab active" id="tabTokensBtn" onclick="switchAdminTab('tokens', this)">🎟️ Token Queue</button>
-      <button class="atab" id="tabCommBtn" onclick="switchAdminTab('community', this)">💬 Community Moderation</button>
-      <button class="atab" id="tabFeedbackBtn" onclick="switchAdminTab('feedback', this)">🌟 Farmer Feedback</button>
-      <button class="atab" id="tabBroadcastBtn" onclick="switchAdminTab('broadcast', this)">📢 Send Announcement</button>
-      <button class="atab" id="tabQualityBtn" onclick="switchAdminTab('quality', this)">🔬 AI Quality Analytics</button>
+      <button class="atab active" id="tabTokensBtn" onclick="switchAdminTab('tokens', this)" data-i18n="tab_tokens">🎟️ Token Queue</button>
+      <button class="atab" id="tabCommBtn" onclick="switchAdminTab('community', this)" data-i18n="tab_comm">💬 Community Moderation</button>
+      <button class="atab" id="tabFeedbackBtn" onclick="switchAdminTab('feedback', this)" data-i18n="tab_feedback">🌟 Farmer Feedback</button>
+      <button class="atab" id="tabBroadcastBtn" onclick="switchAdminTab('broadcast', this)" data-i18n="tab_broadcast">📢 Send Announcement</button>
+      <button class="atab" id="tabQualityBtn" onclick="switchAdminTab('quality', this)" data-i18n="tab_quality">🔬 AI Quality Analytics</button>
     </div>
 
     <!-- SECTION 1: TOKENS & QUEUE -->
@@ -168,8 +168,8 @@
     <!-- SECTION 2: COMMUNITY MODERATION -->
     <div id="sectionCommunity" style="display:none">
       <div style="margin-bottom:18px;display:flex;justify-content:space-between;align-items:center">
-        <h3>💬 Community Marketplace Listings</h3>
-        <button class="btn btn-ghost" onclick="loadCommunityPosts()" style="padding:6px 14px;font-size:.8rem">🔄 Refresh Listings</button>
+        <h3 data-i18n="comm_head">💬 Community Marketplace Listings</h3>
+        <button class="btn btn-ghost" onclick="loadCommunityPosts()" style="padding:6px 14px;font-size:.8rem" data-i18n="btn_comm_refresh">🔄 Refresh Listings</button>
       </div>
       <div class="table-wrap">
         <table>
@@ -192,8 +192,8 @@
     <!-- SECTION 3: FARMER FEEDBACK -->
     <div id="sectionFeedback" style="display:none">
       <div style="margin-bottom:18px;display:flex;justify-content:space-between;align-items:center">
-        <h3>🌟 Farmer Ratings &amp; Experience Feedback</h3>
-        <button class="btn btn-ghost" onclick="loadAdminFeedback()" style="padding:6px 14px;font-size:.8rem">🔄 Refresh Feedback</button>
+        <h3 data-i18n="fb_head">🌟 Farmer Ratings &amp; Experience Feedback</h3>
+        <button class="btn btn-ghost" onclick="loadAdminFeedback()" style="padding:6px 14px;font-size:.8rem" data-i18n="btn_fb_refresh">🔄 Refresh Feedback</button>
       </div>
       <div class="table-wrap">
         <table>
@@ -214,24 +214,24 @@
     <!-- SECTION 4: BROADCAST ANNOUNCEMENT -->
     <div id="sectionBroadcast" style="display:none">
       <div class="login-box" style="max-width:640px;text-align:left;margin:0 auto 28px">
-        <h3 style="margin-bottom:6px">📢 Broadcast Official Mandi Announcement</h3>
-        <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Send instant alerts to all farmers on the portal, SMS gateway, and Supabase cloud.</p>
+        <h3 style="margin-bottom:6px" data-i18n="bc_head">📢 Broadcast Official Mandi Announcement</h3>
+        <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px" data-i18n="bc_sub">Send instant alerts to all farmers on the portal, SMS gateway, and Supabase cloud.</p>
         <form onsubmit="broadcastAlert(event)">
           <input type="hidden" id="bcEditId" value="">
-          <input class="field" id="bcTitle" placeholder="Announcement Title (e.g. Wheat Gate #2 Timing Update)" required>
-          <textarea class="field" id="bcMessage" rows="3" placeholder="Message content for farmers..." required></textarea>
+          <input class="field" id="bcTitle" data-i18n-ph="ph_bc_title" placeholder="Announcement Title (e.g. Wheat Gate #2 Timing Update)" required>
+          <textarea class="field" id="bcMessage" rows="3" data-i18n-ph="ph_bc_msg" placeholder="Message content for farmers..." required></textarea>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button type="submit" id="bcSubmitBtn" class="btn btn-primary" style="flex:1">🚀 Send Notification Broadcast</button>
-            <button type="button" id="bcCancelBtn" class="btn btn-ghost" style="display:none" onclick="cancelBroadcastEdit()">✕ Cancel Edit</button>
+            <button type="submit" id="bcSubmitBtn" class="btn btn-primary" style="flex:1" data-i18n="btn_bc_send">🚀 Send Notification Broadcast</button>
+            <button type="button" id="bcCancelBtn" class="btn btn-ghost" style="display:none" onclick="cancelBroadcastEdit()" data-i18n="btn_bc_cancel">✕ Cancel Edit</button>
           </div>
         </form>
-        <div id="bcSuccess" style="color:var(--green);font-weight:700;font-size:.85rem;margin-top:10px;display:none">✅ Notification sent successfully!</div>
+        <div id="bcSuccess" style="color:var(--green);font-weight:700;font-size:.85rem;margin-top:10px;display:none" data-i18n="bc_success_msg">✅ Notification sent successfully!</div>
       </div>
 
       <div style="margin-top:28px">
         <div style="margin-bottom:18px;display:flex;justify-content:space-between;align-items:center">
-          <h3>📢 Published Mandi Announcements</h3>
-          <button class="btn btn-ghost" onclick="loadAdminBroadcasts()" style="padding:6px 14px;font-size:.8rem">🔄 Refresh Announcements</button>
+          <h3 data-i18n="bc_published_head">📢 Published Mandi Announcements</h3>
+          <button class="btn btn-ghost" onclick="loadAdminBroadcasts()" style="padding:6px 14px;font-size:.8rem" data-i18n="btn_bc_refresh">🔄 Refresh Announcements</button>
         </div>
         <div class="table-wrap">
           <table>
@@ -301,47 +301,267 @@
 const I18N_ADMIN = {
   en: {
     btn_farmer_site: "← Farmer Site",
-    admin_tag: "Administration",
-    admin_title: "Procurement & Moderation Center",
-    admin_sub: "Real-time token queue management, community moderation, and farmer feedback hub.",
-    login_head: "Officer Login", ph_pass: "Enter password", btn_login: "Login",
-    stat_total: "Total Booked Tokens 🎟️", stat_paid: "Completed / Paid ✅", stat_process: "Waiting in Queue ⏳", stat_unreviewed: "🆕 New Today",
+    admin_tag: "COMMAND & CONTROL DASHBOARD",
+    admin_title: "KisanMitra Officer Portal",
+    admin_sub: "Real-time farmer token queue, fast MSP verification, automated queue clearance, and community moderation.",
+    login_head: "Officer Login",
+    admin_login_sub: "Authorized Officer Portal & Live Queue Access",
+    ph_pass: "Enter password",
+    btn_login: "Login",
+    tab_tokens: "🎟️ Token Queue",
+    tab_comm: "💬 Community Moderation",
+    tab_feedback: "🌟 Farmer Feedback",
+    tab_broadcast: "📢 Send Announcement",
+    tab_quality: "🔬 AI Quality Analytics",
+    stat_total: "Total Booked Tokens 🎟️",
+    stat_paid: "Completed / Paid ✅",
+    stat_process: "Waiting in Queue ⏳",
+    stat_unreviewed: "🆕 New Today",
+    queue_live_status: "📋 Live Queue Status:",
+    queue_auto_sync: "● Live Auto-Sync Active",
     ph_search: "🔍 Search name / token / crop...",
-    th_token: "Token", th_farmer: "Farmer", th_crop_qty: "Crop / Qty", th_mandi: "Mandi", th_progress: "Queue / Progress Status", th_actions: "Actions",
-    btn_logout: "🚪 Logout", btn_reset: "🗑️ Reset Demo Data"
+    th_token: "Token",
+    th_farmer: "Farmer",
+    th_crop_qty: "Crop / Qty",
+    th_mandi: "Mandi",
+    th_progress: "Queue / Progress Status",
+    th_actions: "Actions",
+    comm_head: "💬 Community Marketplace Listings",
+    btn_comm_refresh: "🔄 Refresh Listings",
+    th_comm_type: "Type / Cat",
+    th_comm_title: "Title",
+    th_comm_farmer: "Farmer / Contact",
+    th_comm_district: "District",
+    th_comm_price: "Price",
+    th_comm_inquiries: "Inquiries",
+    th_comm_actions: "Actions",
+    fb_head: "🌟 Farmer Ratings & Experience Feedback",
+    btn_fb_refresh: "🔄 Refresh Feedback",
+    th_fb_name: "Farmer Name",
+    th_fb_phone: "Phone",
+    th_fb_rating: "Rating",
+    th_fb_comments: "Comments",
+    th_fb_date: "Date",
+    bc_head: "📢 Broadcast Official Mandi Announcement",
+    bc_sub: "Send instant alerts to all farmers on the portal, SMS gateway, and Supabase cloud.",
+    ph_bc_title: "Announcement Title (e.g. Wheat Gate #2 Timing Update)",
+    ph_bc_msg: "Message content for farmers...",
+    btn_bc_send: "🚀 Send Notification Broadcast",
+    btn_bc_cancel: "✕ Cancel Edit",
+    bc_success_msg: "✅ Notification sent successfully!",
+    bc_published_head: "📢 Published Mandi Announcements",
+    btn_bc_refresh: "🔄 Refresh Announcements",
+    th_bc_title: "Title",
+    th_bc_message: "Message",
+    th_bc_date: "Date / Time",
+    th_bc_actions: "Actions",
+    stat_cq_total: "Total AI Quality Analyses 🔬",
+    stat_cq_avg: "Avg Quality Score 📊",
+    stat_cq_success: "Analysis Success Rate ⚡",
+    cq_dist_head: "🌾 Commodity Analysis Distribution",
+    cq_cat_head: "🏷️ Visual Quality Category Breakdown",
+    cq_privacy_note: "🛡️ Privacy Protection: In compliance with agricultural data security standards, this analytics view shows only aggregated commodity metrics. Individual farmer identities, phone numbers, and private image uploads remain confidential.",
+    btn_logout: "🚪 Logout",
+    btn_reset: "🗑️ Reset Demo Data",
+    alert_new_farmer: "New Farmer Registered!"
   },
   hi: {
     btn_farmer_site: "← किसान पोर्टल",
-    admin_tag: "प्रशासन",
-    admin_title: "खरीद एवं नियंत्रण केंद्र",
-    admin_sub: "वास्तविक समय टोकन कतार प्रबंधन, समुदाय निगरानी और किसान फीडबैक केंद्र।",
-    login_head: "अधिकारी लॉगिन", ph_pass: "पासवर्ड दर्ज करें", btn_login: "लॉगिन करें",
-    stat_total: "कुल टोकन 🎟️", stat_paid: "भुगतान पूर्ण ✅", stat_process: "कतार में प्रतीक्षारत ⏳", stat_unreviewed: "🆕 नए आज",
+    admin_tag: "कमांड एवं नियंत्रण डैशबोर्ड",
+    admin_title: "किसानमित्र अधिकारी पोर्टल",
+    admin_sub: "वास्तविक समय टोकन कतार प्रबंधन, त्वरित MSP सत्यापन, स्वचालित कतार निकासी और समुदाय निगरानी।",
+    login_head: "अधिकारी लॉगिन",
+    admin_login_sub: "अधिकृत अधिकारी पोर्टल व लाइव कतार प्रबंधन",
+    ph_pass: "पासवर्ड दर्ज करें",
+    btn_login: "लॉगिन करें",
+    tab_tokens: "🎟️ टोकन कतार",
+    tab_comm: "💬 समुदाय निगरानी",
+    tab_feedback: "🌟 किसान फीडबैक",
+    tab_broadcast: "📢 घोषणा प्रसारण",
+    tab_quality: "🔬 AI गुणवत्ता विश्लेषण",
+    stat_total: "कुल टोकन 🎟️",
+    stat_paid: "भुगतान पूर्ण ✅",
+    stat_process: "कतार में प्रतीक्षारत ⏳",
+    stat_unreviewed: "🆕 नए आज",
+    queue_live_status: "📋 लाइव कतार स्थिति:",
+    queue_auto_sync: "● लाइव ऑटो-सिंक सक्रिय",
     ph_search: "🔍 नाम / टोकन / फसल खोजें...",
-    th_token: "टोकन", th_farmer: "किसान का नाम", th_crop_qty: "फसल / मात्रा", th_mandi: "मंडी", th_progress: "कतार स्थिति", th_actions: "कार्यवाही",
-    btn_logout: "🚪 लॉगआउट", btn_reset: "🗑️ डेटा रीसेट करें"
+    th_token: "टोकन",
+    th_farmer: "किसान का नाम",
+    th_crop_qty: "फसल / मात्रा",
+    th_mandi: "मंडी",
+    th_progress: "कतार स्थिति",
+    th_actions: "कार्यवाही",
+    comm_head: "💬 किसान समुदाय बाज़ार विज्ञापन",
+    btn_comm_refresh: "🔄 विज्ञापन ताज़ा करें",
+    th_comm_type: "प्रकार / श्रेणी",
+    th_comm_title: "शीर्षक",
+    th_comm_farmer: "किसान / संपर्क",
+    th_comm_district: "जिला",
+    th_comm_price: "मूल्य",
+    th_comm_inquiries: "पूछताछ",
+    th_comm_actions: "कार्यवाही",
+    fb_head: "🌟 किसान रेटिंग एवं अनुभव प्रतिक्रिया",
+    btn_fb_refresh: "🔄 फीडबैक ताज़ा करें",
+    th_fb_name: "किसान का नाम",
+    th_fb_phone: "फोन",
+    th_fb_rating: "रेटिंग",
+    th_fb_comments: "टिप्पणी",
+    th_fb_date: "दिनांक",
+    bc_head: "📢 आधिकारिक मंडी सूचना प्रसारित करें",
+    bc_sub: "पोर्टल, एसएमएस गेटवे और क्लाउड पर सभी किसानों को तत्काल अलर्ट भेजें।",
+    ph_bc_title: "सूचना शीर्षक (उदा. गेहूं गेट नं. 2 समय परिवर्तन)",
+    ph_bc_msg: "किसानों के लिए संदेश सामग्री...",
+    btn_bc_send: "🚀 सूचना प्रसारित करें",
+    btn_bc_cancel: "✕ संपादन रद्द करें",
+    bc_success_msg: "✅ सूचना सफलतापूर्वक भेज दी गई!",
+    bc_published_head: "📢 प्रसारित मंडी सूचनाएं",
+    btn_bc_refresh: "🔄 सूचनाएं ताज़ा करें",
+    th_bc_title: "शीर्षक",
+    th_bc_message: "संदेश",
+    th_bc_date: "दिनांक / समय",
+    th_bc_actions: "कार्यवाही",
+    stat_cq_total: "कुल AI गुणवत्ता जांच 🔬",
+    stat_cq_avg: "औसत गुणवत्ता स्कोर 📊",
+    stat_cq_success: "जांच सफलता दर ⚡",
+    cq_dist_head: "🌾 जिंस-वार जांच वितरण",
+    cq_cat_head: "🏷️ दृश्य गुणवत्ता ग्रेड वितरण",
+    cq_privacy_note: "🛡️ गोपनीयता सुरक्षा: कृषि डेटा सुरक्षा मानकों के तहत, यह दृश्य केवल सामूहिक आंकड़े दिखाता है। किसान की पहचान और फोटो गोपनीय रखे जाते हैं।",
+    btn_logout: "🚪 लॉगआउट",
+    btn_reset: "🗑️ डेटा रीसेट करें",
+    alert_new_farmer: "नया किसान पंजीकृत हुआ!"
   },
   ta: {
     btn_farmer_site: "← உழவர் தளம்",
-    admin_tag: "நிர்வாகம்",
-    admin_title: "கொள்முதல் கட்டுப்பாட்டு மையம்",
-    admin_sub: "டோக்கன் வரிசை மேலாண்மை மற்றும் விவசாயிகள் கருத்து மையம்.",
-    login_head: "அதிகாரி உள்நுழைவு", ph_pass: "கடவுச்சொல் உள்ளிடவும்", btn_login: "உள்நுழைக",
-    stat_total: "மொத்த டோக்கன்கள்", stat_paid: "பணம் செலுத்தப்பட்டது ✅", stat_process: "வரிசையில் ⏳", stat_unreviewed: "🆕 புதியவை",
+    admin_tag: "கட்டுப்பாட்டு தளம்",
+    admin_title: "கிசான்மித்ரா அதிகாரி தளம்",
+    admin_sub: "டோக்கன் வரிசை மேலாண்மை, MSP சரிபார்ப்பு மற்றும் சமூக கண்காணிப்பு மையம்.",
+    login_head: "அதிகாரி உள்நுழைவு",
+    admin_login_sub: "அங்கீகரிக்கப்பட்ட அதிகாரி தளம்",
+    ph_pass: "கடவுச்சொல் உள்ளிடவும்",
+    btn_login: "உள்நுழைக",
+    tab_tokens: "🎟️ டோக்கன் வரிசை",
+    tab_comm: "💬 சமூகம்",
+    tab_feedback: "🌟 கருத்துக்கள்",
+    tab_broadcast: "📢 அறிவிப்பு",
+    tab_quality: "🔬 AI தரம்",
+    stat_total: "மொத்த டோக்கன்கள்",
+    stat_paid: "பணம் செலுத்தப்பட்டது ✅",
+    stat_process: "வரிசையில் ⏳",
+    stat_unreviewed: "🆕 புதியவை",
+    queue_live_status: "📋 நேரடி வரிசை நிலை:",
+    queue_auto_sync: "● தானியங்கி இணைப்பு",
     ph_search: "🔍 பெயர் / டோக்கன் / பயிர் தேடுக...",
-    th_token: "டோக்கன்", th_farmer: "விவசாயி", th_crop_qty: "பயிர் / அளவு", th_mandi: "மண்டி", th_progress: "நிலை", th_actions: "செயல்கள்",
-    btn_logout: "🚪 வெளியேறு", btn_reset: "🗑️ மீட்டமைக்க"
+    th_token: "டோக்கன்",
+    th_farmer: "விவசாயி",
+    th_crop_qty: "பயிர் / அளவு",
+    th_mandi: "மண்டி",
+    th_progress: "நிலை",
+    th_actions: "செயல்கள்",
+    comm_head: "💬 உழவர் சந்தை பட்டியல்கள்",
+    btn_comm_refresh: "🔄 புதுப்பிக்க",
+    th_comm_type: "வகை",
+    th_comm_title: "பொருள்",
+    th_comm_farmer: "விவசாயி / தொடர்பு",
+    th_comm_district: "மாவட்டம்",
+    th_comm_price: "விலை",
+    th_comm_inquiries: "கேள்விகள்",
+    th_comm_actions: "செயல்கள்",
+    fb_head: "🌟 உழவர் கருத்துக்கள்",
+    btn_fb_refresh: "🔄 புதுப்பிக்க",
+    th_fb_name: "விவசாயி பெயர்",
+    th_fb_phone: "தொலைபேசி",
+    th_fb_rating: "மதிப்பீடு",
+    th_fb_comments: "கருத்து",
+    th_fb_date: "தேதி",
+    bc_head: "📢 உத்தியோகபூர்வ மண்டி அறிவிப்பு",
+    bc_sub: "அனைத்து விவசாயிகளுக்கும் உடனடி அறிவிப்பை அனுப்பவும்.",
+    ph_bc_title: "அறிவிப்பு தலைப்பு",
+    ph_bc_msg: "விவசாயிகளுக்கான செய்தி...",
+    btn_bc_send: "🚀 அறிவிப்பை அனுப்புக",
+    btn_bc_cancel: "✕ ரத்து செய்க",
+    bc_success_msg: "✅ அறிவிப்பு வெற்றிகரமாக அனுப்பப்பட்டது!",
+    bc_published_head: "📢 வெளியிடப்பட்ட மண்டி அறிவிப்புகள்",
+    btn_bc_refresh: "🔄 புதுப்பிக்க",
+    th_bc_title: "தலைப்பு",
+    th_bc_message: "செய்தி",
+    th_bc_date: "தேதி / நேரம்",
+    th_bc_actions: "செயல்கள்",
+    stat_cq_total: "மொத்த AI தர சோதனைகள் 🔬",
+    stat_cq_avg: "சராசரி தரம் 📊",
+    stat_cq_success: "வெற்றி விகிதம் ⚡",
+    cq_dist_head: "🌾 பயிர் வாரியான பகுப்பாய்வு",
+    cq_cat_head: "🏷️ தர பிரிவு விவரம்",
+    cq_privacy_note: "🛡️ தனியுரிமை பாதுகாப்பு: தனிப்பட்ட விவசாயிகளின் தகவல்கள் மற்றும் புகைப்படங்கள் பாதுகாக்கப்படுகின்றன.",
+    btn_logout: "🚪 வெளியேறு",
+    btn_reset: "🗑️ மீட்டமைக்க",
+    alert_new_farmer: "புதிய விவசாயி பதிவு செய்தார்!"
   },
   te: {
     btn_farmer_site: "← రైతు పోర్టల్",
-    admin_tag: "పరిపాలన",
-    admin_title: "కొనుగోలు నియంత్రణ కేంద్రం",
-    admin_sub: "రియల్ టైమ్ టోకెన్ క్యూ నిర్వహణ మరియు ఫీడ్‌బ్యాక్ హబ్.",
-    login_head: "అధికారి లాగిన్", ph_pass: "పాస్‌వర్డ్ నమోదు చేయండి", btn_login: "లాగిన్",
-    stat_total: "మొత్తం టోకెన్లు", stat_paid: "చెల్లింపు పూర్తయింది ✅", stat_process: "క్యూలో ఉంది ⏳", stat_unreviewed: "🆕 కొత్తవి",
+    admin_tag: "నియంత్రణ డాష్‌బోర్డ్",
+    admin_title: "కిసాన్‌మిత్ర అధికారి పోర్టల్",
+    admin_sub: "రియల్ టైమ్ టోకెన్ క్యూ నిర్వహణ, వేగవంతమైన MSP ధృవీకరణ మరియు కమ్యూనిటీ పర్యవేక్షణ.",
+    login_head: "అధికారి లాగిన్",
+    admin_login_sub: "అధికారిక లాగిన్ & లైవ్ క్యూ యాక్సెస్",
+    ph_pass: "పాస్‌వర్డ్ నమోదు చేయండి",
+    btn_login: "లాగిన్",
+    tab_tokens: "🎟️ టోకెన్ క్యూ",
+    tab_comm: "💬 కమ్యూనిటీ",
+    tab_feedback: "🌟 రైతు అభిప్రాయాలు",
+    tab_broadcast: "📢 ప్రకటనలు",
+    tab_quality: "🔬 AI నాణ్యత విశ్లేషణ",
+    stat_total: "మొత్తం టోకెన్లు",
+    stat_paid: "చెల్లింపు పూర్తయింది ✅",
+    stat_process: "క్యూలో ఉంది ⏳",
+    stat_unreviewed: "🆕 కొత్తవి",
+    queue_live_status: "📋 లైవ్ క్యూ స్థితి:",
+    queue_auto_sync: "● ఆటో-సింక్ యాక్టివ్",
     ph_search: "🔍 పేరు / టోకెన్ / పంట శోధించండి...",
-    th_token: "టోకెన్", th_farmer: "రైతు", th_crop_qty: "పంట / పరిమాణం", th_mandi: "మార్కెట్", th_progress: "పురోగతి", th_actions: "చర్యలు",
-    btn_logout: "🚪 లాగౌట్", btn_reset: "🗑️ డేటా రీసెట్"
+    th_token: "టోకెన్",
+    th_farmer: "రైతు",
+    th_crop_qty: "పంట / పరిమాణం",
+    th_mandi: "మార్కెట్",
+    th_progress: "పురోగతి",
+    th_actions: "చర్యలు",
+    comm_head: "💬 కమ్యూనిటీ మార్కెట్ జాబితాలు",
+    btn_comm_refresh: "🔄 జాబితాలను రిఫ్రెష్ చేయండి",
+    th_comm_type: "రకం / వర్గం",
+    th_comm_title: "శీర్షిక",
+    th_comm_farmer: "రైతు / సంప్రదింపు",
+    th_comm_district: "జిల్లా",
+    th_comm_price: "ధర",
+    th_comm_inquiries: "విచారణలు",
+    th_comm_actions: "చర్యలు",
+    fb_head: "🌟 రైతు రేటింగ్‌లు & అభిప్రాయాలు",
+    btn_fb_refresh: "🔄 ఫీడ్‌బ్యాక్ రిఫ్రెష్ చేయండి",
+    th_fb_name: "రైతు పేరు",
+    th_fb_phone: "ఫోన్ నంబర్",
+    th_fb_rating: "రేటింగ్",
+    th_fb_comments: "వ్యాఖ్యలు",
+    th_fb_date: "తేదీ",
+    bc_head: "📢 అధికారిక మార్కెట్ ప్రకటన ప్రసారం",
+    bc_sub: "పోర్టల్ మరియు SMS ద్వారా రైతులందరికీ తక్షణ హెచ్చరికలను పంపండి.",
+    ph_bc_title: "ప్రకటన శీర్షిక",
+    ph_bc_msg: "రైతుల కోసం సందేశం...",
+    btn_bc_send: "🚀 ప్రకటన పంపండి",
+    btn_bc_cancel: "✕ రద్దు చేయండి",
+    bc_success_msg: "✅ ప్రకటన విజయవంతంగా పంపబడింది!",
+    bc_published_head: "📢 ప్రచురించిన మార్కెట్ ప్రకటనలు",
+    btn_bc_refresh: "🔄 ప్రకటనలను రిఫ్రెష్ చేయండి",
+    th_bc_title: "శీర్షిక",
+    th_bc_message: "సందేశం",
+    th_bc_date: "తేదీ / సమయం",
+    th_bc_actions: "చర్యలు",
+    stat_cq_total: "మొత్తం AI నాణ్యత తనిఖీలు 🔬",
+    stat_cq_avg: "సగటు నాణ్యత స్కోరు 📊",
+    stat_cq_success: "విజయ రేటు ⚡",
+    cq_dist_head: "🌾 పంటల వారీగా విశ్లేషణ",
+    cq_cat_head: "🏷️ నాణ్యత వర్గీకరణ వివరాలు",
+    cq_privacy_note: "🛡️ గోప్యతా రక్షణ: రైతుల వ్యక్తిగత వివరాలు మరియు చిత్రాలు పూర్తిగా గోప్యంగా ఉంచబడతాయి.",
+    btn_logout: "🚪 లాగౌట్",
+    btn_reset: "🗑️ డేటా రీసెట్",
+    alert_new_farmer: "కొత్త రైతు నమోదు చేసుకున్నారు!"
   }
 };
 
@@ -449,7 +669,6 @@ async function loadCropQualityAnalytics() {
 /* ============ SHARED DATABASE KEYS ============ */
 const DB_KEY = "kisanmitra_db_v3";
 const SEEN_KEY = "km_seen_tokens";
-const ADMIN_PASS = "admin123";
 
 function getDB(){ return JSON.parse(localStorage.getItem(DB_KEY) || "{}"); }
 function saveDB(db){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
@@ -467,37 +686,24 @@ function adminLogout(){
   if(typeof KM_API !== "undefined" && KM_API.clearAuth) KM_API.clearAuth();
 }
 
-async function adminLogin(){
+async function adminLogin() {
   const passInput = document.getElementById("adminPass");
   const p = (passInput.value || "").trim();
   const err = document.getElementById("adminErr");
   
   if (!p) {
     err.style.color = "var(--red)";
-    err.textContent = "❌ Please enter password (Default: admin123)";
-    return;
-  }
-
-  // Instant zero-latency unlock for officer credentials
-  if (p === ADMIN_PASS || p === "admin123" || p === "kisan123") {
-    document.getElementById("adminLogin").style.display = "none";
-    document.getElementById("adminPanel").style.display = "block";
-    document.getElementById("officerTag").textContent = "👮 Officer #1042 · Online";
-    err.textContent = "";
-    if (typeof KM_API !== "undefined" && KM_API.officerLogin) {
-      await KM_API.officerLogin(p).catch(console.warn);
-    }
-    await renderAdmin();
+    err.textContent = "❌ Please enter your officer password";
     return;
   }
 
   err.style.color = "var(--gold)";
-  err.textContent = "Authenticating...";
+  err.textContent = "Authenticating with server...";
 
   try {
     if (typeof KM_API !== "undefined" && KM_API.officerLogin) {
       const res = await KM_API.officerLogin(p);
-      if (res && res.ok) {
+      if (res && (res.ok || res.token || (res.data && res.data.token))) {
         document.getElementById("adminLogin").style.display = "none";
         document.getElementById("adminPanel").style.display = "block";
         document.getElementById("officerTag").textContent = "👮 Officer #1042 · Online";
@@ -511,7 +717,7 @@ async function adminLogin(){
   }
 
   err.style.color = "var(--red)";
-  err.textContent = "❌ Wrong password! Use default: admin123";
+  err.textContent = "❌ Authentication failed. Invalid officer credentials.";
   passInput.value = "";
 }
 
@@ -977,19 +1183,24 @@ window.addEventListener("storage", function(e){
 });
 
 setInterval(function(){
+  if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
   if(document.getElementById("adminPanel").style.display === "block") {
     const activeTab = document.querySelector(".atab.active");
     if(activeTab && activeTab.id === "tabCommBtn") {
-      // background refresh community
     } else if(activeTab && activeTab.id === "tabFeedbackBtn") {
-      // background refresh feedback
     } else if(activeTab && activeTab.id === "tabBroadcastBtn") {
       loadAdminBroadcasts();
     } else {
       renderAdmin();
     }
   }
-}, 2500);
+}, 10000);
+
+window.addEventListener("storage", function(e){
+  if (e.key === "km_lang" && e.newValue) {
+    changeLanguage(e.newValue);
+  }
+});
 
 window.addEventListener("load", async function(){
   changeLanguage(currentLang);

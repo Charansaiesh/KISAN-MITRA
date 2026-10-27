@@ -3,8 +3,8 @@ const supabase = require('../config/supabase');
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 let memoryNotifications = [
-  { id: "n1", title: "Registration Confirmed", message: "KisanMitra: 70+ mandis mapped across India! Live AGMARKNET prices now on the portal.", phone: "ALL_FARMERS", is_read: false, sent_at: new Date().toISOString() },
-  { id: "n2", title: "Wheat MSP Active", message: "Official MSP rate ₹2,425/quintal active across 70+ state APMC mandis.", phone: "ALL_FARMERS", is_read: false, sent_at: new Date(Date.now() - 3600000).toISOString() }
+  { id: "n1", title: "Registration Confirmed", message: "KisanMitra: 67 mandis mapped across India! Live AGMARKNET prices now on the portal.", phone: "ALL_FARMERS", is_read: false, sent_at: new Date().toISOString() },
+  { id: "n2", title: "Wheat MSP Active", message: "Official MSP rate ₹2,425/quintal active across 67 state APMC mandis.", phone: "ALL_FARMERS", is_read: false, sent_at: new Date(Date.now() - 3600000).toISOString() }
 ];
 
 // 1. GET ALL NOTIFICATIONS / ANNOUNCEMENTS

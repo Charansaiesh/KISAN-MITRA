@@ -1,0 +1,114 @@
+{
+  "Wheat": {
+    "crop": "Wheat",
+    "msp": 2425,
+    "season": "Rabi 2026-27",
+    "source": "CACP / Ministry of Agriculture & Farmers Welfare (Cabinet Committee on Economic Affairs)",
+    "verified": true
+  },
+  "Paddy": {
+    "crop": "Paddy",
+    "msp": 2300,
+    "season": "Kharif 2026-27",
+    "source": "CACP / Ministry of Agriculture & Farmers Welfare (Common Grade)",
+    "verified": true
+  },
+  "Mustard": {
+    "crop": "Mustard",
+    "msp": 5950,
+    "season": "Rabi 2026-27",
+    "source": "CACP / Ministry of Agriculture & Farmers Welfare (Rapeseed & Mustard)",
+    "verified": true
+  },
+  "Gram": {
+    "crop": "Gram",
+    "msp": 5650,
+    "season": "Rabi 2026-27",
+    "source": "CACP / Ministry of Agriculture & Farmers Welfare (Chana)",
+    "verified": true
+  },
+  "Maize": {
+    "crop": "Maize",
+    "msp": 2225,
+    "season": "Kharif 2026-27",
+    "source": "CACP / Ministry of Agriculture & Farmers Welfare",
+    "verified": true
+  },
+  "Cotton": {
+    "crop": "Cotton",
+    "msp": 7121,
+    "season": "Kharif 2026-27",
+    "source": "CACP / Ministry of Agriculture & Farmers Welfare (Medium Staple)",
+    "verified": true
+  },
+  "Soybean": {
+    "crop": "Soybean",
+    "msp": 4892,
+    "season": "Kharif 2026-27",
+    "source": "CACP / Ministry of Agriculture & Farmers Welfare (Yellow)",
+    "verified": true
+  },
+  "Groundnut": {
+    "crop": "Groundnut",
+    "msp": 6783,
+    "season": "Kharif 2026-27",
+    "source": "CACP / Ministry of Agriculture & Farmers Welfare",
+    "verified": true
+  },
+  "Barley": {
+    "crop": "Barley",
+    "msp": 1980,
+    "season": "Rabi 2026-27",
+    "source": "CACP / Ministry of Agriculture & Farmers Welfare",
+    "verified": false,
+    "todo": "TODO: Please verify Barley MSP against the latest CCEA gazette notification"
+  },
+  "Sunflower": {
+    "crop": "Sunflower",
+    "msp": 7280,
+    "season": "Kharif 2026-27",
+    "source": "CACP / Ministry of Agriculture & Farmers Welfare",
+    "verified": false,
+    "todo": "TODO: Please verify Sunflower Seed MSP against the latest CCEA gazette notification"
+  },
+  "Tomato": {
+    "crop": "Tomato",
+    "msp": null,
+    "season": null,
+    "source": "Non-MSP Horticultural Crop",
+    "verified": true,
+    "note": "Perishable horticultural vegetables are not covered under national CACP MSP regime"
+  },
+  "Chilli": {
+    "crop": "Chilli",
+    "msp": null,
+    "season": null,
+    "source": "Non-MSP Horticultural Crop",
+    "verified": true,
+    "note": "Perishable horticultural vegetables are not covered under national CACP MSP regime"
+  },
+  "Onion": {
+    "crop": "Onion",
+    "msp": null,
+    "season": null,
+    "source": "Non-MSP Horticultural Crop",
+    "verified": true,
+    "note": "Perishable horticultural vegetables are not covered under national CACP MSP regime"
+  },
+  "Potato": {
+    "crop": "Potato",
+    "msp": null,
+    "season": null,
+    "source": "Non-MSP Horticultural Crop",
+    "verified": true,
+    "note": "Perishable horticultural vegetables are not covered under national CACP MSP regime"
+  },
+  "Banana": {
+    "crop": "Banana",
+    "msp": null,
+    "season": null,
+    "source": "Non-MSP Horticultural Crop",
+    "verified": true,
+    "note": "Perishable horticultural crops are not covered under national CACP MSP regime"
+  }
+}

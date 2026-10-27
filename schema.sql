@@ -150,15 +150,18 @@ VALUES
 ('KM2024003', 'Mohan Patel', '9876543212', 'Paddy', 60.00, 'Patna Mandi', 'Patna', 'Identity verified ⏳', 40)
 ON CONFLICT (token) DO NOTHING;
 
--- PERMISSIONS & ACCESS POLICIES
-ALTER TABLE users DISABLE ROW LEVEL SECURITY;
-ALTER TABLE crop_reports DISABLE ROW LEVEL SECURITY;
-ALTER TABLE token_steps DISABLE ROW LEVEL SECURITY;
-ALTER TABLE mandi_prices DISABLE ROW LEVEL SECURITY;
-ALTER TABLE community_posts DISABLE ROW LEVEL SECURITY;
-ALTER TABLE community_comments DISABLE ROW LEVEL SECURITY;
-ALTER TABLE notifications DISABLE ROW LEVEL SECURITY;
-ALTER TABLE feedback DISABLE ROW LEVEL SECURITY;
-ALTER TABLE crop_quality_assessments DISABLE ROW LEVEL SECURITY;
+-- PERMISSIONS & ACCESS POLICIES (Server-Side Only Access)
+-- Enable Row Level Security (RLS) on all tables with NO public policies.
+-- Direct client access via anon key is strictly prohibited.
+-- Only the backend server using the Supabase Service Role Key bypasses RLS securely.
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE crop_reports ENABLE ROW LEVEL SECURITY;
+ALTER TABLE token_steps ENABLE ROW LEVEL SECURITY;
+ALTER TABLE mandi_prices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE community_posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE community_comments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
+ALTER TABLE crop_quality_assessments ENABLE ROW LEVEL SECURITY;
 
 

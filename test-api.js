@@ -117,7 +117,7 @@ async function runAllTests() {
 
     // 4. Officer Login
     const officerRes = await request('/auth/officer-login', 'POST', {
-      password: 'admin123'
+      password: process.env.ADMIN_INITIAL_SECRET || 'test_admin_pass'
     });
     assert(
       officerRes.status === 200 && officerRes.data.user.role === 'officer' && !!officerRes.data.token,
@@ -176,7 +176,7 @@ async function runAllTests() {
     const pricesRes = await request('/mandis/prices?crop=Wheat');
     assert(
       mandisRes.status === 200 && mandisRes.data.count >= 20 && pricesRes.status === 200 && pricesRes.data.msp === 2425,
-      '10. GET /api/mandis & /api/mandis/prices (70+ Mandis and MSP/Market price data returned)'
+      '10. GET /api/mandis & /api/mandis/prices (67 Mandis and MSP/Market price data returned)'
     );
 
     // 11. Community Listings (GET & POST)

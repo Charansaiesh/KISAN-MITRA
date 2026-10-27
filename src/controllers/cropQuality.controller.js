@@ -4,7 +4,9 @@ const { CropQualityPersistenceService } = require('../services/CropQualityPersis
 
 exports.analyzeCropQuality = async (req, res) => {
   try {
-    const { image, crop, district, save_to_history } = req.body;
+    const { image, crop, district, save_to_history, language } = req.body;
+    const aiLanguage = (language === 'hi' || (typeof language === 'string' && language.trim().toLowerCase() === 'hi')) ? 'hi' : 'en';
+
     if (!image) return res.status(400).json({ success: false, error_code: 'NO_IMAGE', message: 'No image provided.' });
 
     let imageBuffer;
@@ -27,9 +29,15 @@ exports.analyzeCropQuality = async (req, res) => {
       return res.status(400).json({ success: false, error_code: 'UNSUPPORTED_CROP' });
     }
 
-    const visionResult = await CropQualityAIService.analyze(imageBuffer, crop, mimeType);
+    const visionResult = await CropQualityAIService.analyze(imageBuffer, crop, mimeType, aiLanguage);
     if (!visionResult.success) {
-      return res.status(visionResult.error_code === 'LOW_CONFIDENCE' ? 422 : 400).json(visionResult);
+      let code = 400;
+      if (visionResult.error_code === 'LOW_CONFIDENCE' || visionResult.error_code === 'NON_PRODUCE' || visionResult.status === 422) {
+        code = 422;
+      } else if (visionResult.error_code === 'AI_SERVICE_UNAVAILABLE' || visionResult.status === 503) {
+        code = 503;
+      }
+      return res.status(code).json(visionResult);
     }
 
     const analyzedCrop = visionResult.crop;
@@ -95,25 +103,32 @@ exports.analyzeCropQuality = async (req, res) => {
 
     return res.status(200).json({
       success: true,
+      source: visionResult.source || 'gemini',
+      language: aiLanguage,
       crop: analyzedCrop,
       detection_confidence: visionResult.detection_confidence,
       confidence_tier: visionResult.confidence_tier,
       quality_score: qualityScore,
       quality_category: grade,
+      grade_explanation: visionResult.grade_explanation,
+      shelf_life: visionResult.shelf_life,
       maturity_assessment: visionResult.maturity_assessment,
       visible_observations: visionResult.visible_observations,
       visible_defects: visionResult.visible_defects,
       visible_metrics: visionResult.visible_metrics,
+      recommendations: visionResult.recommendations,
       realization_pct: visionResult.realization_pct,
       market_data: marketData,
       price_estimation: priceEstimation,
-      disclaimer: "AI-assisted indicative estimation only. Actual APMC mandi prices depend on official grading and live auctions.",
+      disclaimer: (aiLanguage === 'hi')
+        ? "एआई-सहायक सांकेतिक अनुमान। वास्तविक APMC मंडी भाव भौतिक निरीक्षण व नीलामी पर निर्भर करते हैं।"
+        : "AI-assisted indicative estimation only. Actual APMC mandi prices depend on official grading and live auctions.",
       saved_to_history: !!savedRecord,
       saved_record_id: savedRecord?.id || null,
       model_status: visionResult.model_status
     });
   } catch (err) {
-    return res.status(500).json({ success: false, message: 'Server error during assessment.' });
+    return res.status(500).json({ success: false, source: 'fallback', message: 'Server error during assessment.' });
   }
 };
 

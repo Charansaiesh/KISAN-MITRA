@@ -4,6 +4,8 @@
  * with Resilient Multi-Model Failover & Deterministic Realization Engine.
  */
 
+const { GeminiKeyManager } = require('./GeminiKeyManager');
+
 const SUPPORTED_CROPS = ["Tomato", "Chilli", "Onion", "Potato", "Banana", "Rice"];
 const VALID_RIPENESS = ["unripe", "partially_ripe", "ripe", "overripe", "unknown"];
 
@@ -76,23 +78,120 @@ function calculateRealizationRange(qualityScore, grade) {
   }
 }
 
-function generateRecommendations(crop, grade, defectRatio, ripeness) {
+function generateRecommendations(crop, grade, defectRatio, ripeness, language = "en") {
+  const isHi = (language === "hi");
   const recs = [];
   if (grade === "Fully Spoiled") {
-    recs.push(`CRITICAL: Produce is fully spoiled / rotten. Do not mix with healthy crop lots.`);
-    recs.push(`Segregate and discard or use for organic bio-composting immediately to avoid fungal or bacterial spread.`);
-    recs.push(`Unfit for APMC mandi auction or commercial transport.`);
+    if (isHi) {
+      recs.push("गंभीर: उत्पाद पूरी तरह सड़ चुका है/खराब हो चुका है। इसे स्वस्थ फसल के ढेर में न मिलाएं।");
+      recs.push("फफूंद या जीवाणु संक्रमण फैलने से रोकने के लिए तुरंत अलग करके नष्ट करें या जैविक खाद में उपयोग करें।");
+      recs.push("मंडी नीलामी या व्यापारिक परिवहन के लिए सर्वथा अनुपयुक्त।");
+    } else {
+      recs.push("CRITICAL: Produce is fully spoiled / rotten. Do not mix with healthy crop lots.");
+      recs.push("Segregate and discard or use for organic bio-composting immediately to avoid fungal or bacterial spread.");
+      recs.push("Unfit for APMC mandi auction or commercial transport.");
+    }
   } else if (grade === "Grade A") {
-    recs.push(`Produce meets high visual standards. Suitable for premium APMC mandi lotting or direct retail listing.`);
-    recs.push(`Maintain dry, well-ventilated storage to preserve quality grade before auction.`);
+    if (isHi) {
+      recs.push("उत्पाद उच्च दृश्य मानकों को पूरा करता है। प्रीमियम APMC मंडी बोली या सीधे खुदरा बिक्री के लिए उपयुक्त।");
+      recs.push("नीलामी से पहले गुणवत्ता बनाए रखने के लिए सूखे व हवादार स्थान पर भंडारण करें।");
+    } else {
+      recs.push("Produce meets high visual standards. Suitable for premium APMC mandi lotting or direct retail listing.");
+      recs.push("Maintain dry, well-ventilated storage to preserve quality grade before auction.");
+    }
   } else if (grade === "Grade B") {
-    recs.push(`Sort out visibly blemished units prior to mandi transport to maximize lot realization.`);
-    recs.push(`Consider grading into separate Grade A and Grade B batches rather than selling mixed.`);
+    if (isHi) {
+      recs.push("मंडी में अधिकतम मूल्य पाने के लिए परिवहन से पहले दाग-धब्बे वाले दानों/फलों को छांटकर अलग करें।");
+      recs.push("मिश्रित बेचने के बजाय ग्रेड A और ग्रेड B के अलग-अलग लॉट बनाकर नीलाम करें।");
+    } else {
+      recs.push("Sort out visibly blemished units prior to mandi transport to maximize lot realization.");
+      recs.push("Consider grading into separate Grade A and Grade B batches rather than selling mixed.");
+    }
   } else {
-    recs.push(`Visible surface defects or advanced ripeness observed. Segregate damaged units immediately.`);
-    recs.push(`Explore local direct processing or immediate clearance to prevent further degradation.`);
+    if (isHi) {
+      recs.push("सतह पर स्पष्ट दोष या अधिक पकाव देखा गया। क्षतिग्रस्त दानों/फलों को तुरंत अलग करें।");
+      recs.push("आगे खराब होने से बचाने के लिए स्थानीय स्तर पर प्रसंस्करण या तुरंत निकासी बिक्री पर विचार करें।");
+    } else {
+      recs.push("Visible surface defects or advanced ripeness observed. Segregate damaged units immediately.");
+      recs.push("Explore local direct processing or immediate clearance to prevent further degradation.");
+    }
   }
   return recs;
+}
+
+function generateGradeExplanation(crop, grade, defectRatio, ripeness, language = "en") {
+  const isHi = (language === "hi");
+  if (grade === "Fully Spoiled") {
+    return isHi
+      ? `उत्पाद में अत्यधिक सड़न (${defectRatio}% सतह दोष) पाई गई है, जो व्यापार व उपभोग के अयोग्य है।`
+      : `Produce exhibits severe spoilage (${defectRatio}% surface defects) and is unfit for commercial sale.`;
+  } else if (grade === "Grade A") {
+    return isHi
+      ? `उत्कृष्ट रंग, दृढ़ता और न्यूनतम दोष (${defectRatio}% सतह दोष) के साथ प्रीमियम मंडी गुणवत्ता।`
+      : `Superior visual quality with optimal firmness, uniform coloration, and minimal blemishes (${defectRatio}% defect area).`;
+  } else if (grade === "Grade B") {
+    return isHi
+      ? `मध्यम व्यावसायिक गुणवत्ता — हल्के सतह दोष (${defectRatio}%) और सामान्य पकाव, मानक मंडी व्यापार हेतु उपयुक्त।`
+      : `Moderate commercial quality with minor blemishes (${defectRatio}%) and standard maturity, suitable for regular mandi lots.`;
+  } else {
+    return isHi
+      ? `द्वितीयक गुणवत्ता — दृश्यमान सतह दोष (${defectRatio}%) या अत्यधिक पकाव, तत्काल बिक्री आवश्यक।`
+      : `Secondary quality with noticeable blemishes (${defectRatio}%) or advanced ripeness; requires quick clearance.`;
+  }
+}
+
+function generateShelfLife(crop, grade, ripeness, language = "en") {
+  const isHi = (language === "hi");
+  if (grade === "Fully Spoiled") {
+    return isHi ? "0 दिन (तत्काल नष्ट करें)" : "0 days (discard immediately)";
+  }
+  const cropLower = (crop || "").toLowerCase();
+  if (cropLower.includes("potato") || cropLower.includes("onion")) {
+    if (grade === "Grade A") {
+      return isHi ? "हवादार सूखे स्थान पर 30-45 दिन" : "30–45 days in cool, ventilated storage";
+    } else if (grade === "Grade B") {
+      return isHi ? "हवादार सूखे स्थान पर 15-20 दिन" : "15–20 days in ventilated storage";
+    } else {
+      return isHi ? "7-10 दिन (शीघ्र उपयोग करें)" : "7–10 days (use promptly)";
+    }
+  } else if (cropLower.includes("rice")) {
+    if (grade === "Grade A") {
+      return isHi ? "शुष्क भंडारण (नमी < 12%) में 6-12 महीने" : "6–12 months in dry storage (<12% moisture)";
+    } else {
+      return isHi ? "शुष्क भंडारण में 3-6 महीने" : "3–6 months in dry storage";
+    }
+  } else {
+    // Perishables: Tomato, Chilli, Banana
+    if (grade === "Grade A") {
+      return isHi ? "सामान्य तापमान पर 5-7 दिन, शीतगृह (10-12°C) में 12-15 दिन" : "5–7 days at room temp, 12–15 days under cool storage (10–12°C)";
+    } else if (grade === "Grade B") {
+      return isHi ? "सामान्य तापमान पर 3-4 दिन, शीतगृह में 7-10 दिन" : "3–4 days at room temp, 7–10 days under cool storage";
+    } else {
+      return isHi ? "1-2 दिन (तत्काल उपभोग या प्रसंस्करण)" : "1–2 days (immediate sale or processing)";
+    }
+  }
+}
+
+function generateDefaultDefects(defectRatio, isFullySpoiled, language = "en") {
+  const isHi = (language === "hi");
+  if (isFullySpoiled) {
+    return isHi
+      ? ["गंभीर सड़न / फफूंद के घाव", "ऊतक विखंडन व रिसाव"]
+      : ["Severe soft rot / fungal lesions", "Tissue breakdown and decay"];
+  }
+  if (defectRatio <= 5) {
+    return isHi
+      ? ["कोई स्पष्ट सतह दोष नहीं दिखा"]
+      : ["No visible surface defects detected"];
+  }
+  if (defectRatio <= 20) {
+    return isHi
+      ? ["हल्के सतही दाग / खरोंच", "मामूली रंग भिन्नता"]
+      : ["Minor surface abrasions / spots", "Slight color variation"];
+  }
+  return isHi
+    ? ["दृश्यमान सतही धब्बे व दबाव के निशान", "अधिक पकाव व नरमी के लक्षण"]
+    : ["Noticeable surface blemishes and pressure spots", "Advanced maturity and softening"];
 }
 
 function extractJSON(text) {
@@ -133,54 +232,130 @@ function normalizeRipeness(rawRipeness) {
 }
 
 function getGeminiApiKey() {
-  if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim().length > 10) {
-    return process.env.GEMINI_API_KEY.trim();
+  // Reads keys from process.env.GEMINI_API_KEYS or process.env.GEMINI_API_KEY
+  const keys = GeminiKeyManager.getAllKeys();
+  if (keys.length === 0 || (!process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEYS)) {
+    throw new Error("GEMINI_API_KEY is not configured on the server. Please set it in your .env file.");
   }
-  const enc = "QVEuQWI4Uk42SnZHWHBSZVl6WXVJeHpoXzBFTnk3ZzVDbmJiV3NFMG41b3huUVhZSG9aUVE=";
-  return Buffer.from(enc, "base64").toString("utf8");
+  return keys[0];
+}
+
+async function callGeminiWithRetry(endpoint, payload, timeoutMs = 15000, maxRetries = 2) {
+  let lastError = null;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+
+      clearTimeout(timer);
+
+      if (response.ok) {
+        try {
+          const { AIChatService } = require('./AIChatService');
+          if (AIChatService && AIChatService.setLastSuccessfulCallTime) {
+            AIChatService.setLastSuccessfulCallTime(new Date().toISOString());
+          }
+        } catch (e) {}
+        return await response.json();
+      }
+
+      const errBody = await response.text().catch(() => '');
+      const status = response.status;
+
+      if (status === 401) {
+        throw new Error('Gemini API Authentication Failed (401): Invalid GEMINI_API_KEY. ' + errBody);
+      }
+      if (status === 404) {
+        throw new Error('Gemini API Model Not Found (404): Specified model is invalid. ' + errBody);
+      }
+
+      if (status === 429) {
+        throw new Error('Gemini API 429 (Quota Exceeded): ' + errBody);
+      }
+
+      if (status === 503) {
+        lastError = new Error('Gemini API 503: ' + errBody);
+        if (attempt < maxRetries) {
+          const delay = Math.pow(2, attempt) * 1000;
+          console.warn('Gemini Vision API returned 503. Retrying in ' + delay + 'ms (attempt ' + (attempt + 1) + '/' + maxRetries + ')...');
+          await new Promise(r => setTimeout(r, delay));
+          continue;
+        }
+      } else {
+        throw new Error('Gemini API Error (' + status + '): ' + errBody);
+      }
+    } catch (err) {
+      clearTimeout(timer);
+      if (err.name === 'AbortError') {
+        lastError = new Error('Gemini API request timed out after ' + (timeoutMs / 1000) + 's.');
+      } else {
+        lastError = err;
+      }
+      if (err.message && (err.message.includes('(401)') || err.message.includes('(404)'))) {
+        throw err;
+      }
+    }
+  }
+
+  throw lastError || new Error('Gemini API call failed after retries.');
+}
+
+function isValidImageBuffer(buf) {
+  if (!buf || buf.length < 12) return false;
+  const isJpeg = buf[0] === 0xFF && buf[1] === 0xD8 && buf[2] === 0xFF;
+  const isPng = buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4E && buf[3] === 0x47;
+  const isWebp = buf.slice(0, 4).toString('ascii') === 'RIFF' && buf.slice(8, 12).toString('ascii') === 'WEBP';
+  const isGif = buf.slice(0, 3).toString('ascii') === 'GIF';
+  return isJpeg || isPng || isWebp || isGif;
 }
 
 class CropQualityAIService {
-  static async callGeminiVision(imageBuffer, mimeType = "image/jpeg", requestedCrop = null) {
-    const apiKey = getGeminiApiKey();
-    if (!apiKey) {
+  static async callGeminiVision(imageBuffer, mimeType = "image/jpeg", requestedCrop = null, language = "en") {
+    const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+    const base64Image = imageBuffer.toString("base64");
+    const isHi = (language === "hi");
+
+    const allKeys = GeminiKeyManager.getAllKeys();
+    if (allKeys.length === 0) {
       throw new Error("GEMINI_API_KEY is not configured on the server. Please set it in your .env file.");
     }
 
-    const primaryModel = process.env.GEMINI_MODEL || "gemini-3.5-flash";
-    const candidateModels = [
-      primaryModel,
-      "gemini-3.5-flash",
-      "gemini-3.5-flash-lite",
-      "gemini-3.6-flash",
-      "gemini-3.7-flash",
-      "gemini-3.8-flash"
-    ];
-    // Remove duplicates while preserving order
-    const modelCascade = Array.from(new Set(candidateModels));
-
-    const base64Image = imageBuffer.toString("base64");
+    if (GeminiKeyManager.isCooldownActive()) {
+      const remainingSec = Math.round(GeminiKeyManager.getRemainingCooldownMs() / 1000);
+      throw new Error(`Gemini API 429: 10-minute cooldown active (${remainingSec}s remaining)`);
+    }
 
     const systemPrompt = `You are a specialized agricultural vision assistant for Indian farmers.
 Analyze the provided image of harvested crop/produce strictly for VISIBLE physical quality characteristics.
-Supported crops: Tomato, Chilli, Onion, Potato, Banana, Rice.
+Examine visible external indicators: surface color uniformity, skin texture firmness, bruises, fungal spots, insect puncture holes, decay/rot lesions, wilt, and signs of overripeness.
 
-IMPORTANT GUIDELINES:
-- ONLY assess what can reasonably be seen visually (color, skin blemishes, surface spots, wrinkles, shape).
-- Check if the produce is severely rotten, decaying, full of black mold/fungus, decomposed, or completely spoiled. Set "is_fully_spoiled" to true if so, else false.
-- DO NOT claim to detect pesticide residue, chemical composition, internal rot, exact moisture, laboratory metrics, or exact market grades.
-- If the image is blurry, does not contain produce, or is ambiguous, set "cropName" to "Unknown" and provide a low "confidence" (0-30).
-${requestedCrop ? `- The user indicated this might be '${requestedCrop}'. Verify if the image visually matches '${requestedCrop}'.` : ""}
+CRITICAL Produce Verification:
+- First determine if the image actually shows agricultural produce, fruits, vegetables, grains, or crops.
+- If the image is NOT produce (e.g. solid color, human, landscape, machinery, household object, blank/corrupt image), return cropName as "Unknown" and confidence below 20.
+
+LANGUAGE REQUIREMENT:
+Write the grade_explanation, visibleDefects list, advice (actionable recommendations), and shelf_life text in ${isHi ? "simple Hindi in Devanagari script (e.g. 'उत्कृष्ट रंग...', 'हल्के दाग...')" : "simple English"}.
 
 Return ONLY a valid JSON object matching this exact schema:
 {
-  "cropName": "Tomato | Chilli | Onion | Potato | Banana | Rice | Unknown",
-  "confidence": 0 to 100,
-  "observations": ["array of clear visible physical findings"],
-  "visibleDefects": ["array of visible surface defects if any"],
-  "ripeness": "unripe | partially_ripe | ripe | overripe | spoiled | unknown",
-  "is_fully_spoiled": boolean,
-  "defect_ratio_pct": 0 to 100
+  "cropName": "Tomato" | "Chilli" | "Onion" | "Potato" | "Banana" | "Rice" | "Unknown",
+  "confidence": <number 0-100>,
+  "ripeness": "unripe" | "early_ripe" | "ripe" | "overripe" | "spoiled",
+  "is_fully_spoiled": <boolean>,
+  "defect_ratio_pct": <number 0-100 indicating percentage of surface area with visible defects>,
+  "grade_explanation": "<concise explanation of the grade in ${isHi ? 'Hindi' : 'English'}>",
+  "shelf_life": "<estimated shelf life under recommended storage in ${isHi ? 'Hindi' : 'English'}>",
+  "observations": [<array of concise strings noting color, surface condition, firmness indicators in ${isHi ? 'Hindi' : 'English'}>],
+  "visibleDefects": [<array of strings describing visible lesions, bruises, mold, insect damage in ${isHi ? 'Hindi' : 'English'}>],
+  "advice": [<array of 2-3 actionable harvesting/storage/mandi recommendations in ${isHi ? 'Hindi' : 'English'}>]
 }`;
 
     const payload = {
@@ -202,70 +377,48 @@ Return ONLY a valid JSON object matching this exact schema:
     };
 
     let lastError = null;
+    let attempts = 0;
+    const maxKeyAttempts = allKeys.length;
 
-    for (const model of modelCascade) {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 25000);
+    while (attempts < maxKeyAttempts) {
+      const apiKey = GeminiKeyManager.getNextAvailableKey();
+      if (!apiKey) break;
+      attempts++;
 
+      const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey;
       try {
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-          signal: controller.signal
-        });
-
-        clearTimeout(timeout);
-
-        if (!response.ok) {
-          const errBody = await response.text().catch(() => '');
-          console.warn(`Gemini model ${model} returned ${response.status}. Trying next model...`);
-          lastError = new Error(`Gemini API ${model} status ${response.status}: ${errBody}`);
-          continue;
-        }
-
-        const resData = await response.json();
+        const resData = await callGeminiWithRetry(endpoint, payload, 15000, 2);
         const textOutput = resData?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-        if (!textOutput) {
-          console.warn(`Empty text output from Gemini model ${model}. Trying next...`);
+        if (textOutput) {
+          GeminiKeyManager.markKeySuccess(apiKey);
+          const parsed = extractJSON(textOutput);
+          parsed._active_model = model;
+          parsed._source = "gemini";
+          return parsed;
+        }
+        throw new Error("Empty text output from Gemini Vision API.");
+      } catch (err) {
+        lastError = err;
+        console.error('Gemini Vision call error on ' + model + ' (key attempt ' + attempts + '/' + maxKeyAttempts + '):', err.message);
+        if (err.message && err.message.includes('429')) {
+          GeminiKeyManager.markKey429(apiKey);
+          console.warn('Vision Key placed on 10-minute cooldown. Rotating to next key (if available).');
           continue;
         }
-
-        const parsed = extractJSON(textOutput);
-        parsed._active_model = model;
-        return parsed;
-      } catch (err) {
-        clearTimeout(timeout);
-        lastError = err;
-        console.warn(`Gemini vision model ${model} attempt error:`, err.message);
-        continue;
+        throw err;
       }
     }
-
-    // Resilient Vision Heuristic Engine Fallback
-    console.warn("All remote Gemini models failed or rate-limited. Activating resilient vision heuristic analyzer.");
-    const chosenCrop = requestedCrop || "Tomato";
-    return {
-      cropName: chosenCrop,
-      confidence: 88,
-      observations: [
-        `Visible physical color and surface uniformity consistent with standard commercial ${chosenCrop} produce.`,
-        "Healthy visual skin firmness with minimal transit bruising."
-      ],
-      visibleDefects: ["Minor cosmetic surface markings within acceptable APMC lotting tolerances."],
-      ripeness: "ripe",
-      is_fully_spoiled: false,
-      defect_ratio_pct: 6,
-      _active_model: "Google Gemini Vision API (Resilient Heuristic Fallback)"
-    };
+    throw lastError || new Error("All Gemini Vision keys exhausted or on cooldown.");
   }
 
-  static async analyze(imageBuffer, requestedCrop = null, mimeType = "image/jpeg") {
+  static async analyze(imageBuffer, requestedCrop = null, mimeType = "image/jpeg", language = "en") {
+    const safeLang = (language === 'hi' || (typeof language === 'string' && language.trim().toLowerCase() === 'hi')) ? 'hi' : 'en';
+
     if (!imageBuffer || imageBuffer.length < 500) {
       return {
         success: false,
+        source: "fallback",
+        status: 400,
         error_code: "INVALID_IMAGE",
         message: "Image file is too small or corrupt. Minimum 80x80px required."
       };
@@ -274,21 +427,35 @@ Return ONLY a valid JSON object matching this exact schema:
     if (imageBuffer.length > 10 * 1024 * 1024) {
       return {
         success: false,
+        source: "fallback",
+        status: 400,
         error_code: "IMAGE_TOO_LARGE",
         message: "Image file size exceeds the 10MB limit. Please upload a smaller image."
+      };
+    }
+
+    if (!isValidImageBuffer(imageBuffer)) {
+      return {
+        success: false,
+        source: "fallback",
+        status: 422,
+        error_code: "INVALID_IMAGE_FORMAT",
+        message: "Uploaded file is not a valid image format. Please upload a clear JPG, PNG, or WebP photo of agricultural produce."
       };
     }
 
     if (requestedCrop && !SUPPORTED_CROPS.includes(requestedCrop)) {
       return {
         success: false,
+        source: "fallback",
+        status: 400,
         error_code: "UNSUPPORTED_CROP",
         message: `Crop '${requestedCrop}' is not supported. Supported crops: ${SUPPORTED_CROPS.join(", ")}.`
       };
     }
 
     try {
-      const geminiRaw = await this.callGeminiVision(imageBuffer, mimeType, requestedCrop);
+      const geminiRaw = await this.callGeminiVision(imageBuffer, mimeType, requestedCrop, safeLang);
 
       const cropName = normalizeCropName(geminiRaw.cropName);
       
@@ -319,7 +486,7 @@ Return ONLY a valid JSON object matching this exact schema:
       if (cropName === "Unknown" || confidence < 35) {
         return {
           success: false,
-          error_code: "LOW_CONFIDENCE",
+          error_code: "NON_PRODUCE", status: 422, source: "gemini",
           crop: cropName,
           confidence,
           message: "We couldn't confidently assess this image. Please upload a clearer photo of the harvested produce or select the crop manually."
@@ -343,20 +510,39 @@ Return ONLY a valid JSON object matching this exact schema:
 
       const grade = calculateGrade(qualityScore, isFullySpoiled);
       const realization = calculateRealizationRange(qualityScore, grade);
-      const recommendations = generateRecommendations(cropName, grade, defectRatio, ripeness);
+
+      const recommendations = (Array.isArray(geminiRaw.advice) && geminiRaw.advice.length > 0)
+        ? geminiRaw.advice
+        : generateRecommendations(cropName, grade, defectRatio, ripeness, safeLang);
+
+      const gradeExplanation = (typeof geminiRaw.grade_explanation === 'string' && geminiRaw.grade_explanation.trim().length > 0)
+        ? geminiRaw.grade_explanation.trim()
+        : generateGradeExplanation(cropName, grade, defectRatio, ripeness, safeLang);
+
+      const shelfLife = (typeof geminiRaw.shelf_life === 'string' && geminiRaw.shelf_life.trim().length > 0)
+        ? geminiRaw.shelf_life.trim()
+        : generateShelfLife(cropName, grade, ripeness, safeLang);
+
+      const finalDefects = (visibleDefects.length > 0)
+        ? visibleDefects
+        : generateDefaultDefects(defectRatio, isFullySpoiled, safeLang);
 
       return {
         success: true,
+        source: "gemini",
+        language: safeLang,
         crop: cropName,
         detection_confidence: confidence,
         confidence_tier: confidence >= 70 ? "HIGH" : "MEDIUM",
         quality_score: qualityScore,
         quality_category: grade,
+        grade_explanation: gradeExplanation,
+        shelf_life: shelfLife,
         maturity_assessment: isFullySpoiled 
-          ? "Fully Spoiled / Unfit for Consumption" 
-          : `Ripeness: ${ripeness.replace('_', ' ')}`,
+          ? ((safeLang === 'hi') ? "पूर्णतः सड़ा हुआ / उपभोग अयोग्य" : "Fully Spoiled / Unfit for Consumption") 
+          : ((safeLang === 'hi') ? `पकाव: ${ripeness.replace('_', ' ')}` : `Ripeness: ${ripeness.replace('_', ' ')}`),
         visible_observations: observations,
-        visible_defects: visibleDefects,
+        visible_defects: finalDefects,
         visible_metrics: {
           defect_ratio_pct: defectRatio,
           ripeness_stage: ripeness,
@@ -365,7 +551,7 @@ Return ONLY a valid JSON object matching this exact schema:
         recommendations,
         realization_pct: realization,
         model_status: {
-          model_name: geminiRaw._active_model || process.env.GEMINI_MODEL || "gemini-3.5-flash-lite",
+          model_name: geminiRaw._active_model || process.env.GEMINI_MODEL || "gemini-3.8-flash",
           provider: "Google Gemini Vision API",
           scoring_engine: "Deterministic KisanMitra Quality & Realization Rules",
           is_honest: true
@@ -375,10 +561,13 @@ Return ONLY a valid JSON object matching this exact schema:
       console.error("CropQualityAIService error:", err.message);
       return {
         success: false,
-        error_code: "AI_ANALYSIS_ERROR",
+        source: "fallback",
+        error_code: "AI_SERVICE_UNAVAILABLE",
+        status: 503,
+        failure_reason: err.message,
         message: err.message.includes("GEMINI_API_KEY")
           ? err.message
-          : "Unable to complete AI image analysis. Please ensure image is clear and try again."
+          : (safeLang === 'hi' ? "एआई गुणवत्ता मूल्यांकन अभी अनुपलब्ध है। कृपया कुछ देर बाद पुनः प्रयास करें।" : "AI quality assessment is currently unavailable. Please try again shortly.")
       };
     }
   }
@@ -389,5 +578,9 @@ module.exports = {
   SUPPORTED_CROPS,
   calculateQualityScore,
   calculateGrade,
-  calculateRealizationRange
+  calculateRealizationRange,
+  generateGradeExplanation,
+  generateRecommendations,
+  generateShelfLife,
+  generateDefaultDefects
 };

@@ -10,8 +10,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-<script src="js/api.js?v=4.0"></script>
-<script>if(typeof KM_API==='undefined'||!KM_API.calculateMandiArbitrage){document.write('<script src="api.js?v=4.0"><\/script>');}</script>
+<script src="js/api.js"></script>
 <style>
   :root{
     --bg:#0b0f0d; --surface:#131a16; --surface2:#1a241e; --line:#26332b;
@@ -131,7 +130,7 @@
   .leaflet-popup-tip{background:var(--surface2)}
   .leaflet-popup-content b{color:var(--green)}
   .leaflet-container{background:#0d1410;font-family:'Plus Jakarta Sans',sans-serif}
-  .leaflet-control-attribution{background:rgba(11,15,13,.8)!important;color:#667!important}
+  .leaflet-control-attribution{background:rgba(11,15,13,.8)!important;color:var(--muted)!important}
   .gmap-btn{margin-top:8px;padding:6px 14px;border:none;border-radius:16px;background:var(--green);color:#0b0f0d;font-weight:700;cursor:pointer;font-family:inherit}
   .marker-cluster-small{background:rgba(62,207,111,.25)}
   .marker-cluster-small div,.marker-cluster-medium div,.marker-cluster-large div{background:var(--green);color:#0b0f0d;font-weight:800}
@@ -170,8 +169,8 @@
   @keyframes popIn{from{opacity:0;transform:translateY(30px) scale(.92)}to{opacity:1;transform:none}}
   .sms-head{display:flex;align-items:center;gap:10px;font-weight:800;margin-bottom:8px;font-size:.9rem}
   .sms-body{font-size:.86rem;color:var(--muted);background:var(--bg);border-radius:12px;padding:12px;line-height:1.6}
-  .sms-time{font-size:.7rem;color:#667;margin-top:6px;text-align:right}
-  #smsClose{margin-left:auto;cursor:pointer;color:#667}
+  .sms-time{font-size:.7rem;color:var(--muted);margin-top:6px;text-align:right}
+  #smsClose{margin-left:auto;cursor:pointer;color:var(--muted)}
   
   footer{border-top:1px solid var(--line);text-align:center;padding:44px 6%;font-size:.88rem;color:var(--muted);line-height:2}
   .flag-line{font-size:1.3rem;letter-spacing:8px}
@@ -355,6 +354,26 @@
     color: var(--txt);
     border-bottom-left-radius: 4px;
   }
+  .kisan-chat-read-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    padding: 3px 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .kisan-chat-read-btn:hover {
+    color: var(--green);
+    border-color: var(--green);
+    background: rgba(16, 185, 129, 0.1);
+  }
   .kisan-chat-msg.user {
     align-self: flex-end;
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -484,7 +503,7 @@
     </button>
     <a href="admin.html" target="_blank" class="admin-nav-btn" style="background:rgba(62,207,111,0.15);border:1.5px solid var(--green);color:var(--green);padding:7px 14px;border-radius:22px;font-weight:700;font-size:.82rem;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:.25s;margin-right:4px" data-i18n="btn_admin_portal">🛡️ Admin Portal ↗</a>
     
-    <button class="notif-btn" id="notifBellBtn" onclick="toggleNotifDrawer(event)">
+    <button class="notif-btn" id="notifBellBtn" aria-label="Notifications" aria-expanded="false" onclick="toggleNotifDrawer(event)">
       🔔 <span class="notif-badge" id="notifBadge">2</span>
     </button>
     <select class="lang-select" id="langSelect" onchange="changeLanguage(this.value)">
@@ -493,7 +512,7 @@
       <option value="ta">🌾 தமிழ்</option>
       <option value="te">🌱 తెలుగు</option>
     </select>
-    <button class="menu-btn" onclick="document.getElementById('nav').classList.toggle('open')">☰</button>
+    <button class="menu-btn" id="menuToggleBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMobileNav()">☰</button>
   </div>
   <ul id="nav">
     <li><a href="#home" data-i18n="nav_home">Home</a></li>
@@ -512,13 +531,13 @@
 <header id="home">
   <div class="aurora a1"></div><div class="aurora a2"></div><div class="aurora a3"></div>
   <div>
-    <span class="badge-pill"><span class="dot"></span> <span data-i18n="hero_pill">Digital India Initiative · 70+ Mandis · Live Prices</span></span>
+    <span class="badge-pill"><span class="dot"></span> <span data-i18n="hero_pill">Digital India Initiative · 67 Mandis · Live Prices</span></span>
     <h1 data-i18n="hero_title">Sell your harvest with <span class="grad-txt">zero queues,</span> zero confusion.</h1>
     <p class="hero-p" data-i18n="hero_sub">Smart tokens, live procurement status, guaranteed MSP, today's real mandi prices from AGMARKNET, and an interactive pan-India mandi map with weather alerts. No middlemen. Ever.</p>
     <a href="#register" class="btn btn-primary" data-i18n="hero_btn_book">🚜 Book Your Token</a>
     <a href="community.html" target="_blank" class="btn btn-ghost" data-i18n="hero_btn_comm">🤝 Farmer Community ↗</a>
     <div class="hero-stats">
-      <div class="stat"><b><em>2.4L+</em></b><span data-i18n="stat_farmers">Farmers onboard</span></div>
+      <div class="stat"><b><em>2.4L+*</em></b><span data-i18n="stat_farmers">Farmers onboard</span><small style="display:block;font-size:0.65rem;color:var(--muted);font-weight:normal" data-i18n="stat_demo_label">(*Simulation demo figure)</small></div>
       <div class="stat"><b><em>₹890 Cr</em></b><span data-i18n="stat_paid">Paid via DBT</span></div>
       <div class="stat"><b><em>72 hrs</em></b><span data-i18n="stat_guarantee">Payment guarantee</span></div>
     </div>
@@ -530,7 +549,7 @@
   </div>
 </header>
 
-<div class="ticker"><div data-i18n="ticker_txt">📢 Wheat procurement opens 1 April · Paddy (Kharif) from 1 October · MSP 2024-25 rates applicable · Payment within 72 hours via DBT · 70+ mandis mapped across India · Live AGMARKNET prices · Direct community marketplace online · Helpline 1800-180-1551 ·</div></div>
+<div class="ticker"><div data-i18n="ticker_txt">📢 Wheat procurement opens 1 April · Paddy (Kharif) from 1 October · MSP 2026-27 rates applicable · Payment within 72 hours via DBT · 67 mandis mapped across India · Live AGMARKNET prices · Direct community marketplace online · Helpline 1800-180-1551 ·</div></div>
 
 <section>
   <div class="sec-head reveal">
@@ -545,7 +564,7 @@
     <a href="community.html" target="_blank" class="bcard reveal"><div class="glow-line"></div><div class="icon">🤝</div><h3 data-i18n="feat_3_h">Community Marketplace ↗</h3><p data-i18n="feat_3_p">Buy, sell crops, rent tractors, and hire lorries directly with nearby farmers.</p></a>
     <div class="bcard b-tall reveal"><div class="glow-line"></div><div class="icon">🧠</div><h3 data-i18n="feat_4_h">Fair Price Assurance</h3><p data-i18n="feat_4_p">Official MSP rates upfront + live AGMARKNET market prices, so you always know what your harvest is really worth before you sell.</p></div>
     <div class="bcard reveal"><div class="glow-line"></div><div class="icon">💰</div><h3 data-i18n="feat_5_h">Direct DBT Payment</h3><p data-i18n="feat_5_p">Money in your bank within 72 hours. Zero middlemen, 100% transparency.</p></div>
-    <div class="bcard reveal"><div class="glow-line"></div><div class="icon">🗺️</div><h3 data-i18n="feat_6_h">Pan-India Mandi Map</h3><p data-i18n="feat_6_p">70+ APMC mandis mapped across every state, with live weather alerts.</p></div>
+    <div class="bcard reveal"><div class="glow-line"></div><div class="icon">🗺️</div><h3 data-i18n="feat_6_h">Pan-India Mandi Map</h3><p data-i18n="feat_6_p">67 APMC mandis mapped across every state, with live weather alerts.</p></div>
   </div>
 </section>
 
@@ -592,13 +611,24 @@
     <p class="sec-sub" data-i18n="msp_sub">Official Minimum Support Price — the government-guaranteed floor. Compare with live market prices below 👇</p>
   </div>
   <div class="table-wrap reveal">
-    <table>
-      <tr><th data-i18n="th_crop">Crop</th><th data-i18n="th_mandi">Mandi</th><th data-i18n="th_dates">Dates</th><th data-i18n="th_msp">MSP (₹/quintal)</th><th data-i18n="th_status">Status</th></tr>
-      <tr><td>🌾 <span data-i18n="crop_wheat">Wheat</span></td><td>Lucknow Mandi, UP</td><td>01 Apr – 30 Jun</td><td>₹2,425</td><td><span class="badge b-live">● Live</span></td></tr>
-      <tr><td>🌾 <span data-i18n="crop_paddy">Paddy</span></td><td>Patna Mandi, Bihar</td><td>01 Oct – 31 Dec</td><td>₹2,300</td><td><span class="badge b-soon">● Opening Soon</span></td></tr>
-      <tr><td>🌱 <span data-i18n="crop_mustard">Mustard</span></td><td>Jaipur Mandi, Rajasthan</td><td>15 Feb – 15 Jun</td><td>₹5,950</td><td><span class="badge b-live">● Live</span></td></tr>
-      <tr><td>🫘 <span data-i18n="crop_gram">Gram</span></td><td>Bhopal Mandi, MP</td><td>20 Feb – 31 Jul</td><td>₹5,650</td><td><span class="badge b-closed">● Closed</span></td></tr>
-      <tr><td>🌽 <span data-i18n="crop_maize">Maize</span></td><td>Chandigarh Mandi</td><td>01 Dec – 31 Mar</td><td>₹2,225</td><td><span class="badge b-closed">● Closed</span></td></tr>
+    <table id="mspScheduleTable">
+      <thead>
+        <tr>
+          <th data-i18n="th_crop">Crop</th>
+          <th data-i18n="th_mandi">Mandi</th>
+          <th data-i18n="th_season">Season</th>
+          <th data-i18n="th_dates">Dates</th>
+          <th data-i18n="th_msp">MSP (₹/quintal)</th>
+          <th data-i18n="th_status">Status</th>
+        </tr>
+      </thead>
+      <tbody id="mspScheduleBody">
+        <tr><td>🌾 <span data-i18n="crop_wheat">Wheat</span></td><td>Lucknow Mandi, UP</td><td>Rabi 2026-27</td><td>01 Apr – 30 Jun</td><td>₹2,425</td><td><span class="badge b-closed" data-i18n="status_closed">● Closed</span></td></tr>
+        <tr><td>🌾 <span data-i18n="crop_paddy">Paddy</span></td><td>Patna Mandi, Bihar</td><td>Kharif 2026-27</td><td>01 Oct – 31 Dec</td><td>₹2,300</td><td><span class="badge b-live" data-i18n="status_live">● Live</span></td></tr>
+        <tr><td>🌱 <span data-i18n="crop_mustard">Mustard</span></td><td>Jaipur Mandi, Rajasthan</td><td>Rabi 2026-27</td><td>15 Feb – 15 Jun</td><td>₹5,950</td><td><span class="badge b-closed" data-i18n="status_closed">● Closed</span></td></tr>
+        <tr><td>🫘 <span data-i18n="crop_gram">Gram</span></td><td>Bhopal Mandi, MP</td><td>Rabi 2026-27</td><td>20 Feb – 31 Jul</td><td>₹5,650</td><td><span class="badge b-closed" data-i18n="status_closed">● Closed</span></td></tr>
+        <tr><td>🌽 <span data-i18n="crop_maize">Maize</span></td><td>Chandigarh Mandi</td><td>Kharif 2026-27</td><td>01 Dec – 31 Mar</td><td>₹2,225</td><td><span class="badge b-soon" data-i18n="status_soon">● Opening Soon</span></td></tr>
+      </tbody>
     </table>
   </div>
 </section>
@@ -895,6 +925,7 @@
 
       <!-- Live Populated Result -->
       <div id="cqResultContent" style="display:none">
+        <div id="cqResOfflineNotice" style="display:none;margin-bottom:12px;padding:8px 12px;border-radius:8px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#f59e0b;font-size:0.8rem;font-weight:600">⚠️ Offline answer (AI unavailable)</div>
         <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px">
           <div>
             <span style="color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;font-weight:700">AI Quality Result</span>
@@ -907,30 +938,47 @@
         </div>
 
         <!-- Score & Category Grid -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
           <div style="background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center">
-            <span style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;font-weight:700">Visible Quality Score</span>
+            <span style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;font-weight:700" data-i18n="cq_score_label">Visible Quality Score</span>
             <div id="cqResScore" style="font-size:2.4rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin:4px 0">86/100</div>
-            <small style="color:var(--muted);font-size:0.74rem">Physical visual metrics only</small>
+            <small style="color:var(--muted);font-size:0.74rem" data-i18n="cq_metrics_only">Physical visual metrics only</small>
           </div>
 
           <div style="background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center">
-            <span style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:8px">Quality Category</span>
+            <span style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:8px" data-i18n="cq_category_label">Quality Category</span>
             <span id="cqResCatBadge" class="cq-badge cq-cat-good" style="font-size:1rem;padding:8px 18px">GOOD</span>
             <small id="cqResMaturity" style="color:var(--muted);font-size:0.74rem;margin-top:8px">Fully Ripe</small>
           </div>
         </div>
 
+        <!-- Grade Explanation -->
+        <div id="cqResExplanationBox" style="background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:0.83rem;color:var(--txt);line-height:1.5">
+          <b style="color:var(--green)">📋 <span data-i18n="cq_grade_explanation_label">Grade Assessment:</span></b> <span id="cqResGradeExplanation"></span>
+        </div>
+
+        <!-- Shelf Life & Defects Grid -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+          <div style="background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:12px 14px">
+            <span style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;font-weight:700;display:block;margin-bottom:4px" data-i18n="cq_shelf_life_label">⏳ Estimated Shelf-Life</span>
+            <b id="cqResShelfLife" style="font-size:0.86rem;color:var(--txt)"></b>
+          </div>
+          <div style="background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:12px 14px">
+            <span style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;font-weight:700;display:block;margin-bottom:4px" data-i18n="cq_defects_label">🔍 Visible Defects</span>
+            <span id="cqResDefectsSummary" style="font-size:0.83rem;color:var(--txt)"></span>
+          </div>
+        </div>
+
         <!-- Visible Observations -->
         <div style="margin-bottom:16px">
-          <h5 style="font-size:0.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px">Visible Observations (CV Analysis)</h5>
+          <h5 style="font-size:0.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px" data-i18n="cq_obs_title">Visible Observations (CV Analysis)</h5>
           <ul class="cq-obs-list" id="cqResObsList"></ul>
         </div>
 
         <!-- Market Reference & Indicative Realization -->
         <div style="background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <span style="font-size:0.8rem;font-weight:700;color:var(--muted)">Market Benchmark:</span>
+            <span style="font-size:0.8rem;font-weight:700;color:var(--muted)" data-i18n="cq_mkt_benchmark_label">Market Benchmark:</span>
             <span id="cqResMarketBadge" class="cq-badge cq-badge-ref">REFERENCE MARKET PRICE</span>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
@@ -942,7 +990,7 @@
 
           <div style="display:flex;justify-content:space-between;align-items:baseline">
             <div>
-              <span style="font-size:0.82rem;font-weight:700;color:var(--green)">Indicative Realization:</span>
+              <span style="font-size:0.82rem;font-weight:700;color:var(--green)" data-i18n="cq_realization_label">Indicative Realization:</span>
               <small id="cqResRealizationPct" style="display:block;color:var(--muted);font-size:0.74rem">85% – 94% realization</small>
             </div>
             <b id="cqResIndicativePrice" style="font-size:1.35rem;color:var(--green);font-weight:800">₹1,870 – ₹2,070 / quintal</b>
@@ -951,18 +999,18 @@
 
         <!-- Recommendations -->
         <div class="cq-recs-box" id="cqResRecsBox">
-          <h5>💡 Actionable Advisory</h5>
+          <h5 data-i18n="cq_advice_title">💡 Actionable Advisory</h5>
           <ul id="cqResRecsList" style="margin:0;padding-left:18px;font-size:0.82rem;color:var(--txt);line-height:1.5"></ul>
         </div>
 
         <!-- Disclaimer -->
         <div class="cq-disclaimer">
-          <b>⚠️ AI Disclaimer:</b> This is an AI-assisted Crop Quality &amp; Indicative Market Value Estimation based on visible characteristics and available market data. Final price depends on actual physical inspection, buyer, market conditions, moisture content, and applicable APMC/mandi grade standards.
+          <b>⚠️ <span data-i18n="cq_disclaimer_title">AI Disclaimer:</span></b> <span id="cqResDisclaimer">This is an AI-assisted Crop Quality &amp; Indicative Market Value Estimation based on visible characteristics and available market data. Final price depends on actual physical inspection, buyer, market conditions, moisture content, and applicable APMC/mandi grade standards.</span>
         </div>
 
         <!-- Actions -->
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px">
-          <button class="btn btn-primary" style="padding:10px 22px;font-size:0.85rem" onclick="resetCropQualityUI()">
+          <button class="btn btn-primary" style="padding:10px 22px;font-size:0.85rem" onclick="resetCropQualityUI()" data-i18n="cq_btn_another">
             🔄 Analyze Another Produce
           </button>
         </div>
@@ -1012,7 +1060,7 @@
   <div class="sec-head reveal">
     <div class="sec-tag" data-i18n="mandi_tag">Mandi Locator + Weather</div>
     <h2 class="sec-title" data-i18n="mandi_title">Find your nearest mandi on the map 🗺️</h2>
-    <p class="sec-sub" data-i18n="mandi_sub">70+ APMC mandis across India. Search your city/district or use GPS — mandis rank by distance, with live weather so rain never damages your harvest in transit.</p>
+    <p class="sec-sub" data-i18n="mandi_sub">67 APMC mandis across India. Search your city/district or use GPS — mandis rank by distance, with live weather so rain never damages your harvest in transit.</p>
   </div>
   <div id="mapBox"></div>
   <div class="mandi-grid">
@@ -1123,25 +1171,72 @@
 </div>
 
 <script>
-/* ============ SPEECH SYNTHESIS ENGINE ============ */
-const SPEECH_LANG_MAP = { en: "en-IN", hi: "hi-IN", ta: "ta-IN", te: "te-IN" };
+/* ============ SPEECH SYNTHESIS ENGINE (ITEM 22) ============ */
+const SPEECH_LANG_MAP = { en: "en-IN", hi: "hi-IN", ta: "ta-IN", te: "te-IN", mr: "mr-IN" };
+
+let speechVoices = [];
+
+function loadSpeechVoices() {
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    speechVoices = window.speechSynthesis.getVoices() || [];
+  }
+}
+
+// Initial eager load & event listener for voiceschanged
+loadSpeechVoices();
+if (typeof window !== "undefined" && "speechSynthesis" in window) {
+  window.speechSynthesis.onvoiceschanged = loadSpeechVoices;
+}
+
+function getMatchingVoice(langCode) {
+  if (!speechVoices || !speechVoices.length) {
+    loadSpeechVoices();
+  }
+  if (!speechVoices || !speechVoices.length) return null;
+
+  const code = (langCode || "en-IN").toLowerCase();
+  const prefix = code.split("-")[0];
+
+  // 1. Exact match (e.g. 'ta-IN' or 'hi-IN')
+  let match = speechVoices.find(v => v.lang && v.lang.toLowerCase().replace('_', '-') === code);
+  // 2. Exact country/locale match
+  if (!match) {
+    match = speechVoices.find(v => v.lang && v.lang.toLowerCase().startsWith(code));
+  }
+  // 3. Language prefix match (e.g. 'ta' or 'te' or 'hi')
+  if (!match) {
+    match = speechVoices.find(v => v.lang && v.lang.toLowerCase().startsWith(prefix));
+  }
+  return match || null;
+}
 
 function speakText(text, langCode){
-  if(!("speechSynthesis" in window)) return;
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
-  if(!text) return;
+  if (!text) return;
 
   const code = langCode || SPEECH_LANG_MAP[currentLang] || "en-IN";
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = code;
   utter.rate = 0.95;
 
-  const voices = window.speechSynthesis.getVoices();
-  const matchedVoice = voices.find(function(v){ return v.lang === code || v.lang.startsWith(code.split("-")[0]); });
-  if(matchedVoice) utter.voice = matchedVoice;
+  const matchedVoice = getMatchingVoice(code);
+  if (matchedVoice) utter.voice = matchedVoice;
 
   window.speechSynthesis.speak(utter);
 }
+
+// Cancel speech synthesis on page unload / navigation
+window.addEventListener("beforeunload", function() {
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+  }
+});
+window.addEventListener("pagehide", function() {
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+  }
+});
 
 /* ============ TAP-TO-SPEAK (SINGLE CLICK READS, DOUBLE CLICK OPENS) ============ */
 let voiceModeActive = false;
@@ -1219,19 +1314,24 @@ const I18N = {
     banner_tts: "Tap-to-Speak Active: Single tap reads, double tap opens.",
     voice_activated: "Voice reader activated. Single tap on any item to hear it. Double tap to open.",
     hint_double_click: "Double tap to open.",
-    hero_pill: "Digital India Initiative · 70+ Mandis · Live Prices",
+    hero_pill: "Digital India Initiative · 67 Mandis · Live Prices",
     hero_title: 'Sell your harvest with <span class="grad-txt">zero queues,</span> zero confusion.',
     hero_sub: "Smart tokens, live procurement status, guaranteed MSP, today's real mandi prices from AGMARKNET, and an interactive pan-India mandi map with weather alerts. No middlemen. Ever.",
     hero_btn_book: "🚜 Book Your Token", hero_btn_comm: "🤝 Farmer Community ↗",
-    stat_farmers: "Farmers onboard", stat_paid: "Paid via DBT", stat_guarantee: "Payment guarantee",
-    ticker_txt: "📢 Wheat procurement opens 1 April · Paddy (Kharif) from 1 October · MSP 2024-25 rates applicable · Payment within 72 hours via DBT · 70+ mandis mapped across India · Live AGMARKNET prices · Direct community marketplace online · Helpline 1800-180-1551 ·",
+    stat_farmers: "Farmers onboard",
+    stat_demo_label: "(*Simulation demo figure)",
+    th_season: "Season",
+    status_live: "● Live",
+    status_soon: "● Opening Soon",
+    status_closed: "● Closed", stat_paid: "Paid via DBT", stat_guarantee: "Payment guarantee",
+    ticker_txt: "📢 Wheat procurement opens 1 April · Paddy (Kharif) from 1 October · MSP 2026-27 rates applicable · Payment within 72 hours via DBT · 67 mandis mapped across India · Live AGMARKNET prices · Direct community marketplace online · Helpline 1800-180-1551 ·",
     feat_tag: "Features", feat_title: "Built for every Indian farmer", feat_sub: "From token to money in the bank — one seamless digital journey.",
     feat_1_h: "Zero Waiting Time", feat_1_p: "Our smart token system tells you your exact slot before you leave home. Walk into the mandi exactly when it's your turn — save hours of queueing under the sun.",
     feat_2_h: "Instant SMS Alerts", feat_2_p: "Every step — registration to payment — lands on your phone instantly.",
     feat_3_h: "Community Marketplace ↗", feat_3_p: "Buy, sell crops, rent tractors, and hire lorries directly with nearby farmers.",
     feat_4_h: "Fair Price Assurance", feat_4_p: "Official MSP rates upfront + live AGMARKNET market prices, so you always know what your harvest is really worth before you sell.",
     feat_5_h: "Direct DBT Payment", feat_5_p: "Money in your bank within 72 hours. Zero middlemen, 100% transparency.",
-    feat_6_h: "Pan-India Mandi Map", feat_6_p: "70+ APMC mandis mapped across every state, with live weather alerts.",
+    feat_6_h: "Pan-India Mandi Map", feat_6_p: "67 APMC mandis mapped across every state, with live weather alerts.",
     guide_tag: "Step-by-step", guide_title: "How to book your token", guide_sub: "Specially made for elderly or first-time users — just watch and follow along.",
     demo_play: "Play Demo Animation", demo_steps: "6 simple steps · click to start",
     step1_t: "Fill the registration form", step1_d: "Name, mobile, Aadhaar and crop details — just 2 minutes.",
@@ -1245,7 +1345,7 @@ const I18N = {
     crop_wheat: "Wheat", crop_paddy: "Paddy", crop_mustard: "Mustard", crop_gram: "Gram", crop_maize: "Maize",
     prices_tag: "Live Market", prices_title: "Today's real mandi prices 📈", prices_sub: "Live data from AGMARKNET — Government of India official database (3,000+ mandis). Pick a crop to see today's actual traded prices.",
     prices_refresh: "🔄 Refresh",
-    mandi_tag: "Mandi Locator + Weather", mandi_title: "Find your nearest mandi on the map 🗺️", mandi_sub: "70+ APMC mandis across India. Search your city/district or use GPS — mandis rank by distance, with live weather so rain never damages your harvest in transit.",
+    mandi_tag: "Mandi Locator + Weather", mandi_title: "Find your nearest mandi on the map 🗺️", mandi_sub: "67 APMC mandis across India. Search your city/district or use GPS — mandis rank by distance, with live weather so rain never damages your harvest in transit.",
     mandi_ph: "🔍 Type your city / district (e.g. Coimbatore)", mandi_gps: "📍 GPS",
     wx_head: "🌦️ Weather at Mandi", wx_desc: "Select a mandi to view its live 5-day forecast and transport-safety advice.",
     reg_tag: "Registration", reg_title: "Get your token instantly", reg_sub: "Data is saved safely on your device — it survives page refreshes. ✅",
@@ -1255,7 +1355,30 @@ const I18N = {
     lbl_crop: "Select Crop *",
     lbl_qty: "Quantity (quintal) *", ph_qty: "e.g. 50",
     lbl_dist: "District *", ph_dist: "Your district",
-    btn_issue_token: "✅ Issue Token — with SMS"
+        chat_fab_text: "Ask Kisan AI",
+    chat_header_title: "Kisan AI Sahayak",
+    chat_header_status: "Online • Gemini AI Powered",
+    chat_chip_leaf_curl: "🍅 Leaf curl remedy",
+    chat_chip_pm_kisan: "💰 PM-KISAN ₹6,000",
+    chat_chip_wheat_fert: "🌾 Wheat fertilizer",
+    chat_chip_mandi_tips: "📈 Mandi selling tips",
+    chat_chip_rain_precautions: "🌧️ Rain precautions",
+    chat_greeting: "<b>🙏 Namaste Kisan Mitra!</b><br>I am your <b>AI Agricultural Assistant</b>. Ask me anything about crop diseases, pest remedies, fertilizer doses, government subsidies, or APMC mandi prices in <b>English</b> or <b>Hindi</b>.",
+    chat_input_ph: "Ask in English or Hindi or tap 🎤...",
+    chat_disclaimer: "⚠️ AI-generated advice. Please verify chemical doses with local agricultural officers before field application.",
+    btn_issue_token: "✅ Issue Token — with SMS",
+    cq_score_label: "Visible Quality Score",
+    cq_metrics_only: "Physical visual metrics only",
+    cq_category_label: "Quality Category",
+    cq_grade_explanation_label: "Grade Assessment:",
+    cq_shelf_life_label: "⏳ Estimated Shelf-Life",
+    cq_defects_label: "🔍 Visible Defects",
+    cq_obs_title: "Visible Observations (CV Analysis)",
+    cq_mkt_benchmark_label: "Market Benchmark:",
+    cq_realization_label: "Indicative Realization:",
+    cq_advice_title: "💡 Actionable Advisory",
+    cq_disclaimer_title: "AI Disclaimer:",
+    cq_btn_another: "🔄 Analyze Another Produce"
   },
   hi: {
     nav_home: "मुख्य पृष्ठ", nav_guide: "📖 प्रक्रिया", nav_track: "🔍 स्थिति ट्रैक करें", nav_prices: "📈 मंडी भाव", nav_mandis: "📍 मंडी मैप", nav_community: "🤝 समुदाय ↗", nav_register: "📝 पंजीकरण", nav_admin: "🛡️ एडमिन पोर्टल ↗", btn_admin_portal: "🛡️ एडमिन पोर्टल ↗",
@@ -1263,19 +1386,24 @@ const I18N = {
     banner_tts: "टैप-टू-स्पीक सक्रिय: एक बार दबाकर सुनें, दो बार दबाकर खोलें।",
     voice_activated: "आवाज वाचक सक्रिय हो गया है। सुनने के लिए एक बार दबाएं, खोलने के लिए दो बार दबाएं।",
     hint_double_click: "खोलने के लिए दो बार दबाएं।",
-    hero_pill: "डिजिटल इंडिया पहल · 70+ मंडियां · लाइव भाव",
+    hero_pill: "डिजिटल इंडिया पहल · 67 मंडियां · लाइव भाव",
     hero_title: 'अपनी फसल बेचें <span class="grad-txt">बिना कतार,</span> बिना परेशानी।',
     hero_sub: "स्मार्ट टोकन, लाइव खरीद स्थिति, न्यूनतम समर्थन मूल्य (MSP) गारंटी, AGMARKNET से आज के असली मंडी भाव और मौसम पूर्वानुमान। बिचौलिया मुक्त भारत।",
     hero_btn_book: "🚜 टोकन बुक करें", hero_btn_comm: "🤝 किसान समुदाय ↗",
-    stat_farmers: "किसान पंजीकृत", stat_paid: "DBT द्वारा भुगतान", stat_guarantee: "भुगतान गारंटी",
-    ticker_txt: "📢 गेहूं खरीद 1 अप्रैल से प्रारंभ · धान खरीद 1 अक्टूबर से · MSP 2024-25 दरें लागू · 72 घंटे में बैंक खाते में भुगतान · 70+ मंडियां मैप पर उपलब्ध · किसान हेल्पलाइन 1800-180-1551 ·",
+    stat_farmers: "किसान पंजीकृत",
+    stat_demo_label: "(*सिमुलेशन डेमो संख्या)",
+    th_season: "सीजन",
+    status_live: "● लाइव",
+    status_soon: "● जल्द प्रारंभ",
+    status_closed: "● बंद", stat_paid: "DBT द्वारा भुगतान", stat_guarantee: "भुगतान गारंटी",
+    ticker_txt: "📢 गेहूं खरीद 1 अप्रैल से प्रारंभ · धान खरीद 1 अक्टूबर से · MSP 2026-27 दरें लागू · 72 घंटे में बैंक खाते में भुगतान · 67 मंडियां मैप पर उपलब्ध · किसान हेल्पलाइन 1800-180-1551 ·",
     feat_tag: "सुविधाएं", feat_title: "प्रत्येक भारतीय किसान के लिए निर्मित", feat_sub: "टोकन से लेकर बैंक खाते में पैसे तक — एक सरल डिजिटल अनुभव।",
     feat_1_h: "शून्य प्रतीक्षा समय", feat_1_p: "घर से निकलने से पहले सटीक समय स्लॉट जानें। धूप में लंबी कतारों से मुक्ति पाएं।",
     feat_2_h: "त्वरित SMS अलर्ट", feat_2_p: "पंजीकरण से लेकर बैंक भुगतान तक की हर जानकारी फोन पर पाएं।",
     feat_3_h: "किसान समुदाय बाज़ार ↗", feat_3_p: "सीधे अन्य किसानों से फसल खरीदें-बेचें, ट्रैक्टर व वाहन किराए पर लें।",
     feat_4_h: "उचित मूल्य गारंटी", feat_4_p: "सरकारी समर्थन मूल्य और लाइव मंडी भाव देखें, ताकि फसल का सही दाम मिले।",
     feat_5_h: "सीधा DBT भुगतान", feat_5_p: "72 घंटे में सीधे आपके बैंक खाते में राशि। शून्य बिचौलिए, 100% पारदर्शिता।",
-    feat_6_h: "अखिल भारतीय मंडी मैप", feat_6_p: "70+ APMC मंडियों का नक्शा और लाइव मौसम की सटीक चेतावनी।",
+    feat_6_h: "अखिल भारतीय मंडी मैप", feat_6_p: "67 APMC मंडियों का नक्शा और लाइव मौसम की सटीक चेतावनी।",
     guide_tag: "चरण-दर-चरण", guide_title: "टोकन कैसे प्राप्त करें", guide_sub: "बुजुर्ग एवं नए उपयोगकर्ताओं के लिए सरल सचित्र गाइड।",
     demo_play: "डेमो एनीमेशन देखें", demo_steps: "6 आसान कदम · शुरू करने के लिए क्लिक करें",
     step1_t: "पंजीकरण फॉर्म भरें", step1_d: "नाम, मोबाइल, आधार और फसल विवरण — केवल 2 मिनट।",
@@ -1289,7 +1417,7 @@ const I18N = {
     crop_wheat: "गेहूं", crop_paddy: "धान", crop_mustard: "सरसों", crop_gram: "चना", crop_maize: "मक्का",
     prices_tag: "लाइव बाज़ार भाव", prices_title: "आज के वास्तविक मंडी भाव 📈", prices_sub: "AGMARKNET (भारत सरकार) से लाइव डेटा। आज के असली भाव देखने के लिए फसल चुनें।",
     prices_refresh: "🔄 ताज़ा करें",
-    mandi_tag: "मंडी लोकेटर + मौसम", mandi_title: "नक्शे पर नजदीकी मंडी खोजें 🗺️", mandi_sub: "भारत भर की 70+ मंडियां। शहर खोजें या GPS का उपयोग करें — दूरी और मौसम की जानकारी के साथ।",
+    mandi_tag: "मंडी लोकेटर + मौसम", mandi_title: "नक्शे पर नजदीकी मंडी खोजें 🗺️", mandi_sub: "भारत भर की 67 मंडियां। शहर खोजें या GPS का उपयोग करें — दूरी और मौसम की जानकारी के साथ।",
     mandi_ph: "🔍 अपना शहर / जिला दर्ज करें (उदा. Lucknow, Jaipur)", mandi_gps: "📍 GPS स्थान",
     wx_head: "🌦️ मंडी में मौसम", wx_desc: "5 दिवसीय मौसम पूर्वानुमान और परिवहन सुरक्षा सलाह देखने के लिए मंडी चुनें।",
     reg_tag: "पंजीकरण", reg_title: "तुरंत टोकन प्राप्त करें", reg_sub: "आपकी जानकारी सुरक्षित रूप से सहेजी जाती है। ✅",
@@ -1299,7 +1427,30 @@ const I18N = {
     lbl_crop: "फसल चुनें *",
     lbl_qty: "मात्रा (क्विंटल) *", ph_qty: "उदा. 50",
     lbl_dist: "जिला *", ph_dist: "आपका जिला",
-    btn_issue_token: "✅ टोकन जारी करें — SMS सहित"
+        chat_fab_text: "किसान AI से पूछें",
+    chat_header_title: "किसान AI सहायक",
+    chat_header_status: "ऑनलाइन • जेमिनी AI संचालित",
+    chat_chip_leaf_curl: "🍅 पत्ती मरोड़ का इलाज",
+    chat_chip_pm_kisan: "💰 पीएम-किसान ₹6,000",
+    chat_chip_wheat_fert: "🌾 गेहूं खाद प्रबंधन",
+    chat_chip_mandi_tips: "📈 मंडी में बेहतर भाव",
+    chat_chip_rain_precautions: "🌧️ बारिश से बचाव",
+    chat_greeting: "<b>🙏 नमस्ते किसान मित्र!</b><br>मैं आपका <b>AI कृषि सहायक</b> हूँ। मुझसे फसल रोग, कीट उपचार, खाद की मात्रा, सरकारी सब्सिडी या APMC मंडी भाव के बारे में <b>हिंदी</b> या <b>अंग्रेजी</b> में पूछें।",
+    chat_input_ph: "हिंदी या अंग्रेजी में पूछें या 🎤 दबाएं...",
+    chat_disclaimer: "⚠️ AI-जनित सलाह। खेत में छिड़काव से पहले कृपया स्थानीय कृषि अधिकारी से खुराक की पुष्टि करें।",
+    btn_issue_token: "✅ टोकन जारी करें — SMS सहित",
+    cq_score_label: "दृश्यमान गुणवत्ता स्कोर",
+    cq_metrics_only: "केवल भौतिक दृश्य मानक",
+    cq_category_label: "गुणवत्ता श्रेणी",
+    cq_grade_explanation_label: "ग्रेड मूल्यांकन:",
+    cq_shelf_life_label: "⏳ अनुमानित शेल्फ-लाइफ",
+    cq_defects_label: "🔍 दृश्यमान दोष",
+    cq_obs_title: "दृश्य अवलोकन (कंप्यूटर विज़न)",
+    cq_mkt_benchmark_label: "मंडी बेंचमार्क:",
+    cq_realization_label: "सांकेतिक प्राप्ति मूल्य:",
+    cq_advice_title: "💡 कार्यवाही योग्य सलाह",
+    cq_disclaimer_title: "एआई अस्वीकरण:",
+    cq_btn_another: "🔄 अन्य फसल की जांच करें"
   },
   ta: {
     nav_home: "முகப்பு", nav_guide: "📖 செயல்முறை", nav_track: "🔍 நிலை அறிய", nav_prices: "📈 நேரடி விலை", nav_mandis: "📍 மண்டி வரைபடம்", nav_community: "🤝 சமூகம் ↗", nav_register: "📝 பதிவு", nav_admin: "🛡️ நிர்வாக தளம் ↗", btn_admin_portal: "🛡️ நிர்வாக தளம் ↗",
@@ -1307,11 +1458,16 @@ const I18N = {
     banner_tts: "குரல் வழி இயக்கம்: ஒருமுறை தொட்டு கேட்கவும், இருமுறை தொட்டு திறக்கவும்.",
     voice_activated: "குரல் வாசிப்பான் இயக்கப்பட்டது. ஒருமுறை தொட்டு கேட்கலாம், இருமுறை தொட்டு திறக்கலாம்.",
     hint_double_click: "திறக்க இருமுறை தொடவும்.",
-    hero_pill: "டிஜிட்டல் இந்தியா திட்டம் · 70+ மண்டிகள் · நேரடி விலை",
+    hero_pill: "டிஜிட்டல் இந்தியா திட்டம் · 67 மண்டிகள் · நேரடி விலை",
     hero_title: 'உங்கள் விளைச்சலை விற்கவும் <span class="grad-txt">நீண்ட வரிசையின்றி,</span> இடைத்தரகரின்றி.',
     hero_sub: "ஸ்மார்ட் டோக்கன், நேரடி கொள்முதல் நிலை, குறைந்தபட்ச ஆதரவு விலை (MSP), AGMARKNET நேரடி சந்தை விலைகள் மற்றும் வானிலை முன்னறிவிப்பு.",
     hero_btn_book: "🚜 டோக்கன் பதிவு", hero_btn_comm: "🤝 உழவர் சமூகம் ↗",
-    stat_farmers: "இணைந்த விவசாயிகள்", stat_paid: "DBT மூலம் செலுத்தியது", stat_guarantee: "பண உத்தரவாதம்",
+    stat_farmers: "இணைந்த விவசாயிகள்",
+    stat_demo_label: "(*மாதிரி டெமோ எண்ணிக்கை)",
+    th_season: "பருவம்",
+    status_live: "● நேரடி",
+    status_soon: "● விரைவில் தொடங்கும்",
+    status_closed: "● முடிந்தது", stat_paid: "DBT மூலம் செலுத்தியது", stat_guarantee: "பண உத்தரவாதம்",
     ticker_txt: "📢 கோதுமை கொள்முதல் ஏப்ரல் 1 முதல் · நெல் கொள்முதல் அக்டோபர் 1 முதல் · 72 மணி நேரத்திற்குள் வங்கிக் கணக்கில் பணம் · நேரடி உதவி எண் 1800-180-1551 ·",
     feat_tag: "சிறப்பம்சங்கள்", feat_title: "இந்திய விவசாயிகளுக்காக உருவாக்கப்பட்டது", feat_sub: "டோக்கன் முதல் வங்கி கணக்கு வரை — எளிய டிஜிட்டல் முறை.",
     feat_1_h: "காத்திருக்க தேவையில்லை", feat_1_p: "வீட்டை விட்டு கிளம்பும் முன்பே உங்கள் நேரத்தை அறிந்து கொள்ளுங்கள். வெயிலில் வரிசையில் நிற்பதை தவிர்க்கவும்.",
@@ -1319,7 +1475,7 @@ const I18N = {
     feat_3_h: "உழவர் சந்தை சமூகம் ↗", feat_3_p: "விளைபொருட்களை விற்க, டிராக்டர் மற்றும் லாரி வாடகைக்கு எடுக்க நேரடி தளம்.",
     feat_4_h: "நியாயமான விலை உறுதி", feat_4_p: "அரசு MSP விலை மற்றும் இன்றைய நேரடி சந்தை விலையை அறிந்து விற்கவும்.",
     feat_5_h: "நேரடி வங்கி பரிமாற்றம்", feat_5_p: "72 மணி நேரத்தில் பணம் நேரடியாக வங்கி கணக்கில். 100% வெளிப்படைத்தன்மை.",
-    feat_6_h: "அகில இந்திய மண்டி வரைபடம்", feat_6_p: "70+ மண்டிகளின் வரைபடம் மற்றும் நேரடி மழை வானிலை எச்சரிக்கைகள்.",
+    feat_6_h: "அகில இந்திய மண்டி வரைபடம்", feat_6_p: "67 மண்டிகளின் வரைபடம் மற்றும் நேரடி மழை வானிலை எச்சரிக்கைகள்.",
     guide_tag: "படிப்படியான வழிகாட்டி", guide_title: "டோக்கன் பெறுவது எப்படி", guide_sub: "முதியவர்கள் மற்றும் புதிய பயனர்களுக்கான எளிய காணொளி.",
     demo_play: "டெமோவை பார்க்க", demo_steps: "6 எளிய படிகள் · தொடங்க கிளிக் செய்யவும்",
     step1_t: "படிவத்தை பூர்த்தி செய்க", step1_d: "பெயர், மொபைல், ஆதார் மற்றும் பயிர் விவரங்கள் — 2 நிமிடம்.",
@@ -1333,7 +1489,7 @@ const I18N = {
     crop_wheat: "கோதுமை", crop_paddy: "நெல்", crop_mustard: "கடுகு", crop_gram: "கடலை", crop_maize: "மக்காச்சோளம்",
     prices_tag: "நேரடி சந்தை", prices_title: "இன்றைய மண்டி விலைகள் 📈", prices_sub: "AGMARKNET நேரடி அரசு தரவுத்தளம் (3,000+ மண்டிகள்). இன்றைய விலையை அறிய பயிரை தேர்ந்தெடுக்கவும்.",
     prices_refresh: "🔄 புதுப்பிக்க",
-    mandi_tag: "மண்டி வரைபடம் + வானிலை", mandi_title: "அருகிலுள்ள மண்டியை கண்டறியவும் 🗺️", mandi_sub: "70+ மண்டிகள். உங்கள் ஊரை தட்டச்சு செய்து நேரடி தூரம் மற்றும் வானிலை அறியவும்.",
+    mandi_tag: "மண்டி வரைபடம் + வானிலை", mandi_title: "அருகிலுள்ள மண்டியை கண்டறியவும் 🗺️", mandi_sub: "67 மண்டிகள். உங்கள் ஊரை தட்டச்சு செய்து நேரடி தூரம் மற்றும் வானிலை அறியவும்.",
     mandi_ph: "🔍 உங்கள் ஊர் / மாவட்டம் (எ.கா. Coimbatore, Erode)", mandi_gps: "📍 GPS இடம்",
     wx_head: "🌦️ மண்டியில் வானிலை", wx_desc: "5 நாள் வானிலை முன்னறிவிப்பை காண மண்டியை தேர்ந்தெடுக்கவும்.",
     reg_tag: "பதிவு", reg_title: "உடனடி டோக்கன் பெறுக", reg_sub: "உங்கள் விவரங்கள் பாதுகாப்பாக சேமிக்கப்படும். ✅",
@@ -1343,7 +1499,30 @@ const I18N = {
     lbl_crop: "பயிரை தேர்வு செய்க *",
     lbl_qty: "அளவு (குவிண்டால்) *", ph_qty: "எ.கா. 50",
     lbl_dist: "மாவட்டம் *", ph_dist: "உங்கள் மாவட்டம்",
-    btn_issue_token: "✅ டோக்கன் பெறுக — SMS உடன்"
+        chat_fab_text: "கிசான் AI-யிடம் கேளுங்கள்",
+    chat_header_title: "கிசான் AI உதவியாளர்",
+    chat_header_status: "ஆன்லைன் • ஜெமினி AI இயங்குதளம்",
+    chat_chip_leaf_curl: "🍅 இலை சுருட்டல் தீர்வு",
+    chat_chip_pm_kisan: "💰 பி.எம்-கிசான் ₹6,000",
+    chat_chip_wheat_fert: "🌾 கோதுமை உர அட்டவணை",
+    chat_chip_mandi_tips: "📈 மண்டி விற்பனை குறிப்புகள்",
+    chat_chip_rain_precautions: "🌧️ மழைக்கால முன்னெச்சரிக்கை",
+    chat_greeting: "<b>🙏 வணக்கம் விவசாய தோழரே!</b><br>நான் உங்கள் <b>AI வேளாண்மை உதவியாளர்</b>. பயிர் நோய்கள், பூச்சி கட்டுப்பாடு, உர அளவு, அரசு மானியம் அல்லது மண்டி விலை பற்றி எது வேண்டுமானாலும் கேளுங்கள்.",
+    chat_input_ph: "எந்த மொழியிலும் கேளுங்கள் அல்லது 🎤 அழுத்தவும்...",
+    chat_disclaimer: "⚠️ AI ஆலோசனை. வயலில் தெளிப்பதற்கு முன் உள்ளூர் வேளாண்மை அதிகாரியிடம் உர/பூச்சிக்கொல்லி அளவை உறுதிப்படுத்தவும்.",
+    btn_issue_token: "✅ டோக்கன் பெறுக — SMS உடன்",
+    cq_score_label: "தெரியும் தர மதிப்பீடு",
+    cq_metrics_only: "உடல் காட்சி அளவீடுகள் மட்டுமே",
+    cq_category_label: "தர வகை",
+    cq_grade_explanation_label: "தரம் மதிப்பீடு:",
+    cq_shelf_life_label: "⏳ மதிப்பிடப்பட்ட அடுக்கு வாழ்க்கை",
+    cq_defects_label: "🔍 தெரியும் குறைபாடுகள்",
+    cq_obs_title: "தெரியும் அவதானிப்புகள் (CV பகுப்பாய்வு)",
+    cq_mkt_benchmark_label: "சந்தை அளவுகோல்:",
+    cq_realization_label: "குறிக்கும் வரத்து மதிப்பு:",
+    cq_advice_title: "💡 செயல்படுத்தக்கூடிய ஆலோசனை",
+    cq_disclaimer_title: "AI மறுப்பு:",
+    cq_btn_another: "🔄 மற்றொரு பயிரை ஆய்வு செய்க"
   },
   te: {
     nav_home: "హోమ్", nav_guide: "📖 ఎలా పనిచేస్తుంది", nav_track: "🔍 స్థితిని తనిఖీ చేయండి", nav_prices: "📈 మార్కెట్ ధరలు", nav_mandis: "📍 మార్కెట్ మ్యాప్", nav_community: "🤝 కమ్యూనిటీ ↗", nav_register: "📝 నమోదు", nav_admin: "🛡️ అడ్మిన్ పోర్టల్ ↗", btn_admin_portal: "🛡️ అడ్మిన్ పోర్టల్ ↗",
@@ -1351,11 +1530,16 @@ const I18N = {
     banner_tts: "ట్యాప్-టు-స్పీక్ మోడ్: వినడానికి ఒకసారి నొక్కండి, తెరవడానికి రెండుసార్లు నొక్కండి.",
     voice_activated: "వాయిస్ రీడర్ ప్రారంభించబడింది. వినడానికి ఒకసారి నొక్కండి, తెరవడానికి రెండుసార్లు నొక్కండి.",
     hint_double_click: "తెరవడానికి రెండుసార్లు నొక్కండి.",
-    hero_pill: "డిజిటల్ ఇండియా చొరవ · 70+ మార్కెట్లు · లైవ్ ధరలు",
+    hero_pill: "డిజిటల్ ఇండియా చొరవ · 67 మార్కెట్లు · లైవ్ ధరలు",
     hero_title: 'పంటను అమ్మండి <span class="grad-txt">క్యూలు లేకుండా,</span> దళారుల ప్రమేయం లేకుండా.',
     hero_sub: "స్మార్ట్ టోకెన్, లైవ్ కొనుగోలు స్థితి, కనీస మద్దతు ధర (MSP) హామీ, AGMARKNET లైవ్ మార్కెట్ ధరలు మరియు వాతావరణ హెచ్చరికలు.",
     hero_btn_book: "🚜 టోకెన్ బుక్ చేయండి", hero_btn_comm: "🤝 రైతు కమ్యూనిటీ ↗",
-    stat_farmers: "రిజిస్టర్ అయిన రైతులు", stat_paid: "DBT ద్వారా చెల్లింపు", stat_guarantee: "చెల్లింపు హామీ",
+    stat_farmers: "రిజిస్టర్ అయిన రైతులు",
+    stat_demo_label: "(*డెమో నమూనా సంఖ్య)",
+    th_season: "సీజన్",
+    status_live: "● లైవ్",
+    status_soon: "● త్వరలో ప్రారంభం",
+    status_closed: "● ముగిసింది", stat_paid: "DBT ద్వారా చెల్లింపు", stat_guarantee: "చెల్లింపు హామీ",
     ticker_txt: "📢 గోధుమ కొనుగోలు ఏప్రిల్ 1 నుండి ప్రారంభం · వరి కొనుగోలు అక్టోబర్ 1 నుండి · 72 గంటల్లో ఖాతాలో డబ్బులు జమ · హెల్ప్‌లైన్ 1800-180-1551 ·",
     feat_tag: "ఫీచర్లు", feat_title: "ప్రతి భారతీయ రైతు కోసం రూపొందించబడింది", feat_sub: "టోకెన్ నుండి బ్యాంక్ ఖాతాలో డబ్బు వరకు — ఒకే డిజిటల్ వ్యవస్థ.",
     feat_1_h: "వేచి ఉండాల్సిన అవసరం లేదు", feat_1_p: "ఇంటి నుండి బయలుదేరే ముందే మీ సమయాన్ని తెలుసుకోండి. ఎండలో క్యూలో నిలబడకుండా ఉండండి.",
@@ -1363,7 +1547,7 @@ const I18N = {
     feat_3_h: "రైతు కమ్యూనిటీ మార్కెట్ ↗", feat_3_p: "రైతుల మధ్య నేరుగా పంట అమ్మకాలు, ట్రాక్టర్లు & లారీల అద్దె సేవలు.",
     feat_4_h: "సరసమైన ధర హామీ", feat_4_p: "ప్రభుత్వ MSP ధరలు మరియు ప్రస్తుత మార్కెట్ ధరలు సరిచూసి లాభం పొందండి.",
     feat_5_h: "నేరుగా DBT చెల్లింపు", feat_5_p: "72 గంటల్లో నేరుగా బ్యాంకు ఖాతాలో డబ్బు జమ. దళారుల ప్రమేయం లేదు.",
-    feat_6_h: "అఖిల భారత మార్కెట్ మ్యాప్", feat_6_p: "70+ మార్కెట్ల వివరాలు మరియు లైవ్ వర్ష సూచన హెచ్చరికలు.",
+    feat_6_h: "అఖిల భారత మార్కెట్ మ్యాప్", feat_6_p: "67 మార్కెట్ల వివరాలు మరియు లైవ్ వర్ష సూచన హెచ్చరికలు.",
     guide_tag: "దశల వారీ మార్గదర్శి", guide_title: "టోకెన్ ఎలా బుక్ చేసుకోవాలి", guide_sub: "రైతుల కోసం సులభమైన వీడియో గైడ్.",
     demo_play: "డెమో యానిమేషన్ చూడండి", demo_steps: "6 సులభమైన దశలు · ప్రారంభించడానికి క్లిక్ చేయండి",
     step1_t: "రిజిస్ట్రేషన్ ఫారం పూరించండి", step1_d: "పేరు, మొబైల్, ఆధార్ మరియు పంట వివరాలు — కేవలం 2 నిమిషాలు.",
@@ -1377,7 +1561,7 @@ const I18N = {
     crop_wheat: "గోధుమ", crop_paddy: "వరి", crop_mustard: "ఆవాలు", crop_gram: "శనగలు", crop_maize: "మొక్కజొన్న",
     prices_tag: "లైవ్ మార్కెట్", prices_title: "నేటి మార్కెట్ ధరలు 📈", prices_sub: "AGMARKNET ప్రభుత్వ లైవ్ డేటా (3,000+ మార్కెట్లు). నేటి ధరలను చూడటానికి పంటను ఎంచుకోండి.",
     prices_refresh: "🔄 తాజా చేయండి",
-    mandi_tag: "మార్కెట్ లొకేటర్ + వాతావరణం", mandi_title: "మ్యాప్‌లో సమీప మార్కెట్‌ను కనుగొనండి 🗺️", mandi_sub: "70+ మార్కెట్లు. మీ నగరాన్ని శోధించండి లేదా GPS ఉపయోగించి దూరం మరియు వాతావరణం తెలుసుకోండి.",
+    mandi_tag: "మార్కెట్ లొకేటర్ + వాతావరణం", mandi_title: "మ్యాప్‌లో సమీప మార్కెట్‌ను కనుగొనండి 🗺️", mandi_sub: "67 మార్కెట్లు. మీ నగరాన్ని శోధించండి లేదా GPS ఉపయోగించి దూరం మరియు వాతావరణం తెలుసుకోండి.",
     mandi_ph: "🔍 మీ నగరం / జిల్లా (ఉదా. Warangal, Kurnool)", mandi_gps: "📍 GPS స్థానం",
     wx_head: "🌦️ మార్కెట్ వద్ద వాతావరణం", wx_desc: "5 రోజుల వాతావరణ సూచనను చూడటానికి మార్కెట్‌ను ఎంచుకోండి.",
     reg_tag: "నమోదు", reg_title: "వెంటనే టోకెన్ పొందండి", reg_sub: "మీ డేటా సురక్షితంగా సేవ్ చేయబడుతుంది. ✅",
@@ -1387,13 +1571,119 @@ const I18N = {
     lbl_crop: "పంటను ఎంచుకోండి *",
     lbl_qty: "పరిమాణం (క్వింటాళ్ళు) *", ph_qty: "ఉదా. 50",
     lbl_dist: "జిల్లా *", ph_dist: "మీ జిల్లా",
-    btn_issue_token: "✅ టోకెన్ జారీ చేయండి — SMS తో"
+        chat_fab_text: "కిసాన్ AI ని అడగండి",
+    chat_header_title: "కిసాన్ AI సహాయక్",
+    chat_header_status: "ఆన్‌లైన్ • జెమిని AI ఆధారితం",
+    chat_chip_leaf_curl: "🍅 ఆకు ముడుత నివారణ",
+    chat_chip_pm_kisan: "💰 పి.ఎమ్-కిసాన్ ₹6,000",
+    chat_chip_wheat_fert: "🌾 గోధుమ ఎరువుల షెడ్యూల్",
+    chat_chip_mandi_tips: "📈 మార్కెట్ విక్రయ చిట్కాలు",
+    chat_chip_rain_precautions: "🌧️ వర్షపు జాగ్రత్తలు",
+    chat_greeting: "<b>🙏 నమస్కారం రైతు మిత్రమా!</b><br>నేను మీ <b>AI వ్యవసాయ సహాయకుడిని</b>. పంట తెగుళ్లు, పురుగుల నివారణ, ఎరువుల మోతాదు, ప్రభుత్వ పథకాలు లేదా మార్కెట్ ధరల గురించి నన్ను ఏదైనా అడగండి.",
+    chat_input_ph: "ఏ భాషలోనైనా అడగండి లేదా 🎤 నొక్కండి...",
+    chat_disclaimer: "⚠️ AI సలహా. పొలంలో వాడే ముందు స్థానిక వ్యవసాయ అధికారి వద్ద రసాయన మోతాదును ధృవీకరించుకోండి.",
+    btn_issue_token: "✅ టోకెన్ జారీ చేయండి — SMS తో",
+    cq_score_label: "కనిపించే నాణ్యత స్కోరు",
+    cq_metrics_only: "భౌతిక దృశ్య కొలమానాలు మాత్రమే",
+    cq_category_label: "నాణ్యత విభాగం",
+    cq_grade_explanation_label: "గ్రేడ్ అంచనా:",
+    cq_shelf_life_label: "⏳ అంచనా నిల్వ కాలం",
+    cq_defects_label: "🔍 కనిపించే లోపాలు",
+    cq_obs_title: "కనిపించే పరిశీలనలు (CV విశ్లేషణ)",
+    cq_mkt_benchmark_label: "మార్కెట్ ప్రమాణం:",
+    cq_realization_label: "సూచిక రాబడి:",
+    cq_advice_title: "💡 ఆచరణాత్మక సలహా",
+    cq_disclaimer_title: "AI ప్రకటన:",
+    cq_btn_another: "🔄 మరొక పంటను పరిశీలించండి"
   }
 };
 
 let currentLang = localStorage.getItem("km_lang") || "en";
 
-function changeLanguage(lang){
+
+  // Dynamic MSP Schedule Table computed from current date & 2026-27 season
+  const MSP_SCHEDULE_ITEMS = [
+    { crop: "Wheat", icon: "🌾", cropKey: "crop_wheat", mandi: "Lucknow Mandi, UP", seasonType: "Rabi", dateStr: "01 Apr – 30 Jun", startMonth: 4, startDay: 1, endMonth: 6, endDay: 30, msp: "₹2,425" },
+    { crop: "Paddy", icon: "🌾", cropKey: "crop_paddy", mandi: "Patna Mandi, Bihar", seasonType: "Kharif", dateStr: "01 Oct – 31 Dec", startMonth: 10, startDay: 1, endMonth: 12, endDay: 31, msp: "₹2,300" },
+    { crop: "Mustard", icon: "🌱", cropKey: "crop_mustard", mandi: "Jaipur Mandi, Rajasthan", seasonType: "Rabi", dateStr: "15 Feb – 15 Jun", startMonth: 2, startDay: 15, endMonth: 6, endDay: 15, msp: "₹5,950" },
+    { crop: "Gram", icon: "🫘", cropKey: "crop_gram", mandi: "Bhopal Mandi, MP", seasonType: "Rabi", dateStr: "20 Feb – 31 Jul", startMonth: 2, startDay: 20, endMonth: 7, endDay: 31, msp: "₹5,650" },
+    { crop: "Maize", icon: "🌽", cropKey: "crop_maize", mandi: "Chandigarh Mandi", seasonType: "Kharif", dateStr: "01 Dec – 31 Mar", startMonth: 12, startDay: 1, endMonth: 3, endDay: 31, msp: "₹2,225" }
+  ];
+
+  function computeMspStatus(item, now = new Date()) {
+    const year = now.getFullYear();
+    let start, end;
+    if (item.startMonth <= item.endMonth) {
+      start = new Date(year, item.startMonth - 1, item.startDay, 0, 0, 0);
+      end = new Date(year, item.endMonth - 1, item.endDay, 23, 59, 59);
+    } else {
+      if (now.getMonth() + 1 >= item.startMonth) {
+        start = new Date(year, item.startMonth - 1, item.startDay, 0, 0, 0);
+        end = new Date(year + 1, item.endMonth - 1, item.endDay, 23, 59, 59);
+      } else {
+        start = new Date(year - 1, item.startMonth - 1, item.startDay, 0, 0, 0);
+        end = new Date(year, item.endMonth - 1, item.endDay, 23, 59, 59);
+      }
+    }
+
+    const seasonStartYear = (now.getMonth() + 1 >= 4) ? year : year - 1;
+    const seasonLabel = item.seasonType + " " + seasonStartYear + "-" + String(seasonStartYear + 1).slice(2);
+
+    let statusKey = "status_closed";
+    let badgeClass = "b-closed";
+
+    if (now >= start && now <= end) {
+      statusKey = "status_live";
+      badgeClass = "b-live";
+    } else if (now < start) {
+      const diffDays = (start - now) / (1000 * 60 * 60 * 24);
+      if (diffDays <= 60) {
+        statusKey = "status_soon";
+        badgeClass = "b-soon";
+      } else {
+        statusKey = "status_soon";
+        badgeClass = "b-soon";
+      }
+    } else {
+      const nextStart = new Date(start.getFullYear() + 1, item.startMonth - 1, item.startDay);
+      const diffDaysNext = (nextStart - now) / (1000 * 60 * 60 * 24);
+      if (diffDaysNext <= 45) {
+        statusKey = "status_soon";
+        badgeClass = "b-soon";
+      } else {
+        statusKey = "status_closed";
+        badgeClass = "b-closed";
+      }
+    }
+
+    return { seasonLabel, statusKey, badgeClass };
+  }
+
+  function renderMspScheduleTable() {
+    const tbody = document.getElementById("mspScheduleBody");
+    if (!tbody) return;
+    const now = new Date();
+    const d = I18N[currentLang] || I18N.en;
+
+    tbody.innerHTML = MSP_SCHEDULE_ITEMS.map(item => {
+      const { seasonLabel, statusKey, badgeClass } = computeMspStatus(item, now);
+      const cropText = d[item.cropKey] || item.crop;
+      const statusText = d[statusKey] || (statusKey === 'status_live' ? '● Live' : statusKey === 'status_soon' ? '● Opening Soon' : '● Closed');
+      return "<tr>" +
+        "<td>" + item.icon + ' <span data-i18n="' + item.cropKey + '">' + cropText + "</span></td>" +
+        "<td>" + item.mandi + "</td>" +
+        "<td>" + seasonLabel + "</td>" +
+        "<td>" + item.dateStr + "</td>" +
+        "<td>" + item.msp + "</td>" +
+        '<td><span class="badge ' + badgeClass + '" data-i18n="' + statusKey + '">' + statusText + "</span></td>" +
+        "</tr>";
+    }).join("");
+  }
+
+  function changeLanguage(lang) {
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+  }
   currentLang = lang;
   localStorage.setItem("km_lang", lang);
   document.getElementById("langSelect").value = lang;
@@ -1443,6 +1733,69 @@ function showSMS(text){
 let activeTrackTimer = null;
 let currentTrackingToken = null;
 
+/* ============ RESILIENT POLLING CONTROLLERS (ITEM 19) ============ */
+const TRACK_BASE_INTERVAL = 10000; // 10s
+let trackFailCount = 0;
+
+function scheduleNextTrackPoll(delay) {
+  if (activeTrackTimer) { clearTimeout(activeTrackTimer); activeTrackTimer = null; }
+  if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
+  if (!currentTrackingToken) return;
+  const resEl = document.getElementById("result");
+  if (!resEl || resEl.style.display === "none") return;
+
+  activeTrackTimer = setTimeout(async () => {
+    activeTrackTimer = null;
+    if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
+    try {
+      await trackStatus(true);
+      trackFailCount = 0;
+      scheduleNextTrackPoll(TRACK_BASE_INTERVAL);
+    } catch (err) {
+      trackFailCount++;
+      console.warn("[KisanMitra Tracker] Poll failed (" + trackFailCount + "/5):", err.message || err);
+      if (trackFailCount >= 5) {
+        console.warn("[KisanMitra Tracker] Auto-sync stopped after 5 consecutive failures.");
+        return;
+      }
+      const backoff = TRACK_BASE_INTERVAL * Math.pow(2, trackFailCount);
+      scheduleNextTrackPoll(backoff);
+    }
+  }, delay);
+}
+
+function startTokenTrackingPoll() {
+  trackFailCount = 0;
+  scheduleNextTrackPoll(TRACK_BASE_INTERVAL);
+}
+
+function stopTokenTrackingPoll() {
+  if (activeTrackTimer) {
+    clearTimeout(activeTrackTimer);
+    activeTrackTimer = null;
+  }
+}
+
+// Document visibilitychange listener to pause all polling when tab is hidden
+document.addEventListener("visibilitychange", function() {
+  if (document.visibilityState === "hidden") {
+    // Pause both timers
+    if (activeTrackTimer) { clearTimeout(activeTrackTimer); activeTrackTimer = null; }
+    if (notifPollTimer) { clearTimeout(notifPollTimer); notifPollTimer = null; }
+  } else if (document.visibilityState === "visible") {
+    // Resume notifications if within retry allowance
+    if (notifFailCount < 5) {
+      scheduleNextNotifPoll(1000);
+    }
+    // Resume token tracking if tracking result is currently displayed
+    if (currentTrackingToken && document.getElementById("result") && document.getElementById("result").style.display !== "none") {
+      if (trackFailCount < 5) {
+        scheduleNextTrackPoll(1000);
+      }
+    }
+  }
+});
+
 async function trackStatus(isBackgroundSync = false){
   const t = document.getElementById("tokenInput").value.trim().toUpperCase();
   const r = document.getElementById("result");
@@ -1476,6 +1829,7 @@ async function trackStatus(isBackgroundSync = false){
     }
   } catch(e){
     console.warn("Tracker API fetch error:", e);
+    if (isBackgroundSync) throw e;
   }
 
   if(!d) {
@@ -1521,13 +1875,8 @@ async function trackStatus(isBackgroundSync = false){
   r.innerHTML = html + '</ul>';
 
   // Start background auto-sync so officer step advances reflect live on farmer screen!
-  if (!activeTrackTimer) {
-    activeTrackTimer = setInterval(() => {
-      if (currentTrackingToken && document.getElementById("result").style.display !== "none") {
-        trackStatus(true);
-      }
-    }, 2500);
-  }
+  // Start background auto-sync (10s polling, visibility-aware, exponential backoff)
+  startTokenTrackingPoll();
 }
 
 
@@ -1547,10 +1896,10 @@ function generateTokenSlipHTML(data) {
     '.token-box b { font-size: 34px; color: #1b5e20; letter-spacing: 3px; font-family: monospace; display: block; margin-top: 4px; }' +
     '.details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 22px; font-size: 14px; }' +
     '.item { background: #fbfbfb; padding: 12px 16px; border-radius: 8px; border-left: 4px solid #4caf50; border-top: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee; }' +
-    '.item label { color: #666; font-size: 11px; text-transform: uppercase; display: block; font-weight: bold; }' +
+    '.item label { color: #333; font-size: 11px; text-transform: uppercase; display: block; font-weight: bold; }' +
     '.item value { font-weight: 700; font-size: 15px; color: #111; display: block; margin-top: 3px; }' +
     '.instructions { background: #fff8e1; border: 1.5px solid #ffe082; border-radius: 8px; padding: 15px 18px; font-size: 13px; line-height: 1.6; color: #5d4037; margin-bottom: 22px; }' +
-    '.footer { text-align: center; border-top: 1px solid #ddd; padding-top: 15px; font-size: 12px; color: #777; line-height: 1.6; }' +
+    '.footer { text-align: center; border-top: 1px solid #ddd; padding-top: 15px; font-size: 12px; color: #333; line-height: 1.6; }' +
     '.btn-print { background: linear-gradient(135deg,#3ecf6f,#2e7d32); color: #fff; border: none; padding: 12px 30px; font-size: 15px; font-weight: 800; border-radius: 25px; cursor: pointer; margin-top: 12px; box-shadow: 0 4px 15px rgba(46,125,50,0.3); }' +
     '@media print { .no-print { display: none !important; } body { background: #fff; padding: 0; } .slip { box-shadow: none; border: 2px solid #000; } }' +
     '</style></head><body>' +
@@ -2123,8 +2472,10 @@ window.addEventListener("load", function(){
   renderMandiList(null);
   loadPrices();
   changeLanguage(currentLang);
+  renderMspScheduleTable();
+  setKisanAILanguage(kisanAILang, false);
   setTimeout(function(){
-    showSMS("KisanMitra: 🌾 70+ mandis mapped across India! Voice assistant & live prices ready. Helpline 1800-180-1551 -VM-KISANMT");
+    showSMS("KisanMitra: 🌾 67 mandis mapped across India! Voice assistant & live prices ready. Helpline 1800-180-1551 -VM-KISANMT");
   }, 3000);
 });
 
@@ -2323,7 +2674,13 @@ async function loadFarmerNotifications(){
       }
     }
   } catch(e){
-    console.warn("Farmer notifs fetch fallback:", e);
+    console.warn("Farmer notifs fetch error:", e);
+    // Fall back to local alerts if any
+    try {
+      const localAlerts = JSON.parse(localStorage.getItem("km_broadcast_alerts") || "[]");
+      if (localAlerts.length) list = localAlerts;
+    } catch(err){}
+    throw e;
   }
 
   // Merge with locally stored broadcast alerts if offline
@@ -2338,7 +2695,7 @@ async function loadFarmerNotifications(){
 
   if(!list.length){
     list = [
-      { id: "def_1", title: "🌾 Wheat Procurement Open", message: "MSP rate of ₹2,425/quintal active across 70+ state APMC mandis.", sent_at: new Date().toISOString() },
+      { id: "def_1", title: "🌾 Wheat Procurement Open", message: "MSP rate of ₹2,425/quintal active across 67 state APMC mandis.", sent_at: new Date().toISOString() },
       { id: "def_2", title: "⚡ DBT Subsidy Disbursal", message: "72-hour direct bank transfer guaranteed on approved smart tokens.", sent_at: new Date(Date.now() - 3600000).toISOString() }
     ];
   }
@@ -2393,12 +2750,37 @@ async function loadFarmerNotifications(){
   }).join('');
 }
 
+
+function toggleMobileNav() {
+  const nav = document.getElementById('nav');
+  const btn = document.getElementById('menuToggleBtn');
+  if (!nav) return;
+  const isOpen = nav.classList.toggle('open');
+  if (btn) btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const navLinks = document.querySelectorAll('#nav a');
+  navLinks.forEach(function(link) {
+    link.addEventListener('click', function() {
+      const nav = document.getElementById('nav');
+      const btn = document.getElementById('menuToggleBtn');
+      if (nav && nav.classList.contains('open')) {
+        nav.classList.remove('open');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  });
+});
+
 function toggleNotifDrawer(e){
   if(e) e.stopPropagation();
   const d = document.getElementById("notifDrawer");
   if(!d) return;
   const isHidden = d.style.display === "none" || !d.style.display;
   d.style.display = isHidden ? "flex" : "none";
+  const btn = document.getElementById("notifBellBtn");
+  if(btn) btn.setAttribute("aria-expanded", isHidden ? "true" : "false");
   if(isHidden) loadFarmerNotifications();
 }
 
@@ -2419,6 +2801,8 @@ document.addEventListener("click", function(e){
   if(!e.target.closest("#notifDrawer") && !e.target.closest("#notifBellBtn")){
     const d = document.getElementById("notifDrawer");
     if(d) d.style.display = "none";
+    const btn = document.getElementById("notifBellBtn");
+    if(btn) btn.setAttribute("aria-expanded", "false");
   }
 });
 
@@ -2429,8 +2813,42 @@ window.addEventListener("storage", function(e){
   }
 });
 
-// Background polling for announcements every 3.5 seconds
-setInterval(loadFarmerNotifications, 3500);
+// Background polling for announcements every 20 seconds (resilient, exponential backoff, visibility-aware)
+const NOTIF_BASE_INTERVAL = 20000; // 20s
+let notifPollTimer = null;
+let notifFailCount = 0;
+
+function scheduleNextNotifPoll(delay) {
+  if (notifPollTimer) { clearTimeout(notifPollTimer); notifPollTimer = null; }
+  if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
+
+  notifPollTimer = setTimeout(async () => {
+    notifPollTimer = null;
+    if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
+    try {
+      await loadFarmerNotifications();
+      notifFailCount = 0;
+      scheduleNextNotifPoll(NOTIF_BASE_INTERVAL);
+    } catch (err) {
+      notifFailCount++;
+      console.warn("[KisanMitra Notifications] Poll failed (" + notifFailCount + "/5):", err.message || err);
+      if (notifFailCount >= 5) {
+        console.warn("[KisanMitra Notifications] Polling stopped after 5 consecutive failures.");
+        return;
+      }
+      const backoff = NOTIF_BASE_INTERVAL * Math.pow(2, notifFailCount);
+      scheduleNextNotifPoll(backoff);
+    }
+  }, delay);
+}
+
+function startNotificationPolling() {
+  notifFailCount = 0;
+  scheduleNextNotifPoll(NOTIF_BASE_INTERVAL);
+}
+
+// Start notifications poller
+startNotificationPolling();
 
 
 
@@ -2801,65 +3219,6 @@ function showCropError(msg) {
   }
 }
 
-function analyzeCropQualityClientFallback(base64Image, requestedCrop) {
-  const crop = requestedCrop || "Tomato";
-  const benchmarkPrices = {
-    Tomato: 2200,
-    Chilli: 14200,
-    Onion: 1950,
-    Potato: 1500,
-    Banana: 1750,
-    Rice: 2350
-  };
-  const benchmark = benchmarkPrices[crop] || 2200;
-
-  return {
-    success: true,
-    crop: crop,
-    detection_confidence: 94,
-    confidence_tier: "HIGH",
-    quality_score: 86,
-    quality_category: "Grade A",
-    maturity_assessment: "Ripeness: ripe",
-    visible_observations: [
-      `Visible physical color and surface uniformity consistent with standard commercial ${crop} produce.`,
-      "Healthy visual skin firmness with standard APMC lot characteristics."
-    ],
-    visible_defects: ["Minor cosmetic surface markings within acceptable APMC lotting tolerances."],
-    visible_metrics: {
-      defect_ratio_pct: 7,
-      ripeness_stage: "ripe",
-      is_fully_spoiled: false
-    },
-    recommendations: [
-      "Produce meets high visual standards. Suitable for premium APMC mandi lotting or direct listing.",
-      "Maintain dry, well-ventilated storage to preserve quality grade before auction."
-    ],
-    price_estimation: {
-      calculated: true,
-      benchmark_price: benchmark,
-      estimated_price_min: Math.round(benchmark * 0.85),
-      estimated_price_max: benchmark,
-      realization_min_pct: 85,
-      realization_max_pct: 100,
-      realization_label: "Premium APMC lotting band",
-      formatted_range: `₹${Math.round(benchmark * 0.85).toLocaleString('en-IN')} – ₹${benchmark.toLocaleString('en-IN')} / quintal`
-    },
-    market_data: {
-      available: true,
-      source: "REFERENCE_DEMO",
-      crop: crop,
-      mandi_name: "Kolar APMC Mandi",
-      state: "Karnataka",
-      modal_price: benchmark
-    },
-    model_status: {
-      model_name: "Google Gemini Vision API",
-      provider: "Google Gemini Vision API",
-      scoring_engine: "Deterministic KisanMitra Quality & Realization Rules"
-    }
-  };
-}
 
 async function startCropQualityAnalysis() {
   if (!currentCropImageBase64) {
@@ -2910,7 +3269,8 @@ async function startCropQualityAnalysis() {
     try {
       res = await KM_API.analyzeCropQuality({
         image: currentCropImageBase64,
-        crop: selectedCropType || undefined
+        crop: selectedCropType || undefined,
+        language: (kisanAILang === 'hi') ? 'hi' : 'en'
       });
     } catch (apiErr) {
       console.warn("KM_API analyzeCropQuality threw, using vision fallback:", apiErr);
@@ -2926,8 +3286,15 @@ async function startCropQualityAnalysis() {
     });
 
     if (!res || !res.success) {
-      // Automatic seamless fallback to client vision analyzer
-      res = analyzeCropQualityClientFallback(currentCropImageBase64, selectedCropType);
+      if (loadingBox) loadingBox.style.display = "none";
+      if (analyzeBtn) analyzeBtn.disabled = false;
+      const errMsg = (res && res.message) ? res.message : "AI assessment is currently unavailable. Please try again shortly.";
+      showCropError(errMsg);
+      return;
+    }
+    const cqNotice = document.getElementById("cqResOfflineNotice");
+    if (cqNotice) {
+      cqNotice.style.display = (res && res.source === "fallback") ? "block" : "none";
     }
 
     latestAnalysisResult = res;
@@ -2976,14 +3343,35 @@ async function startCropQualityAnalysis() {
       catBadge.className = `cq-badge ${catClassMap[res.quality_category] || 'cq-cat-fair'}`;
     }
 
+    // Grade Explanation
+    const expEl = document.getElementById("cqResGradeExplanation");
+    if (expEl) {
+      expEl.textContent = res.grade_explanation || ((kisanAILang === 'hi') ? 'सामान्य दृश्य निरीक्षण संपन्न।' : 'Visual inspection completed.');
+    }
+
+    // Shelf Life
+    const shelfEl = document.getElementById("cqResShelfLife");
+    if (shelfEl) {
+      shelfEl.textContent = res.shelf_life || ((kisanAILang === 'hi') ? '3-5 दिन' : '3–5 days');
+    }
+
+    // Defects Summary
+    const defectsSummaryEl = document.getElementById("cqResDefectsSummary");
+    if (defectsSummaryEl) {
+      if (res.visible_defects && res.visible_defects.length > 0) {
+        defectsSummaryEl.textContent = res.visible_defects.join(", ");
+      } else {
+        defectsSummaryEl.textContent = (kisanAILang === 'hi') ? "कोई गंभीर दोष नहीं" : "None detected";
+      }
+    }
+
     // Observations List
     const obsList = document.getElementById("cqResObsList");
     if (obsList) {
-      if (res.visible_observations && res.visible_observations.length > 0) {
-        obsList.innerHTML = res.visible_observations.map(obs => `<li>• ${obs}</li>`).join("");
-      } else {
-        obsList.innerHTML = `<li>• General surface inspection completed.</li>`;
-      }
+      const items = (res.visible_observations && res.visible_observations.length > 0)
+        ? res.visible_observations
+        : ((kisanAILang === 'hi') ? ["सतह व छिलके का सामान्य निरीक्षण संपन्न।"] : ["General surface inspection completed."]);
+      obsList.innerHTML = items.map(obs => `<li>• ${obs}</li>`).join("");
     }
 
     // Market Reference & Realization
@@ -3015,14 +3403,21 @@ async function startCropQualityAnalysis() {
       if (indPrice) indPrice.textContent = "Unavailable";
     }
 
-    // Recommendations
+    // Recommendations (Advice)
     const recsBox = document.getElementById("cqResRecsBox");
     const recsList = document.getElementById("cqResRecsList");
-    if (recsList && res.recommendations && res.recommendations.length > 0) {
-      recsList.innerHTML = res.recommendations.map(r => `<li>${r}</li>`).join("");
+    const adviceItems = res.recommendations || res.advice || [];
+    if (recsList && adviceItems.length > 0) {
+      recsList.innerHTML = adviceItems.map(r => `<li>${r}</li>`).join("");
       if (recsBox) recsBox.style.display = "block";
     } else if (recsBox) {
       recsBox.style.display = "none";
+    }
+
+    // AI Disclaimer
+    const discEl = document.getElementById("cqResDisclaimer");
+    if (discEl && res.disclaimer) {
+      discEl.textContent = res.disclaimer;
     }
 
   } catch (err) {
@@ -3056,7 +3451,8 @@ async function saveCurrentCropAnalysis() {
     const res = await KM_API.analyzeCropQuality({
       image: currentCropImageBase64,
       crop: latestAnalysisResult.crop,
-      save_to_history: true
+      save_to_history: true,
+      language: (kisanAILang === 'hi') ? 'hi' : 'en'
     });
 
     if (saveBtn) {
@@ -3171,23 +3567,221 @@ function toggleKisanChat() {
   if (!box) return;
   const isHidden = box.style.display === "none" || !box.style.display;
   box.style.display = isHidden ? "flex" : "none";
+  const fab = document.getElementById("kisanChatFab");
+  if (fab) fab.setAttribute("aria-expanded", isHidden ? "true" : "false");
   if (isHidden) {
     const input = document.getElementById("kisanChatInput");
     if (input) setTimeout(() => input.focus(), 200);
   }
 }
 
+
+const KISAN_AI_I18N = {
+  en: {
+    greeting: "<b>🙏 Namaste Kisan Mitra!</b><br>I am your <b>AI Agricultural Assistant</b>. Ask me anything about crop diseases, pest remedies, fertilizer doses, government subsidies, or APMC mandi prices in <b>English</b> or <b>Hindi</b>.",
+    chips: [
+      "🍅 Leaf curl remedy",
+      "💰 PM-KISAN ₹6,000",
+      "🌾 Wheat fertilizer",
+      "📈 Mandi selling tips",
+      "🌧️ Rain precautions"
+    ],
+    placeholder: "Ask in English or Hindi or tap 🎤...",
+    thinking: "⏳ <i>Kisan AI is thinking...</i>",
+    offlineNotice: "⚠️ Offline answer (AI unavailable)",
+    busyMessage: "AI is busy, please try again in a few minutes.",
+    disclaimer: "⚠️ AI-generated advice. Please verify chemical doses with local agricultural officers before field application.",
+    readAloud: "🔊 Read",
+    readStop: "⏹️ Stop"
+  },
+  hi: {
+    greeting: "<b>🙏 नमस्ते किसान मित्र!</b><br>मैं आपका <b>एआई कृषि सहायक</b> हूँ। मुझसे फसल रोग, कीट उपचार, खाद की मात्रा, सरकारी सब्सिडी या APMC मंडी भाव के बारे में <b>हिंदी</b> या <b>अंग्रेजी</b> में पूछें।",
+    chips: [
+      "🍅 पत्ती मरोड़ का उपचार",
+      "💰 PM-किसान ₹6,000",
+      "🌾 गेहूं में यूरिया की मात्रा",
+      "📈 मंडी में अधिक मुनाफा",
+      "🌧️ बारिश से फसल बचाव"
+    ],
+    placeholder: "हिंदी या अंग्रेजी में पूछें या 🎤 दबाएं...",
+    thinking: "⏳ <i>किसान एआई सोच रहा है...</i>",
+    offlineNotice: "⚠️ ऑफ़लाइन उत्तर (AI अनुपलब्ध)",
+    busyMessage: "एआई अभी व्यस्त है, कृपया कुछ मिनटों में पुनः प्रयास करें।",
+    disclaimer: "⚠️ AI-निर्मित सलाह। कृपया खेत में प्रयोग से पहले स्थानीय कृषि अधिकारी से पुष्टि करें।",
+    readAloud: "🔊 सुनें",
+    readStop: "⏹️ रोकें"
+  }
+};
+
+let kisanAILang = localStorage.getItem("km_ai_lang") || "en";
+if (kisanAILang !== "hi" && kisanAILang !== "en") {
+  kisanAILang = "en";
+}
+
+function setKisanAILanguage(lang, persist = true) {
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+  }
+  kisanAILang = (lang === "hi") ? "hi" : "en";
+  if (persist) {
+    try {
+      localStorage.setItem("km_ai_lang", kisanAILang);
+    } catch (e) {}
+  }
+  updateKisanChatLanguageUI();
+}
+
+function updateKisanChatLanguageUI() {
+  const isHi = (kisanAILang === "hi");
+  const dict = KISAN_AI_I18N[kisanAILang] || KISAN_AI_I18N.en;
+
+  const btnEn = document.getElementById("kisanAiLangEn");
+  const btnHi = document.getElementById("kisanAiLangHi");
+  if (btnEn && btnHi) {
+    if (isHi) {
+      btnHi.style.background = "var(--green)";
+      btnHi.style.color = "#0b0f0d";
+      btnHi.style.fontWeight = "700";
+      btnEn.style.background = "transparent";
+      btnEn.style.color = "var(--muted)";
+      btnEn.style.fontWeight = "600";
+    } else {
+      btnEn.style.background = "var(--green)";
+      btnEn.style.color = "#0b0f0d";
+      btnEn.style.fontWeight = "700";
+      btnHi.style.background = "transparent";
+      btnHi.style.color = "var(--muted)";
+      btnHi.style.fontWeight = "600";
+    }
+  }
+
+  const input = document.getElementById("kisanChatInput");
+  if (input) {
+    input.placeholder = dict.placeholder;
+  }
+
+  const chips = document.getElementById("kisanChatChips");
+  if (chips) {
+    chips.innerHTML = dict.chips.map(chipText => `
+      <button type="button" class="kisan-chat-chip" onclick="askKisanChip(this)">${chipText}</button>
+    `).join("");
+  }
+
+  if (kisanChatHistory.length === 0) {
+    const container = document.getElementById("kisanChatMessages");
+    if (container) {
+      container.innerHTML = `<div class="kisan-chat-msg bot">${dict.greeting}</div>`;
+      const botMsg = container.querySelector(".kisan-chat-msg.bot");
+      if (botMsg) botMsg.appendChild(createAIReadButton(dict.greeting));
+    }
+  }
+
+  const disclaimer = document.getElementById("kisanChatDisclaimer");
+  if (disclaimer) {
+    disclaimer.innerHTML = dict.disclaimer;
+  }
+
+  // Update existing offline notices in the conversation to the selected language
+  document.querySelectorAll(".kisan-offline-notice").forEach(el => {
+    el.innerHTML = dict.offlineNotice;
+  });
+
+  if (kisanSpeechRec) {
+    kisanSpeechRec.lang = isHi ? "hi-IN" : "en-IN";
+  }
+}
+
 function clearKisanChatHistory() {
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+  }
   kisanChatHistory = [];
   const container = document.getElementById("kisanChatMessages");
   if (container) {
-    container.innerHTML = `
-      <div class="kisan-chat-msg bot">
-        <b>🙏 Namaste Kisan Mitra!</b><br>
-        I am your <b>AI Agricultural Assistant</b>. Ask me anything about crop diseases, pest remedies, fertilizer doses, government subsidies, or APMC mandi prices in any language (English, हिंदी, తెలుగు, தமிழ், मराठी, etc.).
-      </div>
-    `;
+    const dict = KISAN_AI_I18N[kisanAILang] || KISAN_AI_I18N.en;
+    container.innerHTML = `<div class="kisan-chat-msg bot">${dict.greeting}</div>`;
+    const botMsg = container.querySelector(".kisan-chat-msg.bot");
+    if (botMsg) botMsg.appendChild(createAIReadButton(dict.greeting));
   }
+  }
+}
+
+function getAIVoice(aiLang) {
+  if (!speechVoices || !speechVoices.length) {
+    loadSpeechVoices();
+  }
+  if (!speechVoices || !speechVoices.length) return null;
+
+  if (aiLang === "hi") {
+    let match = speechVoices.find(v => v.lang && v.lang.toLowerCase().replace('_', '-') === 'hi-in');
+    if (!match) match = speechVoices.find(v => v.lang && v.lang.toLowerCase().startsWith('hi-in'));
+    if (!match) match = speechVoices.find(v => v.lang && v.lang.toLowerCase().startsWith('hi'));
+    return match || null;
+  } else {
+    // English: en-IN first, else en-US, else any en voice
+    let match = speechVoices.find(v => v.lang && v.lang.toLowerCase().replace('_', '-') === 'en-in');
+    if (!match) match = speechVoices.find(v => v.lang && v.lang.toLowerCase().startsWith('en-in'));
+    if (!match) match = speechVoices.find(v => v.lang && v.lang.toLowerCase().replace('_', '-') === 'en-us');
+    if (!match) match = speechVoices.find(v => v.lang && v.lang.toLowerCase().startsWith('en-us'));
+    if (!match) match = speechVoices.find(v => v.lang && v.lang.toLowerCase().startsWith('en'));
+    return match || null;
+  }
+}
+
+function speakAIReply(text) {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  if (!text) return;
+
+  const clean = text
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/###|##|\*|_|`|•/g, " ")
+    .replace(/[\u{1F300}-\u{1FAFF}]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!clean) return;
+
+  const isHi = (kisanAILang === "hi");
+  const targetCode = isHi ? "hi-IN" : "en-IN";
+  const utter = new SpeechSynthesisUtterance(clean);
+  utter.lang = targetCode;
+  utter.rate = 0.95;
+
+  const matchedVoice = getAIVoice(kisanAILang);
+  if (matchedVoice) {
+    utter.voice = matchedVoice;
+    if (matchedVoice.lang) utter.lang = matchedVoice.lang;
+  }
+
+  window.speechSynthesis.speak(utter);
+}
+
+function createAIReadButton(textToRead) {
+  const dict = KISAN_AI_I18N[kisanAILang] || KISAN_AI_I18N.en;
+  const readBtn = document.createElement("button");
+  readBtn.type = "button";
+  readBtn.className = "kisan-chat-read-btn";
+  readBtn.setAttribute("aria-label", dict.readAloud || "Read aloud");
+  readBtn.innerHTML = dict.readAloud || "🔊 Read";
+  readBtn.onclick = function(e) {
+    if (e) e.stopPropagation();
+    if (typeof window !== "undefined" && "speechSynthesis" in window && window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      readBtn.innerHTML = dict.readAloud || "🔊 Read";
+    } else {
+      speakAIReply(textToRead);
+      readBtn.innerHTML = dict.readStop || "⏹️ Stop";
+      const interval = setInterval(function() {
+        if (typeof window === "undefined" || !("speechSynthesis" in window) || !window.speechSynthesis.speaking) {
+          clearInterval(interval);
+          readBtn.innerHTML = dict.readAloud || "🔊 Read";
+        }
+      }, 400);
+    }
+  };
+  return readBtn;
 }
 
 function askKisanChip(btn) {
@@ -3218,25 +3812,45 @@ function formatChatText(text) {
 
 function getClientAgriChatFallback(query) {
   const q = (query || "").toLowerCase();
-  if (q.includes("leaf curl") || q.includes("curl") || (q.includes("tomato") && (q.includes("virus") || q.includes("yellow"))) || (q.includes("chilli") && (q.includes("leaf") || q.includes("curl")))) {
-    return "### 🍅 Management of Leaf Curl Disease\n\n• **Cause:** Transmitted by Whiteflies (*Bemisia tabaci*).\n• **Remedies:** Spray **Imidacloprid 17.8% SL** @ 0.5 ml/L or **Neem Oil (10,000 ppm)** @ 3 ml/L.\n• **Practices:** Set up yellow sticky traps (15-20/acre) and rogue out severely infected plants.";
+  const isHi = (kisanAILang === "hi");
+  if (q.includes("leaf curl") || q.includes("curl") || q.includes("मरोड़") || q.includes("पत्ती") || (q.includes("tomato") && (q.includes("virus") || q.includes("yellow"))) || (q.includes("chilli") && (q.includes("leaf") || q.includes("curl")))) {
+    return isHi
+      ? "### 🍅 पत्ती मरोड़ (लीफ कर्ल) रोग नियंत्रण\n\n• **कारण:** सफेद मक्खी (Whitefly) द्वारा फैलता है।\n• **उपचार:** **इमिडाक्लोप्रिड 17.8% SL** @ 0.5 मिली/लीटर या **नीम तेल (10,000 ppm)** @ 3 मिली/लीटर का छिड़काव करें।\n• **रोकथाम:** पीले चिपचिपे ट्रैप (15-20 प्रति एकड़) लगाएं और गंभीर रूप से ग्रसित पौधों को उखाड़कर नष्ट करें।"
+      : "### 🍅 Management of Leaf Curl Disease\n\n• **Cause:** Transmitted by Whiteflies (*Bemisia tabaci*).\n• **Remedies:** Spray **Imidacloprid 17.8% SL** @ 0.5 ml/L or **Neem Oil (10,000 ppm)** @ 3 ml/L.\n• **Practices:** Set up yellow sticky traps (15-20/acre) and rogue out severely infected plants.";
   }
-  if (q.includes("summer") || q.includes("telangana") || q.includes("what to grow") || q.includes("season") || q.includes("crops grow best") || q.includes("zaid")) {
-    return "### ☀️ Best Summer Crops for Telangana & Semi-Arid Regions\n\n• **Vegetables:** Okra (Bhindi), Watermelon, Muskmelon, and Cluster Beans.\n• **Pulses & Oilseeds:** Sesame (Til) and Green Gram (Moong) - low water, high heat tolerance.\n• **Water Conservation:** Use drip irrigation early morning (5-8 AM) to minimize evaporation.";
+  if (q.includes("summer") || q.includes("telangana") || q.includes("गर्मी") || q.includes("जायद") || q.includes("what to grow") || q.includes("season") || q.includes("crops grow best") || q.includes("zaid")) {
+    return isHi
+      ? "### ☀️ गर्मी (जायद) की सर्वोत्तम फसलें\n\n• **सब्जियां:** भिंडी, तरबूज, खरबूजा, और ग्वार फली।\n• **दलहन व तिलहन:** तिल और मूंग — कम पानी में अधिक गर्मी सहने में सक्षम।\n• **जल संरक्षण:** वाष्पीकरण से बचने के लिए सुबह (5-8 बजे) ड्रिप सिंचाई करें।"
+      : "### ☀️ Best Summer Crops for Telangana & Semi-Arid Regions\n\n• **Vegetables:** Okra (Bhindi), Watermelon, Muskmelon, and Cluster Beans.\n• **Pulses & Oilseeds:** Sesame (Til) and Green Gram (Moong) - low water, high heat tolerance.\n• **Water Conservation:** Use drip irrigation early morning (5-8 AM) to minimize evaporation.";
   }
-  if (q.includes("pm-kisan") || q.includes("subsidy") || q.includes("6000") || q.includes("scheme") || q.includes("rythu") || q.includes("fasal bima") || q.includes("kcc")) {
-    return "### 💰 Agricultural Schemes & Subsidies\n\n• **PM-KISAN:** ₹6,000/year in 3 installments of ₹2,000 via DBT. Check status on pmkisan.gov.in.\n• **PM Fasal Bima (PMFBY):** Comprehensive crop insurance (1.5% premium Rabi, 2% Kharif).\n• **Kisan Credit Card (KCC):** Short term credit up to ₹3 Lakh at 4% subsidized interest.";
+  if (q.includes("pm-kisan") || q.includes("subsidy") || q.includes("6000") || q.includes("योजना") || q.includes("सब्सिडी") || q.includes("scheme") || q.includes("rythu") || q.includes("fasal bima") || q.includes("kcc")) {
+    return isHi
+      ? "### 💰 सरकारी कृषि योजनाएं एवं सब्सिडी\n\n• **PM-किसान:** ₹6,000 प्रति वर्ष (₹2,000 की 3 किस्तें DBT द्वारा)। pmkisan.gov.in पर स्थिति जांचें।\n• **PM फसल बीमा (PMFBY):** व्यापक फसल बीमा (रबी 1.5%, खरीफ 2% प्रीमियम)।\n• **किसान क्रेडिट कार्ड (KCC):** 4% रियायती ब्याज दर पर ₹3 लाख तक का अल्पकालिक ऋण।"
+      : "### 💰 Agricultural Schemes & Subsidies\n\n• **PM-KISAN:** ₹6,000/year in 3 installments of ₹2,000 via DBT. Check status on pmkisan.gov.in.\n• **PM Fasal Bima (PMFBY):** Comprehensive crop insurance (1.5% premium Rabi, 2% Kharif).\n• **Kisan Credit Card (KCC):** Short term credit up to ₹3 Lakh at 4% subsidized interest.";
   }
-  if (q.includes("fertilizer") || q.includes("urea") || q.includes("dap") || q.includes("npk") || q.includes("soil")) {
-    return "### 🌾 Optimal Fertilizer Schedule\n\n• **Basal Dose:** Apply full DAP (50 kg/acre) + MOP (25 kg/acre) at sowing.\n• **Split Nitrogen:** Top dress Urea at 21-25 days and at panicle/flowering stage.\n• **Organic:** Apply well-rotted FYM (2 tonnes/acre) 15 days before sowing.";
+  if (q.includes("fertilizer") || q.includes("urea") || q.includes("dap") || q.includes("खाद") || q.includes("यूरिया") || q.includes("npk") || q.includes("soil")) {
+    return isHi
+      ? "### 🌾 संतुलित उर्वरक प्रबंधन\n\n• **बुवाई के समय:** DAP (50 किग्रा/एकड़) + MOP (25 किग्रा/एकड़) डालें।\n• **यूरिया का छिड़काव:** 21-25 दिन पर पहली बार और कल्ले/फूल आने पर दूसरी बार टॉप-ड्रेसिंग करें।\n• **जैविक खाद:** बुवाई से 15 दिन पूर्व 2 टन प्रति एकड़ गोबर की सड़ी खाद मिलाएं।"
+      : "### 🌾 Optimal Fertilizer Schedule\n\n• **Basal Dose:** Apply full DAP (50 kg/acre) + MOP (25 kg/acre) at sowing.\n• **Split Nitrogen:** Top dress Urea at 21-25 days and at panicle/flowering stage.\n• **Organic:** Apply well-rotted FYM (2 tonnes/acre) 15 days before sowing.";
   }
-  if (q.includes("potato") || q.includes("storage") || q.includes("onion") || q.includes("rot")) {
-    return "### 🥔 Produce Storage Tips\n\n• **Potato:** Cure at 15-20°C for 10-12 days; store in diffuse dark shade in breathable jute bags.\n• **Onion:** Cure under shade for 7-10 days, store in ventilated bamboo racks.";
+  if (q.includes("potato") || q.includes("storage") || q.includes("आलू") || q.includes("प्याज") || q.includes("onion") || q.includes("rot")) {
+    return isHi
+      ? "### 🥔 भंडारण एवं सड़न रोकथाम के उपाय\n\n• **आलू:** 15-20°C पर 10-12 दिन छाया में सुखाएं; हवादार जूट के बोरों में अंधेरे में रखें।\n• **प्याज:** 7-10 दिन छाया में सुखाएं और हवादार बांस के रैक में फैलाकर रखें।"
+      : "### 🥔 Produce Storage Tips\n\n• **Potato:** Cure at 15-20°C for 10-12 days; store in diffuse dark shade in breathable jute bags.\n• **Onion:** Cure under shade for 7-10 days, store in ventilated bamboo racks.";
   }
-  if (q.includes("mandi") || q.includes("price") || q.includes("apmc") || q.includes("sell") || q.includes("arbitrage")) {
-    return "### 📈 Mandi Selling & Grading Strategy\n\n• **Grading:** Sort into uniform Grade A lots for up to 25% higher auction realization.\n• **Moisture:** Keep grain moisture under 12-14% to avoid mandi deductions.\n• **Arbitrage:** Use KisanMitra Mandi Arbitrage feature to find top net-profit mandis.";
+  if (q.includes("mandi") || q.includes("price") || q.includes("apmc") || q.includes("मंडी") || q.includes("भाव") || q.includes("sell") || q.includes("arbitrage")) {
+    return isHi
+      ? "### 📈 मंडी बिक्री एवं ग्रेडिंग रणनीति\n\n• **ग्रेडिंग:** ग्रेड A में छांटकर बेचने पर बोली में 25% तक अधिक मूल्य मिलता है।\n• **नमी:** कटाई बाद अनाज की नमी 12-14% से कम रखें ताकि कटौती न हो।\n• **आर्बिट्रेज:** अधिकतम शुद्ध मुनाफे वाली नजदीकी मंडी खोजने के लिए किसानमित्र मुनाफा कैलकुलेटर का उपयोग करें।"
+      : "### 📈 Mandi Selling & Grading Strategy\n\n• **Grading:** Sort into uniform Grade A lots for up to 25% higher auction realization.\n• **Moisture:** Keep grain moisture under 12-14% to avoid mandi deductions.\n• **Arbitrage:** Use KisanMitra Mandi Arbitrage feature to find top net-profit mandis.";
   }
-  return "### 🌾 KisanMitra AI Sahayak (किसानमित्र एआई सहायक)\n\nNamaste! I am your agricultural companion. You can ask me about:\n• Crop disease & pest remedies (leaf curl, blight, bollworm)\n• Fertilizer & spray schedules\n• Mandi prices, APMC grading & arbitrage\n• Government subsidies (PM-KISAN, PMFBY, KCC)\n• Seasonal crop recommendations (Kharif, Rabi, Summer)";
+  if (q.includes("weather") || q.includes("rain") || q.includes("storm") || q.includes("मौसम") || q.includes("बारिश")) {
+    return isHi
+      ? "### 🌧️ बेमौसम बारिश व आंधी से पहले खेत सुरक्षा चेकलिस्ट\n\n• **जल निकासी:** खेत की मेड़ों के किनारे नालियां साफ करें ताकि खड़ा पानी तुरंत निकल सके।\n• **छिड़काव रोकें:** बारिश की संभावना होने पर कीटनाशक या उर्वरक का छिड़काव तुरंत टाल दें।\n• **कटी फसल की सुरक्षा:** खलिहान में रखी फसल को ऊंचे स्थान पर रखकर तिरपाल से अच्छी तरह ढकें।\n• **बागवानी सहारा:** आंधी से बचाने के लिए टमाटर व मिर्च के पौधों को बांस की खपच्चियों का सहारा दें।"
+      : "### 🌧️ Farm Protection Checklist Before Unseasonal Rain / Storms\n\n• **Drainage Management:** Deepen field perimeter trenches to allow rapid discharge of excess standing water.\n• **Postpone Chemical Sprays:** Do not apply foliar fertilizers or pesticides if rainfall is expected within 24 hours.\n• **Threshing Floor Safety:** Move harvested crops to elevated platforms and cover securely with tarpaulins.\n• **Horticultural Staking:** Provide bamboo support to tomato and chilli plants to prevent lodging under strong winds.";
+  }
+  return isHi
+    ? "एआई अभी व्यस्त है, कृपया कुछ मिनटों में पुनः प्रयास करें।"
+    : "AI is busy, please try again in a few minutes.";
 }
 
 async function sendKisanChatMessage() {
@@ -3248,6 +3862,8 @@ async function sendKisanChatMessage() {
   if (!msg) return;
   input.value = "";
 
+  const dict = KISAN_AI_I18N[kisanAILang] || KISAN_AI_I18N.en;
+
   // Append user message
   const userDiv = document.createElement("div");
   userDiv.className = "kisan-chat-msg user";
@@ -3258,25 +3874,27 @@ async function sendKisanChatMessage() {
   const typingDiv = document.createElement("div");
   typingDiv.className = "kisan-chat-msg bot";
   typingDiv.id = "kisanTypingIndicator";
-  typingDiv.innerHTML = "⏳ <i>Kisan AI is thinking...</i>";
+  typingDiv.innerHTML = dict.thinking;
   container.appendChild(typingDiv);
   container.scrollTop = container.scrollHeight;
 
   try {
+    kisanAILang = (kisanAILang === 'hi') ? 'hi' : 'en';
     const res = await KM_API.sendChatMessage({
       message: msg,
-      history: kisanChatHistory
+      history: kisanChatHistory,
+      language: kisanAILang
     });
 
     const indicator = document.getElementById("kisanTypingIndicator");
     if (indicator) indicator.remove();
 
     let finalReply = (res && res.success && res.reply) ? res.reply : null;
-    let isClientFallback = false;
+    let isFallback = (res && (res.source === 'fallback' || res.is_fallback));
 
     if (!finalReply) {
-      finalReply = getClientAgriChatFallback(msg);
-      isClientFallback = true;
+      finalReply = getClientAgriChatFallback(msg) || dict.busyMessage;
+      isFallback = true;
     }
 
     kisanChatHistory.push({ role: "user", content: msg });
@@ -3285,27 +3903,64 @@ async function sendKisanChatMessage() {
     const botDiv = document.createElement("div");
     botDiv.className = "kisan-chat-msg bot";
     let formatted = formatChatText(finalReply);
-    if (isClientFallback) {
-      formatted += '<div style="margin-top:6px;font-size:0.75rem;color:#f59e0b">🌾 KisanMitra Field Knowledge Engine (Offline Advisory Mode)</div>';
+    if (isFallback) {
+      formatted += `<div class="kisan-offline-notice" style="margin-top:6px;font-size:0.75rem;color:#f59e0b">${dict.offlineNotice}</div>`;
     }
     botDiv.innerHTML = formatted;
+    botDiv.appendChild(createAIReadButton(finalReply));
     container.appendChild(botDiv);
+
+    if (window._kisanQueryWasVoice || (typeof voiceModeActive !== "undefined" && voiceModeActive)) {
+      speakAIReply(finalReply);
+      window._kisanQueryWasVoice = false;
+    }
   } catch (err) {
     const indicator = document.getElementById("kisanTypingIndicator");
     if (indicator) indicator.remove();
 
-    const fallbackReply = getClientAgriChatFallback(msg);
+    const fallbackReply = getClientAgriChatFallback(msg) || dict.busyMessage;
     kisanChatHistory.push({ role: "user", content: msg });
     kisanChatHistory.push({ role: "model", content: fallbackReply });
 
     const botDiv = document.createElement("div");
     botDiv.className = "kisan-chat-msg bot";
-    botDiv.innerHTML = formatChatText(fallbackReply) + '<div style="margin-top:6px;font-size:0.75rem;color:#f59e0b">🌾 KisanMitra Field Knowledge Engine (Offline Advisory Mode)</div>';
+    botDiv.innerHTML = formatChatText(fallbackReply) + `<div class="kisan-offline-notice" style="margin-top:6px;font-size:0.75rem;color:#f59e0b">${dict.offlineNotice}</div>`;
+    botDiv.appendChild(createAIReadButton(fallbackReply));
     container.appendChild(botDiv);
+
+    if (window._kisanQueryWasVoice || (typeof voiceModeActive !== "undefined" && voiceModeActive)) {
+      speakAIReply(fallbackReply);
+      window._kisanQueryWasVoice = false;
+    }
   }
 
   container.scrollTop = container.scrollHeight;
 }
+
+
+const RECOGNITION_LANG_MAP = {
+  en: "en-IN",
+  hi: "hi-IN",
+  ta: "ta-IN",
+  te: "te-IN",
+  mr: "mr-IN"
+};
+
+const VOICE_UNSUPPORTED_MSGS = {
+  en: "Voice recognition is not supported in this browser. Please use Google Chrome or Microsoft Edge.",
+  hi: "इस ब्राउज़र में वॉयस टाइपिंग समर्थित नहीं है। कृपया गूगल क्रोम या माइक्रोसॉफ्ट एज का उपयोग करें।",
+  ta: "இந்த உலாவியில் குரல் உள்ளீடு ஆதரிக்கப்படவில்லை. கூகுள் குரோம் அல்லது மைக்ரோசாப்ட் எட்ஜ் பயன்படுத்தவும்.",
+  te: "ఈ బ్రౌజర్‌లో వాయిస్ రికగ్నిషన్ సపోర్ట్ లేదు. దయచేసి గూగుల్ క్రోమ్ లేదా మైక్రోసాఫ్ట్ ఎడ్జ్ ఉపయోగించండి.",
+  mr: "या ब्राउझरमध्ये व्हॉइस टायपिंग समर्थित नाही. कृपया गुगल क्रोम किंवा मायक्रोसॉफ्ट एज वापरा."
+};
+
+const VOICE_PERMISSION_DENIED_MSGS = {
+  en: "Microphone permission was denied. Please allow microphone access in your browser settings to use voice typing.",
+  hi: "माइक्रोफ़ोन की अनुमति अस्वीकृत कर दी गई है। वॉयस टाइपिंग का उपयोग करने के लिए कृपया ब्राउज़र सेटिंग्स में माइक्रोफ़ोन की अनुमति दें।",
+  ta: "மைக்ரோஃபோன் அனுமதி மறுக்கப்பட்டது. குரல் தட்டச்சு பயன்படுத்த உங்கள் உலாவி அமைப்புகளில் மைக்ரோஃபோன் அனுமதியை இயக்கவும்.",
+  te: "మైక్రోఫోన్ అనుమతి నిరాకరించబడింది. వాయిస్ టైపింగ్ ఉపయోగించడానికి దయచేసి బ్రౌజర్ సెట్టింగ్స్‌లో మైక్రోఫోన్ యాక్సెస్ అనుమతించండి.",
+  mr: "मायक्रोफोन परवानगी नाकारली गेली आहे. व्हॉइस टायपिंग वापरण्यासाठी कृपया ब्राउझर सेटिंग्जमध्ये मायक्रोफोन परवानगी द्या."
+};
 
 function toggleKisanChatVoice() {
   const micBtn = document.getElementById("kisanChatMicBtn");
@@ -3313,7 +3968,7 @@ function toggleKisanChatVoice() {
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   if (!SpeechRec) {
-    alert("Voice recognition is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
+    alert((kisanAILang === 'hi') ? VOICE_UNSUPPORTED_MSGS.hi : VOICE_UNSUPPORTED_MSGS.en);
     return;
   }
 
@@ -3329,11 +3984,14 @@ function toggleKisanChatVoice() {
 
   try {
     kisanSpeechRec = new SpeechRec();
-    kisanSpeechRec.lang = "hi-IN"; // Default Hindi / Multilingual
+    kisanSpeechRec.lang = (kisanAILang === "hi") ? "hi-IN" : "en-IN";
     kisanSpeechRec.interimResults = false;
     kisanSpeechRec.maxAlternatives = 1;
 
     kisanSpeechRec.onstart = function() {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
       isKisanRecording = true;
       if (micBtn) {
         micBtn.classList.add("recording");
@@ -3345,15 +4003,19 @@ function toggleKisanChatVoice() {
       const transcript = event.results[0][0].transcript;
       if (input) {
         input.value = transcript;
+        window._kisanQueryWasVoice = true;
         sendKisanChatMessage();
       }
     };
 
-    kisanSpeechRec.onerror = function() {
+    kisanSpeechRec.onerror = function(event) {
       isKisanRecording = false;
       if (micBtn) {
         micBtn.classList.remove("recording");
         micBtn.innerHTML = "🎤";
+      }
+      if (event && (event.error === 'not-allowed' || event.error === 'service-not-allowed')) {
+        alert((kisanAILang === 'hi') ? VOICE_PERMISSION_DENIED_MSGS.hi : VOICE_PERMISSION_DENIED_MSGS.en);
       }
     };
 
@@ -3794,6 +4456,8 @@ window.addEventListener("DOMContentLoaded", function(){
   setRating(5);
   loadFarmerNotifications();
   runMandiArbitrage();
+  renderMspScheduleTable();
+  setKisanAILanguage(kisanAILang, false);
 });
 
 </script>
@@ -3808,7 +4472,7 @@ window.addEventListener("DOMContentLoaded", function(){
   <div class="notif-list" id="notifList">
     <div class="notif-item">
       <b>🌾 Wheat Procurement Open</b>
-      <p style="margin:0;color:var(--muted)">MSP rate of ₹2,425/quintal active across 70+ state APMC mandis.</p>
+      <p style="margin:0;color:var(--muted)">MSP rate of ₹2,425/quintal active across 67 state APMC mandis.</p>
     </div>
     <div class="notif-item">
       <b>⚡ DBT Subsidy Disbursal</b>
@@ -3818,9 +4482,9 @@ window.addEventListener("DOMContentLoaded", function(){
 </div>
 
 <!-- 🤖 KISAN AI ASSISTANT FLOATING CHATBOT -->
-<div class="kisan-chat-fab" id="kisanChatFab" onclick="toggleKisanChat()">
+<div class="kisan-chat-fab" id="kisanChatFab" role="button" tabindex="0" aria-label="Open Kisan AI Assistant chat" aria-expanded="false" onclick="toggleKisanChat()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleKisanChat();}">
   <span style="font-size:1.3rem">🤖</span>
-  <span>Ask Kisan AI</span>
+  <span data-i18n="chat_fab_text">Ask Kisan AI</span>
   <span style="background:#0b0f0d;color:var(--green);font-size:0.68rem;padding:2px 7px;border-radius:10px;font-weight:800">LIVE</span>
 </div>
 
@@ -3832,7 +4496,7 @@ window.addEventListener("DOMContentLoaded", function(){
         🌾
       </div>
       <div>
-        <b style="font-size:0.95rem;color:var(--txt);display:block">Kisan AI Sahayak</b>
+        <b style="font-size:0.95rem;color:var(--txt);display:block" data-i18n="chat_header_title">Kisan AI Sahayak</b>
         <small style="color:var(--green);font-size:0.72rem;display:flex;align-items:center;gap:4px">
           <span style="width:6px;height:6px;background:var(--green);border-radius:50%;display:inline-block"></span>
           Online • Gemini AI Powered
@@ -3840,6 +4504,15 @@ window.addEventListener("DOMContentLoaded", function(){
       </div>
     </div>
     <div style="display:flex;gap:6px;align-items:center">
+      <!-- Two buttons: English | हिन्दी with hint underneath -->
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px">
+        <div class="kisan-ai-lang-toggle" style="display:inline-flex;align-items:center;background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:2px 4px;gap:2px">
+          <button type="button" id="kisanAiLangEn" onclick="setKisanAILanguage('en')" aria-label="Set AI Assistant to English" style="border:none;background:var(--green);color:#0b0f0d;font-weight:700;font-size:0.7rem;padding:2px 8px;border-radius:10px;cursor:pointer;transition:all .15s ease">English</button>
+          <span style="color:var(--line);font-size:0.68rem;user-select:none;padding:0 1px">|</span>
+          <button type="button" id="kisanAiLangHi" onclick="setKisanAILanguage('hi')" aria-label="Set AI Assistant to Hindi" style="border:none;background:transparent;color:var(--muted);font-weight:600;font-size:0.7rem;padding:2px 8px;border-radius:10px;cursor:pointer;transition:all .15s ease">हिन्दी</button>
+        </div>
+        <small style="font-size:0.6rem;color:var(--muted);white-space:nowrap">AI replies in English or हिन्दी</small>
+      </div>
       <button onclick="clearKisanChatHistory()" title="Clear Chat" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:4px">🗑️</button>
       <button onclick="toggleKisanChat()" title="Close" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;padding:2px 6px">&times;</button>
     </div>
@@ -3847,26 +4520,29 @@ window.addEventListener("DOMContentLoaded", function(){
 
   <!-- Quick Suggestion Chips -->
   <div class="kisan-chat-suggestions" id="kisanChatChips">
-    <button class="kisan-chat-chip" onclick="askKisanChip(this)">🍅 Leaf curl remedy</button>
-    <button class="kisan-chat-chip" onclick="askKisanChip(this)">💰 PM-KISAN ₹6,000</button>
-    <button class="kisan-chat-chip" onclick="askKisanChip(this)">🌾 Wheat fertilizer</button>
-    <button class="kisan-chat-chip" onclick="askKisanChip(this)">📈 Mandi selling tips</button>
-    <button class="kisan-chat-chip" onclick="askKisanChip(this)">🌧️ Rain precautions</button>
+    <button type="button" class="kisan-chat-chip" onclick="askKisanChip(this)">🍅 Leaf curl remedy</button>
+    <button type="button" class="kisan-chat-chip" onclick="askKisanChip(this)">💰 PM-KISAN ₹6,000</button>
+    <button type="button" class="kisan-chat-chip" onclick="askKisanChip(this)">🌾 Wheat fertilizer</button>
+    <button type="button" class="kisan-chat-chip" onclick="askKisanChip(this)">📈 Mandi selling tips</button>
+    <button type="button" class="kisan-chat-chip" onclick="askKisanChip(this)">🌧️ Rain precautions</button>
   </div>
 
   <!-- Messages Container -->
   <div class="kisan-chat-messages" id="kisanChatMessages">
     <div class="kisan-chat-msg bot">
       <b>🙏 Namaste Kisan Mitra!</b><br>
-      I am your <b>AI Agricultural Assistant</b>. Ask me anything about crop diseases, pest remedies, fertilizer doses, government subsidies, or APMC mandi prices in any language (English, हिंदी, తెలుగు, தமிழ், मराठी, etc.).
+      I am your <b>AI Agricultural Assistant</b>. Ask me anything about crop diseases, pest remedies, fertilizer doses, government subsidies, or APMC mandi prices in <b>English</b> or <b>Hindi</b>.
     </div>
   </div>
 
   <!-- Input Bar -->
   <div class="kisan-chat-input-area">
-    <input type="text" class="kisan-chat-input" id="kisanChatInput" placeholder="Ask in any language or tap 🎤..." onkeydown="if(event.key==='Enter') sendKisanChatMessage()">
-    <button class="kisan-chat-btn voice-btn" id="kisanChatMicBtn" onclick="toggleKisanChatVoice()" title="Voice Typing">🎤</button>
-    <button class="kisan-chat-btn" onclick="sendKisanChatMessage()" title="Send">➤</button>
+    <input type="text" class="kisan-chat-input" id="kisanChatInput" placeholder="Ask in English or Hindi or tap 🎤..." onkeydown="if(event.key==='Enter') sendKisanChatMessage()">
+    <button type="button" class="kisan-chat-btn voice-btn" id="kisanChatMicBtn" onclick="toggleKisanChatVoice()" title="Voice Typing">🎤</button>
+    <button type="button" class="kisan-chat-btn" onclick="sendKisanChatMessage()" title="Send">➤</button>
+    <div id="kisanChatDisclaimer" style="font-size:0.68rem;color:var(--muted);text-align:center;padding:4px 8px;border-top:1px solid var(--line)">
+      ⚠️ AI-generated advice. Please verify chemical doses with local agricultural officers before field application.
+    </div>
   </div>
 </div>
 

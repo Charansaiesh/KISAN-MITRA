@@ -6,7 +6,7 @@
 <title>KisanMitra Community — Buy, Sell & Transport</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&family=Noto+Sans+Tamil:wght@400;600;700&family=Noto+Sans+Telugu:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="js/api.js"></script>
-<script>if(typeof KM_API==='undefined'){document.write('<script src="api.js"><\/script>');}</script>
+
 <style>
   :root{
     --bg:#0b0f0d; --surface:#131a16; --surface2:#1a241e; --line:#26332b;
@@ -171,7 +171,7 @@
   <div class="modal-card">
     <div class="modal-head">
       <div>
-        <h3 id="modalPostTitle">💬 Discussion &amp; Inquiries</h3>
+        <h3 id="modalPostTitle" data-i18n="modal_title">💬 Discussion &amp; Inquiries</h3>
         <small id="modalPostMeta" style="color:var(--muted);font-size:.78rem"></small>
       </div>
       <button class="modal-close" onclick="closeComments()">✕</button>
@@ -180,9 +180,9 @@
       <!-- Injected dynamically -->
     </div>
     <form class="comment-form" onsubmit="submitComment(event)">
-      <input type="text" id="commAuthor" placeholder="Your Name or Farm Name *" required>
-      <textarea id="commText" rows="2" placeholder="Ask a question or offer price..." required></textarea>
-      <button type="submit" class="cbtn c-call" style="border:none;padding:10px;font-weight:700">💬 Post Reply</button>
+      <input type="text" id="commAuthor" data-i18n-ph="ph_author" placeholder="Your Name or Farm Name *" required>
+      <textarea id="commText" rows="2" data-i18n-ph="ph_comment" placeholder="Ask a question or offer price..." required></textarea>
+      <button type="submit" class="cbtn c-call" style="border:none;padding:10px;font-weight:700" data-i18n="btn_reply">💬 Post Reply</button>
     </form>
   </div>
 </div>
@@ -214,7 +214,11 @@ const I18N_COMM = {
     ph_search: "🔍 Search listings (crop, district, person)...",
     foot_txt: "Buy, sell & transport directly",
     tag_sell: "SELLING", tag_buy: "WANTED",
-    btn_call: "📞 Call", btn_wa: "💬 WhatsApp"
+    btn_call: "📞 Call", btn_wa: "💬 WhatsApp",
+    modal_title: "💬 Discussion & Inquiries",
+    ph_author: "Your Name or Farm Name *",
+    ph_comment: "Ask a question or offer price...",
+    btn_reply: "💬 Post Reply"
   },
   hi: {
     back_portal: "← मुख्य पोर्टल पर वापस जाएं",
@@ -235,7 +239,11 @@ const I18N_COMM = {
     ph_search: "🔍 खोजें (फसल, जिला, नाम)...",
     foot_txt: "सीधे खरीदें, बेचें और वाहन किराए पर लें",
     tag_sell: "बिक्री के लिए", tag_buy: "आवश्यकता",
-    btn_call: "📞 कॉल करें", btn_wa: "💬 व्हाट्सएप"
+    btn_call: "📞 कॉल करें", btn_wa: "💬 व्हाट्सएप",
+    modal_title: "💬 पूछताछ एवं संवाद",
+    ph_author: "आपका नाम या फार्म का नाम *",
+    ph_comment: "प्रश्न पूछें या मूल्य का प्रस्ताव दें...",
+    btn_reply: "💬 उत्तर भेजें"
   },
   ta: {
     back_portal: "← முதன்மை போர்ட்டலுக்கு திரும்பு",
@@ -256,7 +264,11 @@ const I18N_COMM = {
     ph_search: "🔍 தேடுக...",
     foot_txt: "நேரடியாக வாங்கவும், விற்கவும்",
     tag_sell: "விற்பனைக்கு", tag_buy: "தேவை",
-    btn_call: "📞 அழைக்க", btn_wa: "💬 வாட்ஸ்அப்"
+    btn_call: "📞 அழைக்க", btn_wa: "💬 வாட்ஸ்அப்",
+    modal_title: "💬 விவாதம் மற்றும் கேள்விகள்",
+    ph_author: "உங்கள் பெயர் அல்லது பண்ணை பெயர் *",
+    ph_comment: "கேள்வி கேட்க அல்லது விலை கூற...",
+    btn_reply: "💬 பதில் இடுக"
   },
   te: {
     back_portal: "← ప్రధాన పోర్టల్‌కు తిరిగి వెళ్ళండి",
@@ -277,7 +289,11 @@ const I18N_COMM = {
     ph_search: "🔍 శోధించండి...",
     foot_txt: "నేరుగా అమ్మండి, కొనండి మరియు రవాణా చేయండి",
     tag_sell: "అమ్మకానికి", tag_buy: "కావలెను",
-    btn_call: "📞 కాల్ చేయండి", btn_wa: "💬 వాట్సాప్"
+    btn_call: "📞 కాల్ చేయండి", btn_wa: "💬 వాట్సాప్",
+    modal_title: "💬 చర్చ మరియు విచారణలు",
+    ph_author: "మీ పేరు లేదా పొలం పేరు *",
+    ph_comment: "ప్రశ్న అడగండి లేదా ధరను ప్రతిపాదించండి...",
+    btn_reply: "💬 ప్రత్యుత్తరం ఇవ్వండి"
   }
 };
 
@@ -504,6 +520,12 @@ async function deleteListing(postId){
   await fetchListings();
   render();
 }
+
+window.addEventListener("storage", function(e){
+  if (e.key === "km_lang" && e.newValue) {
+    changeLanguage(e.newValue);
+  }
+});
 
 window.addEventListener("load", async function(){
   changeLanguage(currentLang);

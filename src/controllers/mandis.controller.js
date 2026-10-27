@@ -1,43 +1,478 @@
 const supabase = require('../config/supabase');
 
 const MANDIS_LIST = [
-  { name: "Lucknow Mandi", state: "Uttar Pradesh", crop: "Wheat", lat: 26.8467, lon: 80.9462 },
-  { name: "Kanpur Mandi", state: "Uttar Pradesh", crop: "Wheat", lat: 26.4499, lon: 80.3319 },
-  { name: "Varanasi Mandi", state: "Uttar Pradesh", crop: "Paddy", lat: 25.3176, lon: 82.9739 },
-  { name: "Meerut Mandi", state: "Uttar Pradesh", crop: "Sugarcane", lat: 28.9845, lon: 77.7064 },
-  { name: "Agra Mandi", state: "Uttar Pradesh", crop: "Potato", lat: 27.1767, lon: 78.0081 },
-  { name: "Patna Mandi", state: "Bihar", crop: "Paddy", lat: 25.5941, lon: 85.1376 },
-  { name: "Muzaffarpur Mandi", state: "Bihar", crop: "Litchi", lat: 26.1209, lon: 85.3647 },
-  { name: "Jaipur Mandi", state: "Rajasthan", crop: "Mustard", lat: 26.9124, lon: 75.7873 },
-  { name: "Kota Mandi", state: "Rajasthan", crop: "Soybean", lat: 25.2138, lon: 75.8648 },
-  { name: "Bhopal Mandi", state: "Madhya Pradesh", crop: "Gram", lat: 23.2599, lon: 77.4126 },
-  { name: "Indore Mandi", state: "Madhya Pradesh", crop: "Soybean", lat: 22.7196, lon: 75.8577 },
-  { name: "Chandigarh Mandi", state: "Chandigarh", crop: "Maize", lat: 30.7333, lon: 76.7794 },
-  { name: "Ludhiana Mandi", state: "Punjab", crop: "Wheat", lat: 30.9010, lon: 75.8573 },
-  { name: "Amritsar Mandi", state: "Punjab", crop: "Wheat", lat: 31.6340, lon: 74.8723 },
-  { name: "Karnal Mandi", state: "Haryana", crop: "Paddy", lat: 29.6857, lon: 76.9905 },
-  { name: "Hisar Mandi", state: "Haryana", crop: "Cotton", lat: 29.1492, lon: 75.7217 },
-  { name: "Delhi Azadpur Mandi", state: "Delhi", crop: "Vegetables", lat: 28.6989, lon: 77.1546 },
-  { name: "Guntur Mandi", state: "Andhra Pradesh", crop: "Chilli", lat: 16.3067, lon: 80.4365 },
-  { name: "Vijayawada Mandi", state: "Andhra Pradesh", crop: "Paddy", lat: 16.5062, lon: 80.6480 },
-  { name: "Hyderabad Mandi", state: "Telangana", crop: "Vegetables", lat: 17.4630, lon: 78.4827 },
-  { name: "Warangal Mandi", state: "Telangana", crop: "Cotton", lat: 17.9689, lon: 79.5941 },
-  { name: "Bengaluru Mandi", state: "Karnataka", crop: "Ragi", lat: 12.9716, lon: 77.5946 },
-  { name: "Erode Mandi", state: "Tamil Nadu", crop: "Turmeric", lat: 11.3410, lon: 77.7172 },
-  { name: "Coimbatore Mandi", state: "Tamil Nadu", crop: "Coconut", lat: 11.0168, lon: 76.9558 },
-  { name: "Ernakulam Mandi", state: "Kerala", crop: "Rice", lat: 9.9312, lon: 76.2673 }
+  {
+    "name": "Lucknow Mandi",
+    "state": "Uttar Pradesh",
+    "crop": "Wheat",
+    "lat": 26.8467,
+    "lon": 80.9462
+  },
+  {
+    "name": "Kanpur Mandi",
+    "state": "Uttar Pradesh",
+    "crop": "Wheat",
+    "lat": 26.4499,
+    "lon": 80.3319
+  },
+  {
+    "name": "Varanasi Mandi",
+    "state": "Uttar Pradesh",
+    "crop": "Paddy",
+    "lat": 25.3176,
+    "lon": 82.9739
+  },
+  {
+    "name": "Meerut Mandi",
+    "state": "Uttar Pradesh",
+    "crop": "Sugarcane",
+    "lat": 28.9845,
+    "lon": 77.7064
+  },
+  {
+    "name": "Agra Mandi",
+    "state": "Uttar Pradesh",
+    "crop": "Potato",
+    "lat": 27.1767,
+    "lon": 78.0081
+  },
+  {
+    "name": "Patna Mandi",
+    "state": "Bihar",
+    "crop": "Paddy",
+    "lat": 25.5941,
+    "lon": 85.1376
+  },
+  {
+    "name": "Muzaffarpur Mandi",
+    "state": "Bihar",
+    "crop": "Litchi",
+    "lat": 26.1209,
+    "lon": 85.3647
+  },
+  {
+    "name": "Jaipur Mandi",
+    "state": "Rajasthan",
+    "crop": "Mustard",
+    "lat": 26.9124,
+    "lon": 75.7873
+  },
+  {
+    "name": "Kota Mandi",
+    "state": "Rajasthan",
+    "crop": "Soybean",
+    "lat": 25.2138,
+    "lon": 75.8648
+  },
+  {
+    "name": "Bhopal Mandi",
+    "state": "Madhya Pradesh",
+    "crop": "Gram",
+    "lat": 23.2599,
+    "lon": 77.4126
+  },
+  {
+    "name": "Indore Mandi",
+    "state": "Madhya Pradesh",
+    "crop": "Soybean",
+    "lat": 22.7196,
+    "lon": 75.8577
+  },
+  {
+    "name": "Chandigarh Mandi",
+    "state": "Chandigarh",
+    "crop": "Maize",
+    "lat": 30.7333,
+    "lon": 76.7794
+  },
+  {
+    "name": "Ludhiana Mandi",
+    "state": "Punjab",
+    "crop": "Wheat",
+    "lat": 30.901,
+    "lon": 75.8573
+  },
+  {
+    "name": "Amritsar Mandi",
+    "state": "Punjab",
+    "crop": "Wheat",
+    "lat": 31.634,
+    "lon": 74.8723
+  },
+  {
+    "name": "Karnal Mandi",
+    "state": "Haryana",
+    "crop": "Paddy",
+    "lat": 29.6857,
+    "lon": 76.9905
+  },
+  {
+    "name": "Hisar Mandi",
+    "state": "Haryana",
+    "crop": "Cotton",
+    "lat": 29.1492,
+    "lon": 75.7217
+  },
+  {
+    "name": "Delhi Azadpur Mandi",
+    "state": "Delhi",
+    "crop": "Vegetables",
+    "lat": 28.6989,
+    "lon": 77.1546
+  },
+  {
+    "name": "Dehradun Mandi",
+    "state": "Uttarakhand",
+    "crop": "Rice",
+    "lat": 30.3165,
+    "lon": 78.0322
+  },
+  {
+    "name": "Nagpur Mandi",
+    "state": "Maharashtra",
+    "crop": "Cotton",
+    "lat": 21.1458,
+    "lon": 79.0882
+  },
+  {
+    "name": "Pune Mandi",
+    "state": "Maharashtra",
+    "crop": "Onion",
+    "lat": 18.5204,
+    "lon": 73.8567
+  },
+  {
+    "name": "Nashik Mandi",
+    "state": "Maharashtra",
+    "crop": "Grapes",
+    "lat": 19.9975,
+    "lon": 73.7898
+  },
+  {
+    "name": "Guwahati Mandi",
+    "state": "Assam",
+    "crop": "Mustard",
+    "lat": 26.1445,
+    "lon": 91.7362
+  },
+  {
+    "name": "Guntur Mandi",
+    "state": "Andhra Pradesh",
+    "crop": "Chilli",
+    "lat": 16.3067,
+    "lon": 80.4365
+  },
+  {
+    "name": "Vijayawada Mandi",
+    "state": "Andhra Pradesh",
+    "crop": "Paddy",
+    "lat": 16.5062,
+    "lon": 80.648
+  },
+  {
+    "name": "Tadepalligudem Mandi",
+    "state": "Andhra Pradesh",
+    "crop": "Paddy",
+    "lat": 16.8143,
+    "lon": 81.847
+  },
+  {
+    "name": "Kurnool Mandi",
+    "state": "Andhra Pradesh",
+    "crop": "Sunflower",
+    "lat": 15.8281,
+    "lon": 78.0373
+  },
+  {
+    "name": "Kadiri Mandi",
+    "state": "Andhra Pradesh",
+    "crop": "Groundnut",
+    "lat": 14.1128,
+    "lon": 78.1608
+  },
+  {
+    "name": "Anantapur Mandi",
+    "state": "Andhra Pradesh",
+    "crop": "Groundnut",
+    "lat": 14.6819,
+    "lon": 77.6006
+  },
+  {
+    "name": "Tirupati Mandi",
+    "state": "Andhra Pradesh",
+    "crop": "Paddy",
+    "lat": 13.6288,
+    "lon": 79.4192
+  },
+  {
+    "name": "Kakinada Mandi",
+    "state": "Andhra Pradesh",
+    "crop": "Coconut",
+    "lat": 16.9891,
+    "lon": 82.2475
+  },
+  {
+    "name": "Eluru Mandi",
+    "state": "Andhra Pradesh",
+    "crop": "Paddy",
+    "lat": 16.7107,
+    "lon": 81.0945
+  },
+  {
+    "name": "Hyderabad Mandi (Bowenpally)",
+    "state": "Telangana",
+    "crop": "Vegetables",
+    "lat": 17.463,
+    "lon": 78.4827
+  },
+  {
+    "name": "Warangal Mandi",
+    "state": "Telangana",
+    "crop": "Cotton",
+    "lat": 17.9689,
+    "lon": 79.5941
+  },
+  {
+    "name": "Nizamabad Mandi",
+    "state": "Telangana",
+    "crop": "Turmeric",
+    "lat": 18.6725,
+    "lon": 78.0941
+  },
+  {
+    "name": "Karimnagar Mandi",
+    "state": "Telangana",
+    "crop": "Paddy",
+    "lat": 18.4386,
+    "lon": 79.1288
+  },
+  {
+    "name": "Khammam Mandi",
+    "state": "Telangana",
+    "crop": "Chilli",
+    "lat": 17.2473,
+    "lon": 80.1514
+  },
+  {
+    "name": "Mahbubnagar Mandi",
+    "state": "Telangana",
+    "crop": "Castor",
+    "lat": 16.7419,
+    "lon": 77.9846
+  },
+  {
+    "name": "Adilabad Mandi",
+    "state": "Telangana",
+    "crop": "Cotton",
+    "lat": 19.664,
+    "lon": 78.5325
+  },
+  {
+    "name": "Siddipet Mandi",
+    "state": "Telangana",
+    "crop": "Paddy",
+    "lat": 18.1033,
+    "lon": 78.8491
+  },
+  {
+    "name": "Bengaluru Mandi (Binny Mills)",
+    "state": "Karnataka",
+    "crop": "Ragi",
+    "lat": 12.9716,
+    "lon": 77.5946
+  },
+  {
+    "name": "Mysuru Mandi",
+    "state": "Karnataka",
+    "crop": "Ragi",
+    "lat": 12.2958,
+    "lon": 76.6394
+  },
+  {
+    "name": "Hubballi Mandi",
+    "state": "Karnataka",
+    "crop": "Chilli",
+    "lat": 15.3647,
+    "lon": 75.124
+  },
+  {
+    "name": "Belagavi Mandi",
+    "state": "Karnataka",
+    "crop": "Sugarcane",
+    "lat": 15.8497,
+    "lon": 74.4977
+  },
+  {
+    "name": "Ballari Mandi",
+    "state": "Karnataka",
+    "crop": "Cotton",
+    "lat": 15.1394,
+    "lon": 76.9214
+  },
+  {
+    "name": "Raichur Mandi",
+    "state": "Karnataka",
+    "crop": "Paddy",
+    "lat": 16.212,
+    "lon": 77.3566
+  },
+  {
+    "name": "Tumakuru Mandi",
+    "state": "Karnataka",
+    "crop": "Coconut",
+    "lat": 13.3392,
+    "lon": 77.114
+  },
+  {
+    "name": "Shivamogga Mandi",
+    "state": "Karnataka",
+    "crop": "Areca nut",
+    "lat": 13.9299,
+    "lon": 75.5681
+  },
+  {
+    "name": "Davangere Mandi",
+    "state": "Karnataka",
+    "crop": "Maize",
+    "lat": 14.4644,
+    "lon": 75.9218
+  },
+  {
+    "name": "Bijapura Mandi",
+    "state": "Karnataka",
+    "crop": "Tur",
+    "lat": 16.8302,
+    "lon": 75.71
+  },
+  {
+    "name": "Kalaburagi Mandi",
+    "state": "Karnataka",
+    "crop": "Tur",
+    "lat": 17.3297,
+    "lon": 76.8343
+  },
+  {
+    "name": "Chennai Koyambedu Mandi",
+    "state": "Tamil Nadu",
+    "crop": "Vegetables",
+    "lat": 13.0698,
+    "lon": 80.194
+  },
+  {
+    "name": "Coimbatore Mandi",
+    "state": "Tamil Nadu",
+    "crop": "Coconut",
+    "lat": 11.0168,
+    "lon": 76.9558
+  },
+  {
+    "name": "Madurai Mandi",
+    "state": "Tamil Nadu",
+    "crop": "Cotton",
+    "lat": 9.9252,
+    "lon": 78.1198
+  },
+  {
+    "name": "Erode Turmeric Mandi",
+    "state": "Tamil Nadu",
+    "crop": "Turmeric",
+    "lat": 11.341,
+    "lon": 77.7172
+  },
+  {
+    "name": "Salem Mandi",
+    "state": "Tamil Nadu",
+    "crop": "Tapioca",
+    "lat": 11.6643,
+    "lon": 78.146
+  },
+  {
+    "name": "Thanjavur Mandi",
+    "state": "Tamil Nadu",
+    "crop": "Paddy",
+    "lat": 10.787,
+    "lon": 79.1378
+  },
+  {
+    "name": "Tiruchirappalli Mandi",
+    "state": "Tamil Nadu",
+    "crop": "Paddy",
+    "lat": 10.7905,
+    "lon": 78.7047
+  },
+  {
+    "name": "Dindigul Mandi",
+    "state": "Tamil Nadu",
+    "crop": "Chilli",
+    "lat": 10.3673,
+    "lon": 77.9803
+  },
+  {
+    "name": "Villupuram Mandi",
+    "state": "Tamil Nadu",
+    "crop": "Groundnut",
+    "lat": 11.9401,
+    "lon": 79.4861
+  },
+  {
+    "name": "Thoothukudi Mandi",
+    "state": "Tamil Nadu",
+    "crop": "Pulses",
+    "lat": 8.7642,
+    "lon": 78.1348
+  },
+  {
+    "name": "Ernakulam Mandi",
+    "state": "Kerala",
+    "crop": "Rice",
+    "lat": 9.9312,
+    "lon": 76.2673
+  },
+  {
+    "name": "Thrissur Mandi",
+    "state": "Kerala",
+    "crop": "Coconut",
+    "lat": 10.5276,
+    "lon": 76.2144
+  },
+  {
+    "name": "Palakkad Mandi",
+    "state": "Kerala",
+    "crop": "Paddy",
+    "lat": 10.7867,
+    "lon": 76.6548
+  },
+  {
+    "name": "Kozhikode Mandi",
+    "state": "Kerala",
+    "crop": "Pepper",
+    "lat": 11.2588,
+    "lon": 75.7804
+  },
+  {
+    "name": "Kannur Mandi",
+    "state": "Kerala",
+    "crop": "Cashew",
+    "lat": 11.8745,
+    "lon": 75.3704
+  },
+  {
+    "name": "Kottayam Mandi",
+    "state": "Kerala",
+    "crop": "Rubber",
+    "lat": 9.5916,
+    "lon": 76.5222
+  },
+  {
+    "name": "Alappuzha Mandi",
+    "state": "Kerala",
+    "crop": "Rice",
+    "lat": 9.4981,
+    "lon": 76.3388
+  }
 ];
 
-const MSP_RATES = {
-  "Wheat": { msp: 2425, season: "Rabi 2024-25" },
-  "Paddy": { msp: 2300, season: "Kharif 2024-25" },
-  "Mustard": { msp: 5950, season: "Rabi 2024-25" },
-  "Gram": { msp: 5650, season: "Rabi 2024-25" },
-  "Maize": { msp: 2225, season: "Kharif 2024-25" },
-  "Cotton": { msp: 7121, season: "Kharif 2024-25" },
-  "Soybean": { msp: 4892, season: "Kharif 2024-25" },
-  "Groundnut": { msp: 6783, season: "Kharif 2024-25" }
-};
+const { MSP_RATES } = require('../config/mspData');
 
 const SAMPLE_MARKET_PRICES = {
   "Wheat": [

@@ -5,7 +5,10 @@ require('dotenv').config();
 async function seedAdmin() {
   const name = process.argv[2] || 'Lead Officer #1042';
   const phone = process.argv[3] || '9999900000';
-  const password = process.argv[4] || 'adminSecret2025';
+  const password = process.argv[4] || process.env.ADMIN_INITIAL_SECRET;
+  if (!password) {
+    throw new Error('ADMIN_INITIAL_SECRET or password argument required.');
+  }
   const role = 'officer';
 
   console.log(`🔐 Secure Admin Provisioning: Creating ${role} (${name}, Phone: ${phone})...`);

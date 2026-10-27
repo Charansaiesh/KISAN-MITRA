@@ -4,6 +4,10 @@ const helmet = require('helmet');
 const path = require('path');
 require('dotenv').config();
 
+if (!process.env.JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET environment variable is missing.');
+}
+
 const { apiLimiter } = require('./src/middleware/rateLimiter');
 const errorHandler = require('./src/middleware/errorHandler');
 
@@ -27,8 +31,8 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 // Rate limiter for API
 app.use('/api/', apiLimiter);
@@ -42,12 +46,7 @@ const fs = require('fs');
 app.get(['/js/api.js', '/api.js'], (req, res) => {
   res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  const apiPath = path.join(__dirname, 'js', 'api.js');
-  if (fs.existsSync(apiPath)) {
-    return res.sendFile(apiPath);
-  }
-  const rootApiPath = path.join(__dirname, 'api.js');
-  res.sendFile(rootApiPath);
+  res.sendFile(path.join(__dirname, 'js', 'api.js'));
 });
 
 app.get('/', (req, res) => {
@@ -63,6 +62,18 @@ app.get('/community', (req, res) => {
 });
 
 // 1. HEALTH CHECK ENDPOINT
+const { AIChatService } = require('./src/services/AIChatService');
+
+app.get(['/api/ai/status', '/ai/status'], (req, res) => {
+  const apiKey = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.trim() : '';
+  res.json({
+    success: true,
+    model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+    key_present: Boolean(apiKey && apiKey.length > 0),
+    last_successful_call_time: AIChatService.getLastSuccessfulCallTime() || null
+  });
+});
+
 app.get(['/api/health', '/health'], (req, res) => {
   res.json({
     status: 'OK',
