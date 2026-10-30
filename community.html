@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KisanMitra Community — Buy, Sell & Transport</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤝</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&family=Noto+Sans+Tamil:wght@400;600;700&family=Noto+Sans+Telugu:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="js/api.js"></script>
 
@@ -15,7 +16,8 @@
     --shadow:0 20px 50px rgba(0,0,0,.45); --radius:22px;
   }
   *{margin:0;padding:0;box-sizing:border-box;font-family:'Plus Jakarta Sans','Noto Sans Devanagari','Noto Sans Tamil','Noto Sans Telugu',system-ui,sans-serif}
-  body{background:var(--bg);color:var(--txt);overflow-x:hidden}
+  html{overflow-x:hidden;max-width:100%}
+  body{background:var(--bg);color:var(--txt);overflow-x:hidden;max-width:100%}
   nav{position:sticky;top:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:14px 5%;background:rgba(11,15,13,.85);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
   .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.2rem;text-decoration:none;color:var(--txt)}
   .logo .mark{width:36px;height:36px;border-radius:11px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.2rem}
@@ -82,7 +84,7 @@
   .comment-form input:focus, .comment-form textarea:focus{border-color:var(--green)}
 
   @media(max-width:820px){.grid{grid-template-columns:1fr 1fr}.post-grid{grid-template-columns:1fr}}
-  @media(max-width:540px){.grid{grid-template-columns:1fr}}
+  @media(max-width:540px){.grid{grid-template-columns:1fr}nav{padding:10px 4%}.nav-right{gap:6px}.back{padding:6px 10px;font-size:.78rem}.aurora{display:none}}
 </style>
 </head>
 <body>
@@ -438,7 +440,7 @@ async function postListing(e){
   }
 
   await fetchListings();
-  (e.target.reset ? e.target.reset() : document.querySelector("form.post-grid").reset());
+  (e && e.target && e.target.reset ? e.target.reset() : document.querySelector("form.post-grid")?.reset());
   const msg = document.getElementById("postMsg");
   msg.style.display = "block";
   setTimeout(function(){ msg.style.display = "none"; }, 4000);

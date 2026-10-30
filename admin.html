@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KisanMitra — Officer/Admin Portal</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&family=Noto+Sans+Tamil:wght@400;600;700&family=Noto+Sans+Telugu:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -13,7 +14,8 @@
     --shadow:0 20px 50px rgba(0,0,0,.45); --radius:22px;
   }
   *{margin:0;padding:0;box-sizing:border-box;font-family:'Plus Jakarta Sans','Noto Sans Devanagari','Noto Sans Tamil','Noto Sans Telugu',system-ui,sans-serif}
-  body{background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
+  html{overflow-x:hidden;max-width:100%}
+  body{background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden;max-width:100%}
   nav{display:flex;align-items:center;justify-content:space-between;padding:16px 5%;
       background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:100}
   .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.15rem}
@@ -80,6 +82,7 @@
     #newAlert{width:calc(100vw - 30px);right:15px}
     .officer-tag{display:none}
   }
+  @media(max-width:500px){nav{flex-wrap:wrap;gap:8px;padding:10px 4%}.nav-actions{flex-wrap:wrap;gap:6px}nav a.back{padding:6px 10px;font-size:.78rem}.officer-tag{font-size:.7rem;padding:4px 8px}}
 </style>
 <script src="js/api.js"></script>
 

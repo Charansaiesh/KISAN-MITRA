@@ -81,8 +81,10 @@ exports.createToken = async (req, res, next) => {
 
     // Token record created
 
+    const randSuffix = Math.floor(1000 + Math.random() * 9000);
+    let tokenNumber = `KM2025${randSuffix}`;
+
     if (supabase) {
-      let tokenNumber = '';
       let report = null;
       let lastErr = null;
 
